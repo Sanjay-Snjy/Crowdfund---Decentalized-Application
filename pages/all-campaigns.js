@@ -182,31 +182,29 @@ export default function AllCampaignsPage() {
 
   return (
     <Layout>
-      <div className="max-w-8xl mx-auto pl-4 py-8 space-y-6">
+      <div className="max-w-8xl mx-auto pl-0 sm:pl-4 py-8 space-y-6">
         {/* Page header */}
-        <div>
-          <div className="flex items-center"> 
-            <div>
-          <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>All Campaigns</h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}> 
-            Browse and discover crowdfunding campaigns
-          </p></div>
-         <div className="ml-auto right-[4%] mt-5 z-20 flex items-center gap-3">
-            <div className="flex items-center text-[12px]  rounded-2xl text-black bg-[var(--bg-secondary)] backdrop-blur-sm border border-black/15 px-4 py-2 text-center dark:text-white dark:bg-white/10 dark:border-white/20">
-          <h1 className="rounded-2xl uppercase  "> Campaigns - &nbsp; </h1> 
-            <div className="flex items-center ">
-              <p className="uppercase tracking-wider">Total: &nbsp;</p>
-              <p className="font-bold">{totalCampaigns}</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>All Campaigns</h1>
+            <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
+              Browse and discover crowdfunding campaigns
+            </p>
+          </div>
+          <div className="flex sm:ml-auto">
+            <div className="flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border border-black/15 bg-[var(--bg-secondary)] px-3 py-2 text-center text-[12px] text-black backdrop-blur-sm sm:w-auto sm:px-4 dark:border-white/20 dark:bg-white/10 dark:text-white">
+              <span className="font-semibold uppercase tracking-wide">Campaigns</span>
+              <span className="flex items-center gap-1 uppercase tracking-wider">
+                Total: <span className="font-bold">{totalCampaigns}</span>
+              </span>
+              <span className="flex items-center gap-1 uppercase tracking-wider">
+                Active: <span className="font-bold">{activeCount}</span>
+              </span>
+              <span className="flex items-center gap-1 uppercase tracking-wider">
+                Funded: <span className="font-bold">{fundedCount}</span>
+              </span>
             </div>
-            <div className="flex items-center  ">
-               <p className="uppercase tracking-wider"> &nbsp; &nbsp;Active: &nbsp;</p>
-              <p className="font-bold">{activeCount}</p>
-            </div>
-            <div className="flex items-center ">
-               <p className="uppercase tracking-wider"> &nbsp; &nbsp;Funded: &nbsp;</p>
-              <p className=" font-bold ">{fundedCount}</p>
-            </div>
-          </div> </div> </div>
+          </div>
         </div>
         
          {/* Hero Banner Slideshow */}
@@ -222,16 +220,16 @@ export default function AllCampaignsPage() {
                 <img
                   src={slide.image}
                   alt={slide.title}
-                  className="ml-[330px] mt-[0px] h-[100%] w-[110%] object-contain"
+                  className="h-full w-full object-cover sm:ml-[330px] sm:w-[110%] sm:object-contain"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-100/10" />
               </div>
             ))}
           </div>
 
-          <div className="relative z-10 flex flex-col gap-6 p-8 lg:flex-row lg:items-end lg:justify-between">
+          {/* Desktop: original layout (title + subtitles flow from top-right) */}
+          <div className="relative z-10 hidden gap-6 p-8 lg:flex lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-           
               <div className="mt-0 ml-auto">
                 <h1 className="mt-0 text-[20px] font-semibold tracking-tight">
                   {HERO_SLIDES[currentSlide].title}
@@ -243,6 +241,21 @@ export default function AllCampaignsPage() {
                   {HERO_SLIDES[currentSlide].subtitle2}
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Mobile/tablet: title at top, subtitles pinned above the slide dots */}
+          <div className="relative z-10 flex h-full flex-col p-5 sm:p-8 lg:hidden">
+            <h1 className="text-base font-semibold tracking-tight sm:text-[20px]">
+              {HERO_SLIDES[currentSlide].title}
+            </h1>
+            <div className="mb-11 mt-auto">
+              <p className="mt-4 max-w-xl text-xs text-slate-200 sm:mt-6 sm:text-sm">
+                {HERO_SLIDES[currentSlide].subtitle1}
+              </p>
+              <p className="mt-2 max-w-xl text-xs text-slate-200 sm:text-sm">
+                {HERO_SLIDES[currentSlide].subtitle2}
+              </p>
             </div>
           </div>
 

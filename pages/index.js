@@ -531,7 +531,12 @@ export default function Home() {
       </header>
 
       {/* ===== Hero ===== */}
-      <section className="relative z-10 mx-auto w-full max-w-7xl px-4 pt-32 pb-20 text-center sm:px-6 lg:px-8">
+      <section
+        className="relative z-10 mx-auto w-full max-w-7xl overflow-hidden bg-cover bg-center px-4 pt-32 pb-20 text-center sm:px-6 lg:px-8"
+        style={{
+          backgroundImage: "url('/bg.png')",
+        }}
+      >
         <div className="mx-auto max-w-3xl">
           <div className="mb-6 inline-flex items-center gap-2 backdrop-blur-sm rounded-full border border-white/10 bg-white/[0.03] px-4 py-1.5 text-xs font-medium text-white/70">
             <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />

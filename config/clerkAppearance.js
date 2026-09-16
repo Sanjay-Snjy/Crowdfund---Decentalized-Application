@@ -1,17 +1,17 @@
 /**
  * Clerk Appearance Configuration
- * Matches the CrowdFund landing page theme: black bg with indigo accents,
- * rounded-full buttons, white text, subtle borders.
+ * Light/white theme that matches the CrowdFund brand: white surfaces,
+ * subtle gray borders, indigo accents, rounded-full buttons.
  */
 const clerkAppearance = {
   variables: {
     colorPrimary: "#6366F1",           // Indigo-500
-    colorBackground: "#000000",        // Black
-    colorInputBackground: "rgba(255,255,255,0.06)", // White/6%
-    colorText: "#FFFFFF",              // White
-    colorTextSecondary: "rgba(255,255,255,0.6)",    // White/60
+    colorBackground: "#FFFFFF",        // White
+    colorInputBackground: "#F9FAFB",   // Gray-50
+    colorText: "#111827",              // Gray-900
+    colorTextSecondary: "rgba(17,24,39,0.6)",       // Gray-900/60
     colorTextOnPrimaryBackground: "#FFFFFF",
-    colorInputText: "#FFFFFF",
+    colorInputText: "#111827",
     colorDanger: "#EF4444",
     colorSuccess: "#22C55E",
     // Base (md) radius. Clerk SCALES this per element (lg x1.35, xl x2.7, 2xl x3.35),
@@ -25,11 +25,10 @@ const clerkAppearance = {
   elements: {
     // ─── Card / Modal Container ───
     card: {
-      background: "rgba(0,0,0,0.85)",
-      border: "1px solid rgba(255,255,255,0.1)",
+      background: "#FFFFFF",
+      border: "1px solid rgba(17,24,39,0.08)",
       borderRadius: "1.5rem",
-      boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
-      backdropFilter: "blur(40px)",
+      boxShadow: "0 8px 32px rgba(17,24,39,0.10)",
       // Clips the absolutely-positioned "Secured by Clerk" badge that
       // Clerk hangs off the card edge (it has no styleable class).
       overflow: "hidden",
@@ -43,29 +42,30 @@ const clerkAppearance = {
       minHeight: "auto",
     },
     page: {
-      backgroundColor: "rgba(0,0,0,0.8)",
+      backgroundColor: "#F9FAFB",
       minHeight: "100vh",
       borderRadius: "1.5rem",
     },
 
     // ─── Form Fields ───
     formFieldInput: {
-      backgroundColor: "rgba(255,255,255,0.06)",
-      border: "1px solid rgba(255,255,255,0.1)",
-      color: "#FFFFFF",
+      backgroundColor: "#F9FAFB",
+      border: "1px solid rgba(17,24,39,0.12)",
+      color: "#111827",
       borderRadius: "0.75rem",
       padding: "0.75rem 1rem",
       fontSize: "0.9375rem",
       transition: "border-color 150ms ease, box-shadow 150ms ease",
       outline: "none",
-      "::placeholder": { color: "rgba(255,255,255,0.4)" },
+      "::placeholder": { color: "rgba(17,24,39,0.35)" },
       "&:focus": {
         borderColor: "#6366F1",
-        boxShadow: "0 0 0 3px rgba(99,102,241,0.2)",
+        boxShadow: "0 0 0 3px rgba(99,102,241,0.15)",
+        backgroundColor: "#FFFFFF",
       },
     },
     formFieldLabel: {
-      color: "rgba(255,255,255,0.7)",
+      color: "rgba(17,24,39,0.7)",
       fontSize: "0.8125rem",
       fontWeight: 500,
       marginBottom: "0.375rem",
@@ -102,104 +102,101 @@ const clerkAppearance = {
 
     // ─── Social / OAuth Buttons ───
     socialButtonsBlockButton: {
-      backgroundColor: "rgba(255,255,255,0.06)",
-      border: "1px solid rgba(255,255,255,0.1)",
-      color: "#FFFFFF",
+      backgroundColor: "#FFFFFF",
+      border: "1px solid rgba(17,24,39,0.12)",
+      color: "#111827",
       borderRadius: "9999px",
       padding: "0.75rem 1rem",
       fontSize: "0.875rem",
       fontWeight: 500,
       transition: "background-color 150ms ease, border-color 150ms ease",
       "&:hover": {
-        backgroundColor: "rgba(255,255,255,0.1)",
-        borderColor: "rgba(255,255,255,0.2)",
+        backgroundColor: "#F9FAFB",
+        borderColor: "rgba(17,24,39,0.2)",
       },
     },
 
     socialButtonsIconButton: {
-      backgroundColor: "rgba(255,255,255,0.06)",
-      border: "1px solid rgba(255,255,255,0.1)",
-      color: "#FFFFFF",
+      backgroundColor: "#FFFFFF",
+      border: "1px solid rgba(17,24,39,0.12)",
+      color: "#111827",
       borderRadius: "9999px",
       "&:hover": {
-        backgroundColor: "rgba(255,255,255,0.1)",
+        backgroundColor: "#F9FAFB",
       },
-    },
-    socialButtonsProviderIcon__github: {
-      filter: "invert(1)",
     },
 
     // ─── Divider ───
     dividerLine: {
-      backgroundColor: "rgba(255,255,255,0.1)",
+      backgroundColor: "rgba(17,24,39,0.1)",
     },
     dividerText: {
-      color: "rgba(255,255,255,0.4)",
+      color: "rgba(17,24,39,0.4)",
       fontSize: "0.8125rem",
     },
 
     // ─── Links ───
     footerActionLink: {
-      color: "#A5B4FC",
+      color: "#4F46E5",
       fontWeight: 500,
       fontSize: "0.875rem",
       transition: "color 150ms ease",
       "&:hover": {
-        color: "#C7D2FE",
+        color: "#6366F1",
       },
     },
     actionLink: {
-      color: "#A5B4FC",
+      color: "#4F46E5",
       fontWeight: 500,
       "&:hover": {
-        color: "#C7D2FE",
+        color: "#6366F1",
       },
     },
 
     // ─── Header ───
     headerTitle: {
-      color: "#FFFFFF",
+      color: "#111827",
       fontSize: "1.5rem",
       fontWeight: 700,
       letterSpacing: "-0.01em",
     },
     headerSubtitle: {
-      color: "rgba(255,255,255,0.6)",
+      color: "rgba(17,24,39,0.6)",
       fontSize: "0.875rem",
       fontWeight: 400,
     },
 
     // ─── Navbar ───
     navbar: {
-      backgroundColor: "rgba(255,255,255,0.03)",
-      borderBottom: "1px solid rgba(255,255,255,0.1)",
+      backgroundColor: "#F9FAFB",
+      borderBottom: "1px solid rgba(17,24,39,0.08)",
       // Override Clerk's border-radius inheritance so the nav rail stays rectangular.
       borderRadius: "0",
       overflow: "hidden",
     },
     navbarButton: {
-      color: "rgba(255,255,255,0.6)",
+      color: "rgba(17,24,39,0.6)",
       "&:hover": {
-        backgroundColor: "rgba(255,255,255,0.06)",
-        color: "#FFFFFF",
+        backgroundColor: "rgba(17,24,39,0.05)",
+        color: "#111827",
       },
     },
     navbarButtonActive: {
-      color: "#FFFFFF",
-      backgroundColor: "rgba(99,102,241,0.2)",
+      color: "#4F46E5",
+      backgroundColor: "rgba(99,102,241,0.1)",
     },
 
     // ─── OTP / Code Input ───
     otpCodeFieldInput: {
-      backgroundColor: "rgba(255,255,255,0.06)",
-      border: "1px solid rgba(255,255,255,0.1)",
-      color: "#FFFFFF",
+      backgroundColor: "#F9FAFB",
+      border: "1px solid rgba(17,24,39,0.12)",
+      color: "#111827",
       borderRadius: "0.75rem",
       fontSize: "1.25rem",
       fontWeight: 600,
       "&:focus": {
         borderColor: "#6366F1",
-        boxShadow: "0 0 0 3px rgba(99,102,241,0.2)",
+        boxShadow: "0 0 0 3px rgba(99,102,241,0.15)",
       },
     },
 
@@ -208,7 +205,7 @@ const clerkAppearance = {
       accentColor: "#6366F1",
     },
     switchButton: {
-      backgroundColor: "rgba(255,255,255,0.1)",
+      backgroundColor: "rgba(17,24,39,0.15)",
       "&:checked": {
         backgroundColor: "#6366F1",
       },
@@ -216,13 +213,13 @@ const clerkAppearance = {
 
     // ─── Alerts / Errors ───
     alertBox: {
-      backgroundColor: "rgba(239,68,68,0.1)",
-      border: "1px solid rgba(239,68,68,0.3)",
-      color: "#FCA5A5",
+      backgroundColor: "rgba(239,68,68,0.06)",
+      border: "1px solid rgba(239,68,68,0.25)",
+      color: "#B91C1C",
       borderRadius: "0.75rem",
     },
     alertText: {
-      color: "#FFFFFF",
+      color: "#111827",
     },
 
     // ─── Footer ───
@@ -230,17 +227,17 @@ const clerkAppearance = {
       backgroundColor: "transparent",
     },
     footerAction: {
-      color: "rgba(255,255,255,0.5)",
+      color: "rgba(17,24,39,0.5)",
     },
 
     // ─── Verification Code ───
     verificationCodeFieldInput: {
-      backgroundColor: "rgba(255,255,255,0.06)",
-      border: "1px solid rgba(255,255,255,0.1)",
-      color: "#FFFFFF",
+      backgroundColor: "#F9FAFB",
+      border: "1px solid rgba(17,24,39,0.12)",
+      color: "#111827",
       "&:focus": {
         borderColor: "#6366F1",
-        boxShadow: "0 0 0 3px rgba(99,102,241,0.2)",
+        boxShadow: "0 0 0 3px rgba(99,102,241,0.15)",
       },
     },
 
@@ -256,21 +253,20 @@ const clerkAppearance = {
       width: 36,
       height: 36,
       borderRadius: "9999px",
-      border: "2px solid rgba(255,255,255,0.1)",
+      border: "2px solid rgba(17,24,39,0.1)",
     },
     userButtonPopoverCard: {
-      backgroundColor: "rgba(0,0,0,0.9)",
-      border: "1px solid rgba(255,255,255,0.1)",
+      backgroundColor: "#FFFFFF",
+      border: "1px solid rgba(17,24,39,0.08)",
       borderRadius: "0.75rem",
-      boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
-      color: "#FFFFFF",
-      backdropFilter: "blur(40px)",
+      boxShadow: "0 8px 32px rgba(17,24,39,0.10)",
+      color: "#111827",
     },
     userButtonPopoverActionButton: {
-      color: "#FFFFFF",
+      color: "#111827",
       borderRadius: "0.5rem",
       "&:hover": {
-        backgroundColor: "rgba(255,255,255,0.06)",
+        backgroundColor: "rgba(17,24,39,0.05)",
       },
     },
     userButtonPopoverActionButtonText: {
@@ -279,42 +275,42 @@ const clerkAppearance = {
     },
     userButtonPopoverFooter: {
       display: "none",
-      color: "rgba(255,255,255,0.5)",
-      borderTop: "1px solid rgba(255,255,255,0.1)",
+      color: "rgba(17,24,39,0.5)",
+      borderTop: "1px solid rgba(17,24,39,0.08)",
     },
 
     // ─── Profile Page ───
     profilePage: {
-      backgroundColor: "rgba(0,0,0,0.5)",
+      backgroundColor: "#F9FAFB",
     },
     profileSectionPrimaryButton: {
-      backgroundColor: "rgba(255,255,255,0.06)",
-      color: "#FFFFFF",
+      backgroundColor: "#FFFFFF",
+      color: "#111827",
       borderRadius: "0.375rem",
-      border: "1px solid rgba(255,255,255,0.1)",
+      border: "1px solid rgba(17,24,39,0.12)",
       "&:hover": {
-        backgroundColor: "rgba(255,255,255,0.1)",
+        backgroundColor: "#F9FAFB",
       },
     },
 
     // ─── Modal / Overlay ───
     modalBackdrop: {
-      backgroundColor: "rgba(0,0,0,0.7)",
+      backgroundColor: "rgba(17,24,39,0.4)",
       backdropFilter: "blur(8px)",
     },
     modalContent: {},
 
     // ─── Button Arrow ───
     socialButtonsBlockButtonArrow: {
-      color: "rgba(255,255,255,0.4)",
+      color: "rgba(17,24,39,0.4)",
     },
 
     // ─── Form Reset Password ───
     formResendCodeLink: {
-      color: "#A5B4FC",
+      color: "#4F46E5",
       fontSize: "0.8125rem",
       "&:hover": {
-        color: "#C7D2FE",
+        color: "#6366F1",
       },
     },
 
@@ -325,27 +321,27 @@ const clerkAppearance = {
 
     // ─── Checkbox / Password Toggle ───
     formFieldLabelRow: {
-      color: "rgba(255,255,255,0.7)",
+      color: "rgba(17,24,39,0.7)",
     },
     formFieldInputShowPasswordButton: {
-      color: "rgba(255,255,255,0.4)",
+      color: "rgba(17,24,39,0.4)",
       "&:hover": {
-        color: "rgba(255,255,255,0.7)",
+        color: "rgba(17,24,39,0.7)",
       },
     },
 
     // ─── Breadcrumbs ───
     breadcrumbs: {
-      color: "rgba(255,255,255,0.4)",
+      color: "rgba(17,24,39,0.4)",
     },
     breadcrumbsItem: {
-      color: "rgba(255,255,255,0.6)",
+      color: "rgba(17,24,39,0.6)",
     },
     breadcrumbsItemDivider: {
-      color: "rgba(255,255,255,0.2)",
+      color: "rgba(17,24,39,0.2)",
     },
     breadcrumbsItemActive: {
-      color: "#A5B4FC",
+      color: "#4F46E5",
     },
   },
 };

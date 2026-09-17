@@ -23,8 +23,8 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      { source: "/home", destination: "/", permanent: true },
-      { source: "/campaigns", destination: "/all-campaigns", permanent: false },
+      { source: "/all-campaigns", destination: "/home", permanent: true },
+      { source: "/campaigns", destination: "/home", permanent: false },
     ];
   },
 };

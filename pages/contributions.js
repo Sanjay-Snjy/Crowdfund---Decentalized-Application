@@ -84,7 +84,7 @@ export default function ContributionsPage() {
             <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>
               Connect a real wallet to view and manage your contributions.
             </p>
-            <Link href="/all-campaigns" className="btn btn-secondary mt-4">Browse Campaigns</Link>
+            <Link href="/home" className="btn btn-secondary mt-4">Browse Campaigns</Link>
           </div>
         </div>
       </Layout>
@@ -141,7 +141,7 @@ export default function ContributionsPage() {
             <FiHeart className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--color-text-muted)" }} />
             <h3 className="font-semibold" style={{ color: "var(--color-text)" }}>No contributions yet</h3>
             <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>Start backing campaigns you care about.</p>
-            <Link href="/all-campaigns" className="btn btn-secondary mt-4">Browse Campaigns</Link>
+            <Link href="/home" className="btn btn-secondary mt-4">Browse Campaigns</Link>
           </div>
         )}
       </div>

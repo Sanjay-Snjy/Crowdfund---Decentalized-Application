@@ -1,4 +1,46 @@
 import { ethers } from "ethers";
+import { CREATOR_STAKE_PERCENT } from "../constants";
+
+/**
+ * Creator stake required to launch a campaign: CREATOR_STAKE_PERCENT of the target.
+ * Mirrors the Solidity `(targetAmount * STAKE_PERCENT) / 100` integer math.
+ *
+ * @param {*} targetAmountWei campaign target in wei (BigNumber / string)
+ * @returns {ethers.BigNumber|null} stake in wei, or null when the target is unusable
+ */
+export const calculateCreatorStakeWei = (targetAmountWei) => {
+  if (targetAmountWei === undefined || targetAmountWei === null || targetAmountWei === "") {
+    return null;
+  }
+  try {
+    return ethers.BigNumber.from(targetAmountWei.toString())
+      .mul(CREATOR_STAKE_PERCENT)
+      .div(100);
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Same as calculateCreatorStakeWei but for a user typed ETH amount.
+ */
+export const calculateCreatorStakeEth = (targetAmountEther) => {
+  const parsed = parseFloat(targetAmountEther);
+  if (!parsed || parsed <= 0 || isNaN(parsed)) return "0";
+  return ((parsed * CREATOR_STAKE_PERCENT) / 100).toString();
+};
+
+/**
+ * Share of a milestone (in wei) out of the donor funds raised so far.
+ */
+export const calculateMilestoneShareWei = (raisedWei, percent) => {
+  if (!raisedWei || !percent) return ethers.BigNumber.from(0);
+  try {
+    return ethers.BigNumber.from(raisedWei.toString()).mul(percent).div(100);
+  } catch {
+    return ethers.BigNumber.from(0);
+  }
+};
 
 export const formatEther = (value) => {
   if (!value) return "0";

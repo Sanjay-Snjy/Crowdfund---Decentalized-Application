@@ -12,11 +12,16 @@ import {
   CAMPAIGN_CREATION_FEE,
 } from "../constants";
 import { CROWDFUNDING_ABI } from "../constants/abi";
+import { calculateCreatorStakeWei } from "../utils/helpers";
 import { toast } from "react-hot-toast";
 
 export const useContract = () => {
   const { address, isConnected } = useAccount();
 
+  /**
+   * Create a campaign and deposit the mandatory creator stake (30% of the target).
+   * `targetAmount` is expected in wei.
+   */
   const useCreateCampaign = (
     title,
     description,
@@ -24,6 +29,8 @@ export const useContract = () => {
     targetAmount,
     duration
   ) => {
+    const stake = targetAmount ? calculateCreatorStakeWei(targetAmount) : null;
+
     const { config, error: prepareError } = usePrepareContractWrite({
       address: CONTRACT_ADDRESS,
       abi: CROWDFUNDING_ABI,
@@ -31,10 +38,11 @@ export const useContract = () => {
       args: title
         ? [title, description, metadataHash, targetAmount, duration]
         : undefined,
-      value: title
-  ? ethers.utils.parseEther(CAMPAIGN_CREATION_FEE)
-  : undefined,
-      enabled: Boolean(address && CONTRACT_ADDRESS && title),
+      value:
+        stake !== null
+          ? stake.add(ethers.utils.parseEther(CAMPAIGN_CREATION_FEE))
+          : undefined,
+      enabled: Boolean(address && CONTRACT_ADDRESS && title && stake !== null),
     });
 
     const { write, writeAsync, isLoading, isSuccess, error } = useContractWrite(
@@ -60,7 +68,8 @@ export const useContract = () => {
     };
   };
 
-  // Simple create campaign without prepare
+  // Simple create campaign without prepare. Callers must pass the creator stake
+  // as `value` (see calculateCreatorStakeWei) together with the campaign args.
   const useCreateCampaignSimple = () => {
     const { write, writeAsync, isLoading, isSuccess, error } = useContractWrite(
       {
@@ -68,7 +77,7 @@ export const useContract = () => {
         abi: CROWDFUNDING_ABI,
         functionName: "createCampaign",
         onSuccess(data) {
-          toast.success("Campaign created successfully!");
+          toast.success("Campaign created — creator stake locked in escrow!");
         },
         onError(error) {
           console.error("Contract write error:", error);
@@ -112,31 +121,6 @@ export const useContract = () => {
     };
   };
 
-  // Withdraw Campaign Funds
-  const useWithdrawFunds = () => {
-    const { write, writeAsync, isLoading, isSuccess, error } = useContractWrite(
-      {
-        address: CONTRACT_ADDRESS,
-        abi: CROWDFUNDING_ABI,
-        functionName: "withdrawCampaignFunds",
-        onSuccess(data) {
-          toast.success("Funds withdrawn successfully!");
-        },
-        onError(error) {
-          toast.error(error?.message || "Transaction failed");
-        },
-      }
-    );
-
-    return {
-      withdrawFunds: write,
-      withdrawFundsAsync: writeAsync,
-      isLoading,
-      isSuccess,
-      error,
-    };
-  };
-
   // Get Refund
   const useGetRefund = () => {
     const { write, writeAsync, isLoading, isSuccess, error } = useContractWrite(
@@ -162,46 +146,54 @@ export const useContract = () => {
     };
   };
 
-  const useAddMilestone = () => {
+  /**
+   * Creator submits the IPFS CID of the evidence for the next milestone and opens
+   * donor voting. Milestones are handled strictly in order (M1 -> M2 -> M3).
+   */
+  const useSubmitMilestoneEvidence = () => {
     const { write, writeAsync, isLoading, isSuccess, error } = useContractWrite({
       address: CONTRACT_ADDRESS,
       abi: CROWDFUNDING_ABI,
-      functionName: "addCampaignMilestone",
+      functionName: "submitMilestoneEvidence",
       onSuccess() {
-        toast.success("Milestone added successfully!");
+        toast.success("Evidence submitted — donors can now vote!");
       },
       onError(err) {
-        console.error("Milestone add error:", err);
-        toast.error(err?.message || "Failed to add milestone");
+        console.error("Milestone evidence error:", err);
+        toast.error(err?.reason || err?.message || "Failed to submit evidence");
       },
     });
 
     return {
-      addMilestone: write,
-      addMilestoneAsync: writeAsync,
+      submitMilestoneEvidence: write,
+      submitMilestoneEvidenceAsync: writeAsync,
       isLoading,
       isSuccess,
       error,
     };
   };
 
-  const useRequestMilestoneVote = () => {
+  /**
+   * Forfeit the creator stake of a campaign that failed to reach its target.
+   * Callable by anyone once the deadline has passed.
+   */
+  const useForfeitCreatorStake = () => {
     const { write, writeAsync, isLoading, isSuccess, error } = useContractWrite({
       address: CONTRACT_ADDRESS,
       abi: CROWDFUNDING_ABI,
-      functionName: "requestMilestoneVote",
+      functionName: "forfeitCreatorStake",
       onSuccess() {
-        toast.success("Milestone vote requested successfully!");
+        toast.success("Creator stake moved to the platform treasury");
       },
       onError(err) {
-        console.error("Milestone vote request error:", err);
-        toast.error(err?.message || "Failed to request milestone vote");
+        console.error("Forfeit creator stake error:", err);
+        toast.error(err?.reason || err?.message || "Failed to forfeit creator stake");
       },
     });
 
     return {
-      requestMilestoneVote: write,
-      requestMilestoneVoteAsync: writeAsync,
+      forfeitCreatorStake: write,
+      forfeitCreatorStakeAsync: writeAsync,
       isLoading,
       isSuccess,
       error,
@@ -214,11 +206,11 @@ export const useContract = () => {
       abi: CROWDFUNDING_ABI,
       functionName: "voteOnMilestone",
       onSuccess() {
-        toast.success("Vote submitted successfully!");
+        toast.success("Vote recorded — your voting power counts!");
       },
       onError(err) {
         console.error("Vote on milestone error:", err);
-        toast.error(err?.message || "Failed to submit vote");
+        toast.error(err?.reason || err?.message || "Failed to submit vote");
       },
     });
 
@@ -237,11 +229,11 @@ export const useContract = () => {
       abi: CROWDFUNDING_ABI,
       functionName: "releaseMilestoneFunds",
       onSuccess() {
-        toast.success("Milestone funds released successfully!");
+        toast.success("Milestone share released to the creator!");
       },
       onError(err) {
         console.error("Release milestone funds error:", err);
-        toast.error(err?.message || "Failed to release milestone funds");
+        toast.error(err?.reason || err?.message || "Failed to release milestone funds");
       },
     });
 
@@ -303,6 +295,7 @@ export const useContract = () => {
       data: milestones,
       isLoading: loadingMilestones,
       error: milestoneError,
+      refetch: refetchMilestones,
     } = useContractRead({
       address: CONTRACT_ADDRESS,
       abi: CROWDFUNDING_ABI,
@@ -329,6 +322,15 @@ export const useContract = () => {
         approvals: m.approvals,
         rejections: m.rejections,
         createdAt: m.createdAt,
+        // ── creator accountability / escrow fields ──
+        percentage: Number(m.percentage ?? 0),
+        evidenceCID: m.evidenceCID || "",
+        evidenceSubmitted: Boolean(m.evidenceSubmitted),
+        evidenceSubmittedAt: m.evidenceSubmittedAt ? Number(m.evidenceSubmittedAt) : 0,
+        approved: Boolean(m.approved),
+        totalVotingPower: m.totalVotingPower || 0n,
+        approvalWeight: m.approvalWeight || 0n,
+        rejectionWeight: m.rejectionWeight || 0n,
       }));
     }, [milestones, campaignId]);
 
@@ -337,6 +339,7 @@ export const useContract = () => {
       count,
       isLoading: loadingMilestones,
       error: milestoneError,
+      refetch: refetchMilestones,
     };
   };
 
@@ -399,6 +402,35 @@ export const useContract = () => {
       cacheTime: 30000,
       staleTime: 5000,
     });
+  };
+
+  /**
+   * Separate accounting for a campaign: donor funds, locked creator stake,
+   * released funds and the donor funds still held in escrow.
+   */
+  const useCampaignAccounting = (campaignId) => {
+    const { data: raw, ...rest } = useContractRead({
+      address: CONTRACT_ADDRESS,
+      abi: CROWDFUNDING_ABI,
+      functionName: "getCampaignAccounting",
+      args: campaignId ? [campaignId] : undefined,
+      enabled: Boolean(campaignId && CONTRACT_ADDRESS),
+      cacheTime: 30000,
+      staleTime: 5000,
+    });
+
+    const data = raw
+      ? {
+          donorFundsRaised: raw[0],
+          creatorStakeHeld: raw[1],
+          releasedAmountTotal: raw[2],
+          lockedDonorFunds: raw[3],
+          refundableDonorFunds: raw[4],
+          stakeLocked: raw[5],
+        }
+      : null;
+
+    return { data, rawData: raw, ...rest };
   };
 
   const useContractStats = () => {
@@ -499,10 +531,14 @@ export const useContract = () => {
                   targetAmount: campaignData.targetAmount,
                   raisedAmount: campaignData.raisedAmount,
                   deadline: campaignData.deadline,
-                  withdrawn: campaignData.withdrawn,
+                  completed: campaignData.completed,
                   active: campaignData.active,
                   createdAt: campaignData.createdAt,
                   contributorsCount: campaignData.contributorsCount,
+                  creatorStake: campaignData.creatorStake,
+                  stakeReturned: campaignData.stakeReturned,
+                  stakeForfeited: campaignData.stakeForfeited,
+                  completedAt: campaignData.completedAt,
                 };
               }
               console.error(
@@ -869,13 +905,13 @@ export const useContract = () => {
     useCreateCampaign,
     useCreateCampaignSimple,
     useContributeToCampaignSimple,
-    useWithdrawFunds,
     useGetRefund,
-    useAddMilestone,
-    useRequestMilestoneVote,
+    useSubmitMilestoneEvidence,
+    useForfeitCreatorStake,
     useVoteOnMilestone,
     useReleaseMilestoneFunds,
     useCampaignMilestones,
+    useCampaignAccounting,
     useCampaign,
     useActiveCampaigns,
     useUserCampaigns,

@@ -166,10 +166,16 @@ export default function Home() {
         "Every contribution is stored on the blockchain and can be checked at any time.",
     },
     {
+      icon: FiShield,
+      title: "Creator Stake Commitment",
+      description:
+        "Creators lock 30% of their target in escrow and get it back only after completing every milestone.",
+    },
+    {
       icon: FiFlag,
       title: "Milestone Based Funding",
       description:
-        "Money is released step by step, only as the work gets done.",
+        "Money is released step by step — 30%, 30% and 40% — only after donors approve the evidence.",
     },
     {
       icon: FiThumbsUp,
@@ -393,7 +399,7 @@ export default function Home() {
   }, []);
 
   const handleGoToCampaigns = () => {
-    router.push("/all-campaigns");
+    router.push("/home");
   };
   const handleGoToDashboard = () => {
     router.push("/dashboard");
@@ -568,15 +574,6 @@ export default function Home() {
                     <FiArrowRight className="ml-2 h-4 w-4" />
                   </button>
                 </SignUpButton>
-                <button
-                  onClick={() => {
-                    setDemoMode(true);
-                    router.push("/all-campaigns");
-                  }}
-                  className="inline-flex w-full items-center justify-center rounded-full border border-white/15 backdrop-blur-sm px-8 py-3.5 text-sm font-medium text-white/70 transition-colors hover:border-white/40 hover:text-white sm:w-auto"
-                >
-                  Demo Login
-                </button>
               </>
             )}
 
@@ -595,22 +592,33 @@ export default function Home() {
             )}
 
             {heroStep === 3 && (
-              <>
-                <button
-                  onClick={handleGoToCampaigns}
-                  className={`inline-flex w-full items-center justify-center rounded-full border border-indigo-500 backdrop-blur-sm px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-indigo-500 sm:w-auto ${
-                    shouldBlinkDashboard ? "blink-twice" : ""
-                  }`}
-                >
-                  Explore Campaigns
-                </button>
-                <button
-                  onClick={handleGoToDashboard}
-                  className="inline-flex w-full items-center justify-center rounded-full backdrop-blur-sm px-6 py-3.5 border border-white/60 text-sm font-medium text-white/60 transition-colors hover:text-white sm:w-auto"
-                >
-                  Go to Dashboard
-                </button>
-              </>
+              <button
+                onClick={handleGoToDashboard}
+                className="inline-flex w-full items-center justify-center rounded-full backdrop-blur-sm px-6 py-3.5 border border-white/60 text-sm font-medium text-white/60 transition-colors hover:text-white sm:w-auto"
+              >
+                Go to Dashboard
+              </button>
+            )}
+
+            <button
+              onClick={handleGoToCampaigns}
+              className={`inline-flex w-full items-center justify-center rounded-full border border-indigo-500 backdrop-blur-sm px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-indigo-500 sm:w-auto ${
+                shouldBlinkDashboard ? "blink-twice" : ""
+              }`}
+            >
+              Explore Campaigns
+            </button>
+
+            {heroStep === 1 && (
+              <button
+                onClick={() => {
+                  setDemoMode(true);
+                  router.push("/home");
+                }}
+                className="inline-flex w-full items-center justify-center rounded-full border border-white/15 backdrop-blur-sm px-8 py-3.5 text-sm font-medium text-white/70 transition-colors hover:border-white/40 hover:text-white sm:w-auto"
+              >
+                Demo Login
+              </button>
             )}
           </div>
 
@@ -642,7 +650,7 @@ export default function Home() {
             </p>
           </div>
           <button
-            onClick={() => router.push("/all-campaigns")}
+            onClick={() => router.push("/home")}
             className="inline-flex flex-shrink-0 items-center gap-2 self-start rounded-full border border-white/35 backdrop-blur-sm px-5 py-2.5 text-sm font-medium text-white transition-colors hover:border-white/40 md:self-auto"
           >
             View All
@@ -871,7 +879,7 @@ export default function Home() {
               </h3>
               <ul className="mt-4 space-y-3 text-sm text-white/60">
                 <li>
-                  <a href="/all-campaigns" className="transition hover:text-white">
+                  <a href="/home" className="transition hover:text-white">
                     Browse campaigns
                   </a>
                 </li>

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useContract } from "../../hooks/useContract";
 import { formatEther } from "../../utils/helpers";
-import { FiCheckCircle, FiClock, FiLock, FiFlag } from "react-icons/fi";
+import { FiCheckCircle, FiClock, FiLock, FiFlag, FiUnlock } from "react-icons/fi";
 
 export default function MilestoneTracker({ campaignId, campaign }) {
   const { useCampaignMilestones } = useContract();
@@ -11,7 +11,7 @@ export default function MilestoneTracker({ campaignId, campaign }) {
     if (!milestones?.length) return null;
     const total = milestones.length;
     const completed = milestones.filter((m) => m.fundsReleased).length;
-    const pending = milestones.filter((m) => m.voteRequested && !m.fundsReleased).length;
+    const pending = milestones.filter((m) => m.evidenceSubmitted && !m.fundsReleased).length;
     const locked = total - completed - pending;
     return { total, completed, pending, locked };
   }, [milestones]);
@@ -29,7 +29,7 @@ export default function MilestoneTracker({ campaignId, campaign }) {
     return (
       <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
         <FiFlag className="w-3 h-3" />
-        <span>No milestones</span>
+        <span>Milestone data unavailable</span>
       </div>
     );
   }
@@ -67,15 +67,19 @@ export default function MilestoneTracker({ campaignId, campaign }) {
           if (m.fundsReleased) {
             Icon = FiCheckCircle;
             color = "var(--color-success)";
-            label = "Released";
-          } else if (m.voteRequested) {
+            label = `${m.percentage || 0}% released`;
+          } else if (m.approved) {
+            Icon = FiUnlock;
+            color = "#06b6d4";
+            label = "Approved — ready to release";
+          } else if (m.evidenceSubmitted) {
             Icon = FiClock;
             color = "#fbbf24";
-            label = "Pending vote";
+            label = "Voting open";
           } else if (m.completed) {
             Icon = FiCheckCircle;
             color = "#06b6d4";
-            label = "Completed";
+            label = "Evidence submitted";
           }
 
           return (

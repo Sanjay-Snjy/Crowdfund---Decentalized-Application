@@ -17,7 +17,7 @@ export default function Footer() {
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--color-text-muted)" }}>Product</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/all-campaigns" className="hover:underline" style={{ color: "var(--color-text-secondary)" }}>Browse Campaigns</Link></li>
+              <li><Link href="/home" className="hover:underline" style={{ color: "var(--color-text-secondary)" }}>Browse Campaigns</Link></li>
               <li><Link href="/create-campaign" className="hover:underline" style={{ color: "var(--color-text-secondary)" }}>Start a Campaign</Link></li>
               <li><Link href="/dashboard" className="hover:underline" style={{ color: "var(--color-text-secondary)" }}>Dashboard</Link></li>
             </ul>

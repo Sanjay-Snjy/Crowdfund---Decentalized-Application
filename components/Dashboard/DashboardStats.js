@@ -39,7 +39,7 @@ export default function DashboardStats() {
     { title: "Active Campaigns", value: active.toString(), icon: FiActivity, trend: "up", trendValue: "+" },
     { title: "Contributors", value: formatNumber(contributors), icon: FiUsers, trend: "up", trendValue: "+" },
     { title: "Successful", value: successful.toString(), icon: FiAward, trend: "up", trendValue: "+" },
-    { title: "Platform Fees", value: `${parseFloat(formatEther(contractStats?.totalFees || 0)).toFixed(4)} ETH`, icon: FiTrendingUp, trend: null, trendValue: null },
+    { title: "Platform Treasury", value: `${parseFloat(formatEther(contractStats?.totalFees || 0)).toFixed(4)} ETH`, icon: FiTrendingUp, trend: null, trendValue: null },
   ];
 
   return (

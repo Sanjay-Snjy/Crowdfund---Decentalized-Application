@@ -40,7 +40,7 @@ export default function MyCampaignsPage() {
         const c = r.result;
         const safe = (v) => { if (!v) return 0n; if (typeof v === "bigint") return v; return BigInt(v.toString()); };
         const safeNum = (v) => { if (!v) return 0; if (typeof v === "bigint") return Number(v); return Number(v.toString()); };
-        return { id: safeNum(c.id || campaignIds[i]), creator: c.creator, title: c.title, description: c.description, metadataHash: c.metadataHash, targetAmount: safe(c.targetAmount), raisedAmount: safe(c.raisedAmount), deadline: safeNum(c.deadline), withdrawn: c.withdrawn, active: c.active, createdAt: safeNum(c.createdAt), contributorsCount: safeNum(c.contributorsCount) };
+        return { id: safeNum(c.id || campaignIds[i]), creator: c.creator, title: c.title, description: c.description, metadataHash: c.metadataHash, targetAmount: safe(c.targetAmount), raisedAmount: safe(c.raisedAmount), deadline: safeNum(c.deadline), completed: c.completed, active: c.active, createdAt: safeNum(c.createdAt), contributorsCount: safeNum(c.contributorsCount), creatorStake: safe(c.creatorStake), stakeReturned: c.stakeReturned, stakeForfeited: c.stakeForfeited, completedAt: safeNum(c.completedAt) };
       })
       .filter(Boolean);
     setCampaigns(formatted);

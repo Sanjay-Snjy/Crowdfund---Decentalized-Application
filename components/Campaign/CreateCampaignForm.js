@@ -1,13 +1,18 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
-import { FiUpload, FiX, FiInfo, FiPlus, FiCheckCircle, FiAlertTriangle } from "react-icons/fi";
+import { FiUpload, FiX, FiInfo, FiShield, FiLock, FiCheckCircle } from "react-icons/fi";
 import { useAccount, useBalance, useNetwork } from "wagmi";
 import { useUser } from "@clerk/nextjs";
 import { useContract } from "../../hooks/useContract";
 import { uploadCampaignMetadata } from "../../utils/ipfs";
-import { CAMPAIGN_CREATION_FEE } from "../../constants";
+import {
+  CAMPAIGN_CREATION_FEE,
+  CREATOR_STAKE_PERCENT,
+  MILESTONE_SCHEDULE,
+  VOTE_QUORUM_PERCENT,
+} from "../../constants";
 import { formatEther } from "../../utils/helpers";
 import { useDemoMode } from "../../lib/demoMode";
 
@@ -25,19 +30,42 @@ export default function CreateCampaignForm() {
   const { data: balanceData } = useBalance({ address, enabled: Boolean(address) });
   const { useCreateCampaignSimple } = useContract();
   const { createCampaignAsync, isLoading } = useCreateCampaignSimple();
-  const milestoneListRef = useRef(null);
 
   const [formData, setFormData] = useState({ title: "", description: "", targetAmount: "", duration: "", category: "Student Projects", tags: "", additionalInfo: "" });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [milestones, setMilestones] = useState([{ id: 1, title: "Milestone 1", percentage: 100, status: "Pending" }]);
   const [rates, setRates] = useState(null);
 
   const configuredChainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID || 0);
   const configuredNetworkName = process.env.NEXT_PUBLIC_NETWORK || "the configured network";
   const creationFeeWei = ethers.utils.parseEther(CAMPAIGN_CREATION_FEE || "0");
   const walletBalanceWei = balanceData?.value ? ethers.BigNumber.from(balanceData.value.toString()) : ethers.BigNumber.from(0);
+
+  // The creator stake is 30% of the target and is sent together with the
+  // createCampaign transaction; the contract holds it until the campaign completes.
+  const { stakeWei, targetWei } = useMemo(() => {
+    const amount = parseFloat(formData.targetAmount);
+    if (!formData.targetAmount || isNaN(amount) || amount <= 0) {
+      return { stakeWei: ethers.BigNumber.from(0), targetWei: ethers.BigNumber.from(0) };
+    }
+    try {
+      const parsedTarget = ethers.utils.parseEther(formData.targetAmount);
+      return {
+        targetWei: parsedTarget,
+        stakeWei: parsedTarget.mul(CREATOR_STAKE_PERCENT).div(100),
+      };
+    } catch {
+      return { stakeWei: ethers.BigNumber.from(0), targetWei: ethers.BigNumber.from(0) };
+    }
+  }, [formData.targetAmount]);
+
+  const stakeDisplay = stakeWei.gt(0) ? formatEther(stakeWei) : "0";
+  const hasEnoughForStake = walletBalanceWei.gte(stakeWei.add(creationFeeWei));
+  const releasePlan = MILESTONE_SCHEDULE.map((m) => ({
+    ...m,
+    amountWei: targetWei.gt(0) ? targetWei.mul(m.percent).div(100) : ethers.BigNumber.from(0),
+  }));
 
   useEffect(() => {
     let mounted = true;
@@ -49,8 +77,6 @@ export default function CreateCampaignForm() {
   }, []);
 
   const tagList = formData.tags.split(",").map((t) => t.trim()).filter(Boolean);
-  const totalAllocation = milestones.reduce((s, m) => s + (Number(m.percentage) || 0), 0);
-  const isAllocationValid = milestones.length >= 1 && milestones.length <= 3 && totalAllocation === 100;
 
   const handleInputChange = (e) => setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -62,24 +88,16 @@ export default function CreateCampaignForm() {
     setImagePreview(URL.createObjectURL(file));
   };
 
-  const addMilestone = () => {
-    if (milestones.length >= 3) { toast.error("Max 3 milestones"); return; }
-    setMilestones((prev) => [...prev, { id: prev.length + 1, title: `Milestone ${prev.length + 1}`, percentage: 0, status: "Pending" }]);
-  };
-
-  const removeMilestone = (index) => setMilestones((prev) => prev.filter((_, i) => i !== index));
-
-  const updateMilestone = (index, field, value) => {
-    setMilestones((prev) => prev.map((m, i) => i !== index ? m : { ...m, [field]: field === "percentage" ? Math.max(0, Math.min(100, Number(value) || 0)) : value }));
-  };
-
   const validate = () => {
     if (!formData.title.trim()) { toast.error("Title required"); return false; }
     if (!formData.description.trim()) { toast.error("Description required"); return false; }
     if (!formData.targetAmount || parseFloat(formData.targetAmount) <= 0) { toast.error("Valid target amount required"); return false; }
     if (!formData.duration || parseInt(formData.duration) <= 0) { toast.error("Valid duration required"); return false; }
-    if (milestones.length < 1) { toast.error("At least 1 milestone required"); return false; }
-    if (!isAllocationValid) { toast.error("Milestones must total 100%"); return false; }
+    if (stakeWei.lte(0)) { toast.error("Enter the target amount to calculate the creator stake"); return false; }
+    if (!hasEnoughForStake) {
+      toast.error(`You need at least ${stakeDisplay} ETH for the creator stake`);
+      return false;
+    }
     return true;
   };
 
@@ -89,7 +107,6 @@ export default function CreateCampaignForm() {
     if (configuredChainId && chain?.id && chain.id !== configuredChainId) {
       toast.error(`Switch to ${configuredNetworkName}`); return;
     }
-    if (walletBalanceWei.lt(creationFeeWei)) { toast.error("Insufficient funds"); return; }
     if (!createCampaignAsync) { toast.error("Contract not available"); return; }
 
     setUploading(true);
@@ -99,19 +116,19 @@ export default function CreateCampaignForm() {
       const uploadResult = await uploadCampaignMetadata({
         ...formData,
         tags: tagList,
-        milestones: milestones.map(({ title, percentage, status }) => ({ title, percentage, status })),
+        releasePlan: MILESTONE_SCHEDULE.map(({ label, percent }) => ({ label, percent })),
         creator: creatorName,
       }, imageFile);
       toast.dismiss("upload");
       if (!uploadResult.success) throw new Error(uploadResult.error);
 
-      const targetWei = ethers.utils.parseEther(formData.targetAmount);
       const durationSec = parseInt(formData.duration) * 86400;
 
-      toast.loading("Creating campaign...", { id: "create" });
+      toast.loading("Creating campaign and locking stake...", { id: "create" });
       await createCampaignAsync({
         args: [formData.title, formData.description, uploadResult.metadataHash, targetWei, durationSec],
-        value: creationFeeWei,
+        // Stake (30% of target) + creation fee (0 ETH) — held by the contract.
+        value: stakeWei.add(creationFeeWei),
       });
       toast.dismiss("create");
       toast.success("Campaign created!");
@@ -135,13 +152,16 @@ export default function CreateCampaignForm() {
             </p>
           </div>
 
-          {/* Creation Fee Notice */}
-          <div className="flex items-start gap-3 px-4 py-2 rounded-2xl bg-indigo-500/10 dark:bg-indigo-900/20 border border-indigo-800/20 dark:border-indigo-800/40 mb-6">
-            <FiInfo className="w-5 h-5 text-indigo-700 mt-0.5 shrink-0" />
+          {/* Creator stake notice */}
+          <div className="flex items-start gap-3 px-4 py-3 rounded-2xl bg-indigo-500/10 dark:bg-indigo-900/20 border border-indigo-800/20 dark:border-indigo-800/40 mb-6">
+            <FiShield className="w-5 h-5 text-indigo-700 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-300">Creation fee notice</p>
+              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-300">Creator stake required</p>
               <p className="text-xs text-indigo-500/80 dark:text-indigo-400/70 mt-0.5">
-                A fee of {formatEther(CAMPAIGN_CREATION_FEE)} ETH is required to create your campaign.
+                You deposit a security stake of {CREATOR_STAKE_PERCENT}% of your target
+                ({stakeDisplay} ETH). It stays locked in the smart contract and is returned only when
+                all three milestones are released. There is no campaign creation fee
+                ({formatEther(CAMPAIGN_CREATION_FEE)} ETH).
               </p>
             </div>
           </div>
@@ -231,6 +251,18 @@ export default function CreateCampaignForm() {
                     </>
                   )}
                 </div>
+                {formData.targetAmount > 0 && (
+                  <div
+                    className="mt-2 flex items-center gap-2 text-xs"
+                    style={{ color: hasEnoughForStake ? "var(--color-text-muted)" : "#f87171" }}
+                  >
+                    <FiLock className="w-3.5 h-3.5" />
+                    <span>
+                      Stake to lock: <span className="font-semibold">{stakeDisplay} ETH</span>
+                      {!hasEnoughForStake && ` — your balance is ${formatEther(walletBalanceWei)} ETH`}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -285,91 +317,66 @@ export default function CreateCampaignForm() {
             title={demoMode ? "Demo account - connect a wallet to create campaigns" : ""}
             className="w-full mt-5 py-3 rounded-full bg-indigo-500 text-white font-semibold text-sm transition hover:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {demoMode ? "Demo Account — Create Disabled" : uploading ? "Uploading..." : isLoading ? "Creating..." : "Create Campaign"}
+            {demoMode ? "Demo Account — Create Disabled" : uploading ? "Uploading..." : isLoading ? "Creating..." : `Create Campaign & Lock ${stakeDisplay} ETH Stake`}
           </button>
         </div>
       </div>
 
-      {/* ─── Right: Milestone Planner ─── */}
+      {/* ─── Right: Fund release plan ─── */}
       <div className="space-y-4">
         <div className="p-6 rounded-2xl bg-[#111827] text-white sticky top-20">
-          {/* Header */}
-          <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-white">Milestone Planner</h3>
-          <p className="text-xs text-slate-400 mt-1">Define project milestones and allocate fund percentages.</p>
+          <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-white">Fund Release Plan</h3>
+          <p className="text-xs text-slate-400 mt-1">
+            Donor funds stay in the smart contract and are released milestone by milestone.
+          </p>
 
-          {/* Total Allocation */}
+          {/* Creator stake */}
           <div className="mt-5 p-4 rounded-xl bg-white/5 border border-white/10">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-300">Total Allocation</span>
-              <span className={`text-sm font-bold ${isAllocationValid ? "text-indigo-400" : totalAllocation > 100 ? "text-red-400" : "text-white"}`}>
-                {totalAllocation}%
-              </span>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-300">Creator stake ({CREATOR_STAKE_PERCENT}%)</span>
+              <span className="text-sm font-bold text-indigo-400">{stakeDisplay} ETH</span>
             </div>
-            <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-300 ${isAllocationValid ? "bg-indigo-500" : totalAllocation > 100 ? "bg-red-500" : "bg-indigo-500"}`}
-                style={{ width: `${Math.min(totalAllocation, 100)}%` }}
-              />
-            </div>
-
-            {/* Warning / Success */}
-            <div className="flex items-center gap-2 mt-3">
-              {isAllocationValid ? (
-                <>
-                  <FiCheckCircle className="w-4 h-4 text-indigo-400" />
-                  <span className="text-xs text-indigo-400">Milestones are valid</span>
-                </>
-              ) : (
-                <>
-                  <FiAlertTriangle className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs text-amber-400">At least one milestone is required.</span>
-                </>
-              )}
-            </div>
+            <p className="text-[11px] text-slate-400 mt-1.5">
+              Locked until the campaign completes successfully. Donors use it as a signal of commitment.
+            </p>
           </div>
 
-          {/* Milestone List */}
-          <div ref={milestoneListRef} className="mt-4 space-y-3 max-h-[280px] overflow-y-auto pr-1 scrollbar-hide">
-            {milestones.map((m, i) => (
-              <div key={i} className="p-3 rounded-xl bg-white/5 border border-white/10">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-slate-400">Milestone {i + 1}</span>
-                  {milestones.length > 1 && (
-                    <button type="button" onClick={() => removeMilestone(i)} className="text-xs text-red-400 hover:text-red-300 transition">
-                      Remove
-                    </button>
-                  )}
+          {/* Milestone schedule (fixed) */}
+          <div className="mt-4 space-y-3">
+            {releasePlan.map((m) => (
+              <div key={m.index} className="p-3 rounded-xl bg-white/5 border border-white/10">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-slate-300">{m.label}</span>
+                  <span className="text-xs font-bold text-white">{m.percent}%</span>
                 </div>
-                <input
-                  value={m.title}
-                  onChange={(e) => updateMilestone(i, "title", e.target.value)}
-                  placeholder="Milestone title"
-                  className="w-full rounded-full px-3 py-2 text-sm bg-white/5 border border-white/10 text-white placeholder-slate-500 outline-none focus:border-indigo-500 mb-2"
-                />
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={m.percentage}
-                    onChange={(e) => updateMilestone(i, "percentage", e.target.value)}
-                    className="flex-1 rounded-full px-3 py-2 text-sm bg-white/5 border border-white/10 text-white outline-none focus:border-indigo-500"
-                  />
-                  <span className="text-xs text-slate-400 font-medium">%</span>
+                <div className="mt-1 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-400">
+                    {formData.targetAmount > 0 ? `${formatEther(m.amountWei)} ETH at target` : "Released after donor approval"}
+                  </span>
+                  <FiLock className="w-3 h-3 text-slate-500" />
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Add Milestone Button */}
-          <button
-            type="button"
-            onClick={addMilestone}
-            disabled={milestones.length >= 3}
-            className="w-full mt-4 py-2.5 rounded-full border-2 border-indigo-500/50 bg-indigo-500/10 text-indigo-400 font-medium text-sm transition hover:bg-indigo-500/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            <FiPlus className="w-4 h-4" /> Add Milestone
-          </button>
+          <div className="mt-4 flex items-start gap-2">
+            <FiInfo className="w-3.5 h-3.5 text-indigo-400 mt-0.5 shrink-0" />
+            <p className="text-[11px] text-slate-400">
+              After the funding deadline you complete each milestone, upload evidence to IPFS and donors
+              vote. A share is released only when a majority of the participating voting power approves
+              and at least {VOTE_QUORUM_PERCENT}% of the campaign&apos;s voting power took part. Milestones
+              are released strictly in order.
+            </p>
+          </div>
+
+          <div className="mt-3 flex items-start gap-2">
+            <FiCheckCircle className="w-3.5 h-3.5 text-indigo-400 mt-0.5 shrink-0" />
+            <p className="text-[11px] text-slate-400">
+              The platform improves accountability through a creator stake, milestone evidence, donor
+              voting and transparent on-chain releases. Submitting evidence does not prove that the
+              work or invoices are genuine — donors judge that themselves.
+            </p>
+          </div>
         </div>
       </div>
     </form>

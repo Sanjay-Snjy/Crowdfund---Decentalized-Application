@@ -183,29 +183,7 @@ export default function AllCampaignsPage() {
   return (
     <Layout>
       <div className="max-w-8xl mx-auto pl-0 sm:pl-4 py-8 space-y-6">
-        {/* Page header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>All Campaigns</h1>
-            <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
-              Browse and discover crowdfunding campaigns
-            </p>
-          </div>
-          <div className="flex sm:ml-auto">
-            <div className="flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border border-black/15 bg-[var(--bg-secondary)] px-3 py-2 text-center text-[12px] text-black backdrop-blur-sm sm:w-auto sm:px-4 dark:border-white/20 dark:bg-white/10 dark:text-white">
-              <span className="font-semibold uppercase tracking-wide">Campaigns</span>
-              <span className="flex items-center gap-1 uppercase tracking-wider">
-                Total: <span className="font-bold">{totalCampaigns}</span>
-              </span>
-              <span className="flex items-center gap-1 uppercase tracking-wider">
-                Active: <span className="font-bold">{activeCount}</span>
-              </span>
-              <span className="flex items-center gap-1 uppercase tracking-wider">
-                Funded: <span className="font-bold">{fundedCount}</span>
-              </span>
-            </div>
-          </div>
-        </div>
+        
         
          {/* Hero Banner Slideshow */}
         <section className="relative overflow-hidden h-[208px] rounded-3xl border border-slate-200/70 dark:border-[rgba(255,255,255,0.1)] bg-slate-900 p-0 text-white">
@@ -273,9 +251,31 @@ export default function AllCampaignsPage() {
             ))}
           </div>
         </section>
-
+        {/* Page header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center px-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>All Campaigns</h1>
+            <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
+              Browse and discover crowdfunding campaigns
+            </p>
+          </div>
+          <div className="flex sm:ml-auto">
+            <div className="flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border border-black/15 bg-[var(--bg-secondary)] px-3 py-2 text-center text-[12px] text-black backdrop-blur-sm sm:w-auto sm:px-4 dark:border-white/20 dark:bg-white/10 dark:text-white">
+              <span className="font-semibold uppercase tracking-wide">Campaigns</span>
+              <span className="flex items-center gap-1 uppercase tracking-wider">
+                Total: <span className="font-bold">{totalCampaigns}</span>
+              </span>
+              <span className="flex items-center gap-1 uppercase tracking-wider">
+                Active: <span className="font-bold">{activeCount}</span>
+              </span>
+              <span className="flex items-center gap-1 uppercase tracking-wider">
+                Funded: <span className="font-bold">{fundedCount}</span>
+              </span>
+            </div>
+          </div>
+        </div>
         {/* Search + Filters */}
-        <div className="card p-4 rounded-3xl">
+        <div className=" p-4">
           <div className="flex flex-col sm:flex-row gap-3 ">
             <div className="relative flex-1 ">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--color-text-muted)" }} />
@@ -284,7 +284,7 @@ export default function AllCampaignsPage() {
                 placeholder="Search campaigns..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="input pl-9 rounded-full"
+                className="input pl-9 rounded-full backdrop-blur-sm"
               />
             </div>
             <div className="flex gap-2">
@@ -321,7 +321,7 @@ export default function AllCampaignsPage() {
           </div>
 
           {/* Category pills */}
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 -mb-1">
+          <div className="mt-3 flex justify-center gap-2 overflow-x-auto pb-1 -mb-1">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}

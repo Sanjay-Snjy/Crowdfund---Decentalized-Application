@@ -2,6 +2,18 @@ export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
 export const CAMPAIGN_CREATION_FEE = "0"; // no upfront creation fee
 
+// ── Creator accountability / milestone escrow model ──────────────────────────
+// Must stay in sync with the Solidity constants of the same name.
+export const CREATOR_STAKE_PERCENT = 30; // creator stake, as % of the campaign target
+export const VOTE_QUORUM_PERCENT = 50; // % of donor voting power that must vote
+
+// Fixed fund release schedule of every campaign (30% / 30% / 40%).
+export const MILESTONE_SCHEDULE = [
+  { index: 0, label: "Milestone 1", percent: 30 },
+  { index: 1, label: "Milestone 2", percent: 30 },
+  { index: 2, label: "Milestone 3", percent: 40 },
+];
+
 // Validate required environment variables
 if (typeof window !== "undefined") {
   if (!CONTRACT_ADDRESS) {
@@ -26,39 +38,3 @@ export const NETWORK_CONFIGS = {
   },
 };
 
-export const SIDEBAR_ITEMS = [
-   
-  {
-    id: "all-campaigns",
-    label: "All Campaigns",
-    icon: "FiList",
-    path: "/all-campaigns",
-  },
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    icon: "FiGrid",
-    path: "/dashboard",
-  },
- 
-  {
-    id: "create",
-    label: "Create Campaign",
-    icon: "FiPlus",
-    path: "/create-campaign",
-  },
- 
-  {
-    id: "contributions",
-    label: "My Contributions",
-    icon: "FiHeart",
-    path: "/contributions",
-  },
-  {
-    id: "admin",
-    label: "Admin Panel",
-    icon: "FiSettings",
-    path: "/admin",
-    adminOnly: true,
-  },
-];

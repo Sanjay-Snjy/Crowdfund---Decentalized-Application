@@ -45,7 +45,7 @@ export default function SavedCampaignsPage() {
             <FiBookmark className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--color-text-muted)" }} />
             <h3 className="font-semibold" style={{ color: "var(--color-text)" }}>No saved campaigns</h3>
             <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>Bookmark campaigns to see them here.</p>
-            <Link href="/all-campaigns" className="btn btn-secondary mt-4">Browse Campaigns</Link>
+            <Link href="/home" className="btn btn-secondary mt-4">Browse Campaigns</Link>
           </div>
         )}
       </div>

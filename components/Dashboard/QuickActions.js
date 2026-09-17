@@ -1,21 +1,24 @@
 import Link from "next/link";
 import { useState } from "react";
-import { FiEdit2, FiEye, FiPause, FiPlay, FiDollarSign, FiMoreVertical } from "react-icons/fi";
+import { FiEdit2, FiEye, FiPause, FiPlay, FiAlertTriangle, FiMoreVertical } from "react-icons/fi";
 import { formatEther } from "../../utils/helpers";
 import { useContract } from "../../hooks/useContract";
 import { toast } from "react-hot-toast";
 
 export default function QuickActions({ campaign, onRefresh }) {
   const [showMenu, setShowMenu] = useState(false);
-  const { useDeactivateCampaign, useReactivateCampaign, useWithdrawFunds } = useContract();
+  const { useDeactivateCampaign, useReactivateCampaign, useForfeitCreatorStake } = useContract();
   const { deactivateCampaign, isLoading: deactivating } = useDeactivateCampaign();
   const { reactivateCampaign, isLoading: reactivating } = useReactivateCampaign();
-  const { withdrawFunds, isLoading: withdrawing } = useWithdrawFunds();
+  const { forfeitCreatorStake, isLoading: forfeiting } = useForfeitCreatorStake();
 
   const raised = parseFloat(formatEther(campaign.raisedAmount || 0));
   const target = parseFloat(formatEther(campaign.targetAmount || 0));
   const isFunded = raised >= target;
-  const canWithdraw = isFunded && !campaign.withdrawn;
+  // A failed campaign frees its creator stake to the platform treasury.
+  const deadlinePassed = Number(campaign.deadline || 0) * 1000 <= Date.now();
+  const canForfeitStake =
+    deadlinePassed && !isFunded && !campaign.stakeForfeited && !campaign.stakeReturned;
   const isActive = campaign.active;
 
   const handleDeactivate = async () => {
@@ -36,10 +39,10 @@ export default function QuickActions({ campaign, onRefresh }) {
     setShowMenu(false);
   };
 
-  const handleWithdraw = async () => {
-    if (!withdrawFunds) return;
+  const handleForfeitStake = async () => {
+    if (!forfeitCreatorStake) return;
     try {
-      await withdrawFunds({ args: [campaign.id] });
+      await forfeitCreatorStake({ args: [campaign.id] });
       onRefresh?.();
     } catch (e) {}
     setShowMenu(false);
@@ -102,15 +105,15 @@ export default function QuickActions({ campaign, onRefresh }) {
                   {reactivating ? "Activating..." : "Reactivate"}
                 </button>
               )}
-              {canWithdraw && (
+              {canForfeitStake && (
                 <button
-                  onClick={handleWithdraw}
-                  disabled={withdrawing}
+                  onClick={handleForfeitStake}
+                  disabled={forfeiting}
                   className="flex items-center gap-2 w-full px-3 py-2 text-xs hover:opacity-80 transition"
-                  style={{ color: "var(--color-success)" }}
+                  style={{ color: "#f59e0b" }}
                 >
-                  <FiDollarSign className="w-3.5 h-3.5" />
-                  {withdrawing ? "Withdrawing..." : "Withdraw Funds"}
+                  <FiAlertTriangle className="w-3.5 h-3.5" />
+                  {forfeiting ? "Processing..." : "Forfeit Creator Stake"}
                 </button>
               )}
             </div>

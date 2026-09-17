@@ -3,6 +3,6 @@ import { useEffect } from "react";
 
 export default function CampaignsRedirect() {
   const router = useRouter();
-  useEffect(() => { router.replace("/all-campaigns"); }, [router]);
+  useEffect(() => { router.replace("/home"); }, [router]);
   return null;
 }

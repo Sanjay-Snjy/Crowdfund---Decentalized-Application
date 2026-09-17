@@ -113,7 +113,7 @@ export const useCachedCampaignMilestones = (campaignId, options = {}) => {
       return client.readContract({
         address: CONTRACT_ADDRESS,
         abi: CROWDFUNDING_ABI,
-        functionName: "getCampaignMilestones",
+        functionName: "getMilestones",
         args: [campaignId],
       });
     },

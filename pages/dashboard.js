@@ -11,7 +11,7 @@ import DeadlineCountdown from "../components/Dashboard/DeadlineCountdown";
 
 import MilestoneTracker from "../components/Dashboard/MilestoneTracker";
 
-import WithdrawFundsButton from "../components/Dashboard/WithdrawFundsButton";
+import CreatorStakeStatus from "../components/Dashboard/CreatorStakeStatus";
 import BookmarkedCampaigns from "../components/Dashboard/BookmarkedCampaigns";
 import { useContract } from "../hooks/useContract";
 import { CONTRACT_ADDRESS } from "../constants";
@@ -110,7 +110,7 @@ function Dashboard() {
             </div>
             <div className="flex items-center gap-3">
               <Link href="/create-campaign" className="btn btn-sm rounded-3xl px-4">New Campaign</Link>
-              <Link href="/all-campaigns" className="btn btn-secondary btn-sm rounded-3xl px-4">Browse</Link>
+              <Link href="/home" className="btn btn-secondary btn-sm rounded-3xl px-4">Browse</Link>
             </div>
           </div>
 
@@ -207,7 +207,7 @@ function Dashboard() {
                     { title: "Active Campaigns", value: "5" },
                     { title: "Contributors", value: "144" },
                     { title: "Successful", value: "3" },
-                    { title: "Platform Fees", value: "0.9500 ETH" },
+                    { title: "Platform Treasury", value: "0.9500 ETH" },
                   ].map((s, i) => (
                     <div key={i} className="p-4 rounded-xl" style={{ background: "var(--color-surface)" }}>
                       <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{s.title}</p>
@@ -252,7 +252,7 @@ function Dashboard() {
               transactionFeed={transactionFeed}
             />
             <Link href="/create-campaign" className="btn btn-sm rounded-3xl px-4">New Campaign</Link>
-            <Link href="/all-campaigns" className="btn btn-secondary btn-sm rounded-3xl px-4">Browse</Link>
+            <Link href="/home" className="btn btn-secondary btn-sm rounded-3xl px-4">Browse</Link>
           </div>
         </div>
 
@@ -315,8 +315,8 @@ function Dashboard() {
                     </div>
                     {/* Feature #1: Funding Progress Bars */}
                     <FundingProgress campaign={c} />
-                    {/* Feature #13: Withdraw Funds Button */}
-                    <WithdrawFundsButton campaign={c} onRefresh={refreshData} />
+                    {/* Creator stake status (returned / forfeited / locked) */}
+                    <CreatorStakeStatus campaign={c} />
                   </div>
                 ))}
               </div>

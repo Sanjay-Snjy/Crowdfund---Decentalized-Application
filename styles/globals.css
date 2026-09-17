@@ -331,7 +331,8 @@ html {
     @apply rounded-2xl border;
     background: var(--color-surface);
     border-color: var(--color-border);
-    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
   }
 
   .badge {

@@ -8,6 +8,7 @@ import { FiSearch, FiGrid, FiList, FiFilter } from "react-icons/fi";
 import { getCreatorDisplayName, calculateProgress } from "../utils/helpers";
 import { getFromIPFS } from "../utils/ipfs";
 import CampaignCard from "../components/Campaign/CampaignCard";
+import { useDemoMode, DEMO_ACTIVE_CAMPAIGNS } from "../lib/demoMode";
 
 const CATEGORIES = [
   "All", "Student Projects", "Medical", "Startup", "Education",
@@ -83,10 +84,13 @@ export default function AllCampaignsPage() {
   const { address } = useAccount();
   const { user } = useUser();
   const { useActiveCampaigns } = useContract();
+  const isDemo = useDemoMode();
 
   const currentUserName = user?.fullName || [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.username || "";
 
-  const { data: campaigns, isLoading } = useActiveCampaigns(0, 100);
+  const { data: onChainCampaigns, isLoading } = useActiveCampaigns(0, 100);
+  // In demo mode, show the bundled sample campaigns instead of on-chain data.
+  const campaigns = isDemo ? DEMO_ACTIVE_CAMPAIGNS : onChainCampaigns;
 
   // URL-synced state
   const [searchTerm, setSearchTerm] = useState(router.query.search || "");

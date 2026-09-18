@@ -49,7 +49,7 @@ export default function Layout({ children }) {
 
   return (
     <div
-      className="bg-[var(--bg)] min-h-screen flex -mt-8 flex-col"
+      className="bg-[var(--bg)] min-h-screen flex flex-col"
       suppressHydrationWarning
     >
       {/* Fixed background */}

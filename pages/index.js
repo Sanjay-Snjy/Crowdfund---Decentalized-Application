@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
 import { useAccount, useContractRead } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   FiArrowRight,
   FiTarget,
@@ -218,17 +218,29 @@ export default function Home() {
 
   const { useActiveCampaigns } = useContract();
   const { data: campaignsForLanding, isLoading: recentCampaignsLoading } = useActiveCampaigns(0, 100);
-  const visibleRecentCampaigns = Array.isArray(campaignsForLanding)
-    ? campaignsForLanding.slice(0, 4)
-    : [];
+  // Memoized so the effect below doesn't re-run on every render (new array identity).
+  const visibleRecentCampaigns = useMemo(
+    () => (Array.isArray(campaignsForLanding) ? campaignsForLanding.slice(0, 4) : []),
+    [campaignsForLanding]
+  );
 
   const [recentCreatorProfiles, setRecentCreatorProfiles] = useState({});
   const [campaignMetadataMap, setCampaignMetadataMap] = useState({});
   const [scrolled, setScrolled] = useState(false);
 
+  // Mirror the map in a ref so the fetch effect can skip already-loaded entries
+  // without putting campaignMetadataMap in its dependency array (which caused
+  // an infinite setState loop when the campaign list is empty).
+  const campaignMetadataMapRef = useRef(campaignMetadataMap);
+  useEffect(() => {
+    campaignMetadataMapRef.current = campaignMetadataMap;
+  }, [campaignMetadataMap]);
+
   useEffect(() => {
     if (!Array.isArray(campaignsForLanding) || !campaignsForLanding.length) {
-      setCampaignMetadataMap({});
+      // Only clear if not already empty — a fresh {} here re-triggered this
+      // effect forever (Maximum update depth exceeded) and froze the page.
+      setCampaignMetadataMap((prev) => (Object.keys(prev).length ? {} : prev));
       return;
     }
 
@@ -236,7 +248,7 @@ export default function Home() {
       const entries = await Promise.all(
         campaignsForLanding.map(async (campaign) => {
           const id = campaign.id?.toString?.();
-          if (!id || campaignMetadataMap[id] || !campaign.metadataHash) {
+          if (!id || campaignMetadataMapRef.current[id] || !campaign.metadataHash) {
             return null;
           }
 
@@ -351,7 +363,9 @@ export default function Home() {
     );
 
     if (!campaignAddresses.length) {
-      setRecentCreatorProfiles({});
+      // Guard: only clear when there is actually something to clear, otherwise
+      // this fires on every render and loops forever.
+      setRecentCreatorProfiles((prev) => (Object.keys(prev).length ? {} : prev));
       return;
     }
 
@@ -373,7 +387,10 @@ export default function Home() {
               nextProfiles[profile.walletAddress.toLowerCase()] = profile;
             }
           });
-          setRecentCreatorProfiles(nextProfiles);
+          // Guard against empty results re-triggering the effect loop.
+          if (Object.keys(nextProfiles).length) {
+            setRecentCreatorProfiles(nextProfiles);
+          }
         }
       } catch (error) {
         if (error.name !== "AbortError") {

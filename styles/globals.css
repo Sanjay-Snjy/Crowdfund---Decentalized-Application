@@ -240,6 +240,12 @@ html {
     0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
+/* Marquee ticker animation for the home activity feed */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* Progress bar animations */
 .progress-bar {
   background-size: 40px 40px;

@@ -506,6 +506,7 @@ export default function Home() {
             {hasValidClerkKey ? (
               <>
                 <SignedOut>
+                 
                   <SignInButton mode="modal">
                     <button className="rounded-full px-3 py-2 text-sm font-medium text-white/80 transition-colors hover:text-white">
                       Login
@@ -516,6 +517,15 @@ export default function Home() {
                       Sign Up
                     </button>
                   </SignUpButton>
+                   <button
+                    onClick={() => {
+                      setDemoMode(true);
+                      router.push("/home");
+                    }}
+                    className="rounded-full px-3 py-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
+                  >
+                    Demo Login
+                  </button>
                 </SignedOut>
 
                 <SignedIn>
@@ -626,17 +636,6 @@ export default function Home() {
               Explore Campaigns
             </button>
 
-            {heroStep === 1 && (
-              <button
-                onClick={() => {
-                  setDemoMode(true);
-                  router.push("/home");
-                }}
-                className="inline-flex w-full items-center justify-center rounded-full border border-white/15 backdrop-blur-sm px-8 py-3.5 text-sm font-medium text-white/70 transition-colors hover:border-white/40 hover:text-white sm:w-auto"
-              >
-                Demo Login
-              </button>
-            )}
           </div>
 
           {/* Live stats */}

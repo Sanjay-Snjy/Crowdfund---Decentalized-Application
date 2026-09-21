@@ -1,35 +1,7 @@
-
-> crowd-funding-dapp@0.1.0 dev
-> next dev
-
   ▲ Next.js 13.5.7
-  - Local:        http://localhost:9542
+  - Local:        http://localhost:3000
   - Environments: .env.local
 
- ✓ Ready in 6s
- ⚠ Your project has `@next/font` installed as a dependency, please use the built-in `next/font` instead. The `@next/font` package will be removed in Next.js 14. You can migrate by running `npx @next/codemod@latest built-in-next-font .`. Read more: https://nextjs.org/docs/messages/built-in-next-font
- ○ Compiling / ...
- ✓ Compiled / in 64.9s (2646 modules)
- ✓ Compiled in 2.6s (2646 modules)
-[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
-Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
-1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
-2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
-Desktop MetaMask extension connection keeps working regardless.
- ○ Compiling /home ...
- ✓ Compiled /home in 7.7s (2666 modules)
- ✓ Compiled in 1350ms (2666 modules)
- ✓ Compiled in 905ms (2666 modules)
-[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
-Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
-1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
-2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
-Desktop MetaMask extension connection keeps working regardless.
- ✓ Compiled /404 in 2.6s (2670 modules)
-[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
-Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
-1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
-2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
-Desktop MetaMask extension connection keeps working regardless.
- ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
-[?25h
+ ✓ Ready in 4s
+ ○ Compiling /404 ...
+ ✓ Compiled /404 in 8.3s (2664 modules)

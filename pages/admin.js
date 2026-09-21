@@ -69,7 +69,7 @@ export default function AdminPage() {
             { label: "Balance", value: `${balance} ETH` },
             { label: "Status", value: isPaused ? "Paused" : "Active" },
           ].map((s) => (
-            <div key={s.label} className="card p-4 rounded-3xl">
+            <div key={s.label} className="card p-4 rounded-2xl">
               <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{s.label}</p>
               <p className="text-lg font-bold mt-1" style={{ color: "var(--color-text)" }}>{s.value}</p>
             </div>
@@ -78,7 +78,7 @@ export default function AdminPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Withdraw */}
-          <div className="card p-5 rounded-3xl">
+          <div className="card p-5 rounded-2xl">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-text)" }}>
               <FiDollarSign className="w-4 h-4" /> Treasury
             </h3>
@@ -91,7 +91,7 @@ export default function AdminPage() {
           </div>
 
           {/* Controls */}
-          <div className="card p-5 rounded-3xl">
+          <div className="card p-5 rounded-2xl">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-text)" }}>
               <FiShield className="w-4 h-4" /> Platform Controls
             </h3>
@@ -104,7 +104,7 @@ export default function AdminPage() {
           </div>
 
           {/* Deactivate */}
-          <div className="card p-5 lg:col-span-2 rounded-3xl">
+          <div className="card p-5 lg:col-span-2 rounded-2xl">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-text)" }}>
               <FiActivity className="w-4 h-4" /> Deactivate Campaign
             </h3>

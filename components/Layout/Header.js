@@ -85,10 +85,10 @@ export default function Header({ onMenuToggle, isCollapsed }) {
   return (
     <header
       className={`
-        fixed top-0 left-0 right-0 md:top-1 md:left-1 md:right-1 z-50 
-        bg-white/80 border-b md:border border-secondary 
+        fixed top-0 left-0 right-0 md:top-2 md:left-4 md:right-4 z-50 
+        bg-white/80 dark:bg-[var(--bg-secondary)] border-b md:border border-secondary 
         dark:border-[rgba(255,255,255,0.1)] 
-        transition-all duration-300 rounded-2xl backdrop-blur-md backdrop-saturate-150
+        transition-all duration-300 rounded-3xl backdrop-blur-md backdrop-saturate-150
       `}
     >
       <div className="flex items-center justify-between px-3 py-1.5">

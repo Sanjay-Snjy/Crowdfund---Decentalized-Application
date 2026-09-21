@@ -1,0 +1,7 @@
+ ⚠ Your project has `@next/font` installed as a dependency, please use the built-in `next/font` instead. The `@next/font` package will be removed in Next.js 14. You can migrate by running `npx @next/codemod@latest built-in-next-font .`. Read more: https://nextjs.org/docs/messages/built-in-next-font
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload

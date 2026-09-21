@@ -311,78 +311,7 @@ export default function AllCampaignsPage() {
     <Layout>
       <div className="max-w-8xl mx-auto pl-0 sm:pl-4 py-8 space-y-14">
 
-        {/* ================= Hero Banner Slideshow ================= */}
-        <section
-          className="group relative overflow-hidden h-[260px] rounded-3xl border border-slate-200/70 dark:border-[rgba(255,255,255,0.1)] bg-slate-900 text-white card-hover"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
-          <div className="absolute inset-0">
-            {HERO_SLIDES.map((slide, index) => (
-              <div
-                key={slide.title}
-                className={`absolute inset-0 transition-opacity duration-700 ${
-                  index === currentSlide ? "opacity-100" : "opacity-0 pointer-events-none"
-                }`}
-              >
-                <img
-                  src={slide.image}
-                  alt={slide.title}
-                  className="h-full w-full object-cover sm:ml-[330px] sm:w-[110%] sm:object-contain"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-100/10" />
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop: title + subtitles */}
-          <div className="relative z-10 hidden gap-6 p-10 lg:flex lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <div className="mt-0 ml-auto">
-                <h1 className="mt-0 text-2xl font-bold tracking-tight">
-                  {HERO_SLIDES[currentSlide].title}
-                </h1>
-                <p className="mt-6 max-w-xl text-sm text-slate-200">
-                  {HERO_SLIDES[currentSlide].subtitle1}
-                </p>
-                <p className="mt-2 max-w-xl text-sm text-slate-200">
-                  {HERO_SLIDES[currentSlide].subtitle2}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile/tablet: title at top, subtitles pinned above the slide dots */}
-          <div className="relative z-10 flex h-full flex-col p-5 sm:p-8 lg:hidden">
-            <h1 className="text-base font-bold tracking-tight sm:text-xl">
-              {HERO_SLIDES[currentSlide].title}
-            </h1>
-            <div className="mb-11 mt-auto">
-              <p className="mt-4 max-w-xl text-xs text-slate-200 sm:mt-6 sm:text-sm">
-                {HERO_SLIDES[currentSlide].subtitle1}
-              </p>
-              <p className="mt-2 max-w-xl text-xs text-slate-200 sm:text-sm">
-                {HERO_SLIDES[currentSlide].subtitle2}
-              </p>
-            </div>
-          </div>
-
-          {/* Slide dots */}
-          <div className="absolute bottom-8 left-8 z-20 flex items-center gap-2">
-            {HERO_SLIDES.map((slide, index) => (
-              <button
-                key={slide.title}
-                type="button"
-                onClick={() => setCurrentSlide(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentSlide ? "w-6 bg-white" : "w-2.5 bg-white/50 hover:bg-white/70"
-                }`}
-                aria-label={`Show slide ${index + 1}`}
-              />
-            ))}
-          </div>
-        </section>
-
+        
         {/* ================= Live Activity Ticker ================= */}
         {activityFeed.length > 0 && (
           <section className="-mt-6">
@@ -603,6 +532,79 @@ export default function AllCampaignsPage() {
             <h2 className="text-xl font-bold tracking-tight" style={sectionHeading}>Explore by Category</h2>
             <p className="mt-1 text-sm" style={sectionMuted}>Find causes that matter to you — click a tile to filter</p>
           </div>
+
+          {/* ================= Hero Banner Slideshow ================= */}
+        <section
+          className="group relative overflow-hidden h-[260px] rounded-3xl border border-slate-200/70 dark:border-[rgba(255,255,255,0.1)] bg-slate-900 text-white card-hover mb-6"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          <div className="absolute inset-0">
+            {HERO_SLIDES.map((slide, index) => (
+              <div
+                key={slide.title}
+                className={`absolute inset-0 transition-opacity duration-700 ${
+                  index === currentSlide ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
+              >
+                <img
+                  src={slide.image}
+                  alt={slide.title}
+                  className="h-full w-full object-cover sm:ml-[330px] sm:w-[110%] sm:object-contain"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-100/10" />
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: title + subtitles */}
+          <div className="relative z-10 hidden gap-6 p-10 lg:flex lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <div className="mt-0 ml-auto">
+                <h1 className="mt-0 text-2xl font-bold tracking-tight">
+                  {HERO_SLIDES[currentSlide].title}
+                </h1>
+                <p className="mt-6 max-w-xl text-sm text-slate-200">
+                  {HERO_SLIDES[currentSlide].subtitle1}
+                </p>
+                <p className="mt-2 max-w-xl text-sm text-slate-200">
+                  {HERO_SLIDES[currentSlide].subtitle2}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile/tablet: title at top, subtitles pinned above the slide dots */}
+          <div className="relative z-10 flex h-full flex-col p-5 sm:p-8 lg:hidden">
+            <h1 className="text-base font-bold tracking-tight sm:text-xl">
+              {HERO_SLIDES[currentSlide].title}
+            </h1>
+            <div className="mb-11 mt-auto">
+              <p className="mt-4 max-w-xl text-xs text-slate-200 sm:mt-6 sm:text-sm">
+                {HERO_SLIDES[currentSlide].subtitle1}
+              </p>
+              <p className="mt-2 max-w-xl text-xs text-slate-200 sm:text-sm">
+                {HERO_SLIDES[currentSlide].subtitle2}
+              </p>
+            </div>
+          </div>
+
+          {/* Slide dots */}
+          <div className="absolute bottom-8 left-8 z-20 flex items-center gap-2">
+            {HERO_SLIDES.map((slide, index) => (
+              <button
+                key={slide.title}
+                type="button"
+                onClick={() => setCurrentSlide(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === currentSlide ? "w-6 bg-white" : "w-2.5 bg-white/50 hover:bg-white/70"
+                }`}
+                aria-label={`Show slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </section>
+
           <div className="grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {CATEGORIES.filter((c) => c !== "All").map((cat) => {
               const Icon = CATEGORY_META[cat] || FiGrid;

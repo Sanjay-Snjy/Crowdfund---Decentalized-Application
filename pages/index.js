@@ -618,15 +618,6 @@ export default function Home() {
               </ConnectButton.Custom>
             )}
 
-            {heroStep === 3 && (
-              <button
-                onClick={handleGoToDashboard}
-                className="inline-flex w-full items-center justify-center rounded-full backdrop-blur-sm px-6 py-3.5 border border-white/60 text-sm font-medium text-white/60 transition-colors hover:text-white sm:w-auto"
-              >
-                Go to Dashboard
-              </button>
-            )}
-
             <button
               onClick={handleGoToCampaigns}
               className={`inline-flex w-full items-center justify-center rounded-full border border-indigo-500 backdrop-blur-sm px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-indigo-500 sm:w-auto ${
@@ -635,6 +626,15 @@ export default function Home() {
             >
               Explore Campaigns
             </button>
+
+            {heroStep === 3 && (
+              <button
+                onClick={handleGoToDashboard}
+                className="inline-flex w-full items-center justify-center rounded-full backdrop-blur-sm px-6 py-3.5 border border-white/60 text-sm font-medium text-white/60 transition-colors hover:text-white sm:w-auto"
+              >
+                Go to Dashboard
+              </button>
+            )}
 
           </div>
 

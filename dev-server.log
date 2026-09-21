@@ -2,8 +2,6 @@
   - Local:        http://localhost:3000
   - Environments: .env.local
 
- ✓ Ready in 4s
- ○ Compiling /404 ...
- ✓ Compiled /404 in 8.3s (2664 modules)
- ○ Compiling / ...
- ✓ Compiled / in 6.5s (2666 modules)
+ ✓ Ready in 6.3s
+ ○ Compiling /home ...
+ ✓ Compiled /home in 48.4s (2660 modules)

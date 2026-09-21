@@ -65,7 +65,7 @@ export default function Layout({ children }) {
         <div
           className="hidden md:block fixed inset-0 pointer-events-none"
           style={{
-            backgroundImage: `radial-gradient(${isDark ? "rgba(255, 255, 255, 0)" : "rgba(0, 0, 0, 0.02)"} 1.2px, transparent 1.4px)`,
+            backgroundImage: `radial-gradient(${isDark ? "rgba(255, 255, 255, 0)" : "rgba(0, 0, 0, 0)"} 1.2px, transparent 1.4px)`,
             backgroundSize: "8px 8px",
             zIndex: 1,
           }}
@@ -73,7 +73,7 @@ export default function Layout({ children }) {
         <div
           className="hidden md:block fixed inset-0 pointer-events-none"
           style={{
-            backgroundImage: `radial-gradient(${isDark ? "rgba(255, 255, 255, 0.52)" : "rgba(0, 0, 0, 0.5)"} 1px, transparent 1.2px)`,
+            backgroundImage: `radial-gradient(${isDark ? "rgba(255, 255, 255, 0.35)" : "rgba(0, 0, 0, 0.5)"} 1px, transparent 1.2px)`,
             backgroundSize: "8px 8px",
             maskImage: `radial-gradient(circle 200px at ${mousePosition.x}px ${mousePosition.y}px, white 0%, transparent 80%)`,
             WebkitMaskImage: `radial-gradient(circle 200px at ${mousePosition.x}px ${mousePosition.y}px, white 0%, transparent 80%)`,

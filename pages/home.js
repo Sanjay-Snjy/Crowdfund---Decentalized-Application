@@ -304,6 +304,20 @@ export default function AllCampaignsPage() {
     return `${Math.floor(diff / 86400)}d ago`;
   };
 
+  // The category tiles sit above the results, so scrolling to the #all-campaigns
+  // section top carries the view *away* from the campaigns (upwards) and leaves
+  // the cards off-screen. Scroll to the results instead, offset by the pinned
+  // toolbar so the first row of campaign cards is never hidden behind it.
+  const scrollToResults = () => {
+    const target = document.getElementById("campaign-results");
+    if (!target) return;
+    const toolbar = document.getElementById("campaign-toolbar");
+    const stickyTop = 84; // keep in sync with the toolbar's top-[84px]
+    const offset = stickyTop + (toolbar?.offsetHeight || 0) + 16;
+    const top = window.scrollY + target.getBoundingClientRect().top - offset;
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  };
+
   const sectionHeading = { color: "var(--color-text)" };
   const sectionMuted = { color: "var(--color-text-muted)" };
 
@@ -369,7 +383,7 @@ export default function AllCampaignsPage() {
                 <button
                   type="button"
                   onClick={() => scrollTrending(-1)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-sm transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10"
                   style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}
                   aria-label="Scroll trending left"
                 >
@@ -378,7 +392,7 @@ export default function AllCampaignsPage() {
                 <button
                   type="button"
                   onClick={() => scrollTrending(1)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-sm transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10"
                   style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}
                   aria-label="Scroll trending right"
                 >
@@ -389,7 +403,7 @@ export default function AllCampaignsPage() {
 
             <div
               ref={trendingRef}
-              className="flex gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:thin] snap-x snap-mandatory"
+              className="flex gap-4 overflow-x-auto px-4 pt-3 pb-4 [scrollbar-width:thin] snap-x snap-mandatory"
             >
               {trending.map((c, idx) => {
                 const raised = Number(c.raisedAmount?.toString?.() || 0) / 1e18;
@@ -451,15 +465,15 @@ export default function AllCampaignsPage() {
 
         {/* ================= All Campaigns (header + stats) ================= */}
         <section id="all-campaigns" className="scroll-mt-24">
-          <div className="mb-5 flex flex-col gap-3 px-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-8 flex flex-col gap-3 px-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
                   <FiGrid className="h-3.5 w-3.5" />
                 </span>
-                <h2 className="text-xl font-bold tracking-tight" style={sectionHeading}>All Campaigns</h2>
+                <h2 className="text-xl font-bold tracking-tight" style={sectionHeading}>Explore by Category</h2>
               </div>
-              <p className="mt-1 text-sm" style={sectionMuted}>Browse and discover crowdfunding campaigns</p>
+              <p className="mt-1 text-sm" style={sectionMuted}>Find causes that matter to you — click a tile to filter</p>
             </div>
             <div className="flex flex-wrap gap-2">
               {[
@@ -476,66 +490,12 @@ export default function AllCampaignsPage() {
             </div>
           </div>
 
-          {/* Search + Filters toolbar */}
-          <div className="px-4">
-            <div className="card sticky top-[84px] z-30 p-3 backdrop-blur-xl">
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <div className="relative flex-1">
-                  <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--color-text-muted)" }} />
-                  <input
-                    type="text"
-                    placeholder="Search campaigns..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input pl-9 rounded-2xl"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="select w-auto rounded-2xl">
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="funded">Funded</option>
-                  </select>
-                  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="select w-auto rounded-2xl">
-                    <option value="newest">Newest</option>
-                    <option value="ending">Ending Soon</option>
-                    <option value="funded">Most Funded</option>
-                    <option value="popular">Most Popular</option>
-                  </select>
-                  <div className="flex rounded-2xl border overflow-hidden" style={{ borderColor: "var(--color-border)" }}>
-                    <button
-                      onClick={() => setViewMode("grid")}
-                      className={`p-2 ${viewMode === "grid" ? "bg-indigo-50 dark:bg-indigo-500/10" : ""}`}
-                      style={{ color: viewMode === "grid" ? "var(--color-accent)" : "var(--color-text-muted)" }}
-                      aria-label="Grid view"
-                    >
-                      <FiGrid className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode("list")}
-                      className={`p-2 ${viewMode === "list" ? "bg-indigo-50 dark:bg-indigo-500/10" : ""}`}
-                      style={{ color: viewMode === "list" ? "var(--color-accent)" : "var(--color-text-muted)" }}
-                      aria-label="List view"
-                    >
-                      <FiList className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-             
-            </div>
-          </div>
+         
      {/* ================= Explore by Category (Tiles) ================= */}
         <section>
-          <div className="mb-5 px-4 mt-6">
-            <h2 className="text-xl font-bold tracking-tight" style={sectionHeading}>Explore by Category</h2>
-            <p className="mt-1 text-sm" style={sectionMuted}>Find causes that matter to you — click a tile to filter</p>
-          </div>
-
           {/* ================= Hero Banner Slideshow ================= */}
         <section
-          className="group relative overflow-hidden h-[260px] rounded-3xl border border-slate-200/70 dark:border-[rgba(255,255,255,0.1)] bg-slate-900 text-white card-hover mb-6"
+          className="group relative overflow-hidden h-[200px] rounded-3xl border border-slate-200/70 dark:border-[rgba(255,255,255,0.1)] bg-slate-900 text-white card-hover mb-6 mx-4"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
@@ -550,7 +510,7 @@ export default function AllCampaignsPage() {
                 <img
                   src={slide.image}
                   alt={slide.title}
-                  className="h-full w-full object-cover sm:ml-[330px] sm:w-[110%] sm:object-contain"
+                  className="h-full w-full object-cover sm:ml-[350px] sm:w-[110%] sm:object-contain"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-100/10" />
               </div>
@@ -561,7 +521,7 @@ export default function AllCampaignsPage() {
           <div className="relative z-10 hidden gap-6 p-10 lg:flex lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <div className="mt-0 ml-auto">
-                <h1 className="mt-0 text-2xl font-bold tracking-tight">
+                <h1 className="-mt-4 text-xl font-bold tracking-tight">
                   {HERO_SLIDES[currentSlide].title}
                 </h1>
                 <p className="mt-6 max-w-xl text-sm text-slate-200">
@@ -616,7 +576,7 @@ export default function AllCampaignsPage() {
                   type="button"
                   onClick={() => {
                     setActiveCategory(isActive ? "All" : cat);
-                    document.getElementById("all-campaigns")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    scrollToResults();
                   }}
                   className={`card group relative overflow-hidden p-3 text-left transition-all duration-200 ${
                     isActive ? "ring-2 ring-indigo-500" : "card-hover"
@@ -637,11 +597,61 @@ export default function AllCampaignsPage() {
               );
             })}
           </div>
+           {/* Search + Filters toolbar */}
+          <div className="px-4 mt-6">
+            <div id="campaign-toolbar" className="card sticky top-[84px] z-30 p-3 backdrop-blur-xl">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1">
+                  <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--color-text-muted)" }} />
+                  <input
+                    type="text"
+                    placeholder="Search campaigns..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="input pl-9 rounded-2xl"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="select w-auto rounded-2xl">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="funded">Funded</option>
+                  </select>
+                  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="select w-auto rounded-2xl">
+                    <option value="newest">Newest</option>
+                    <option value="ending">Ending Soon</option>
+                    <option value="funded">Most Funded</option>
+                    <option value="popular">Most Popular</option>
+                  </select>
+                  <div className="flex rounded-2xl border overflow-hidden" style={{ borderColor: "var(--color-border)" }}>
+                    <button
+                      onClick={() => setViewMode("grid")}
+                      className={`p-2 ${viewMode === "grid" ? "bg-indigo-50 dark:bg-indigo-500/10" : ""}`}
+                      style={{ color: viewMode === "grid" ? "var(--color-accent)" : "var(--color-text-muted)" }}
+                      aria-label="Grid view"
+                    >
+                      <FiGrid className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode("list")}
+                      className={`p-2 ${viewMode === "list" ? "bg-indigo-50 dark:bg-indigo-500/10" : ""}`}
+                      style={{ color: viewMode === "list" ? "var(--color-accent)" : "var(--color-text-muted)" }}
+                      aria-label="List view"
+                    >
+                      <FiList className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+             
+            </div>
+          </div>
         </section>
 
 
           {/* Results count */}
-          <div className="mt-5 flex items-center justify-between px-4">
+          <div id="campaign-results" className="mt-5 flex items-center justify-between px-4 scroll-mt-[220px]">
             <p className="text-sm" style={sectionMuted}>
               Showing <span className="font-medium" style={sectionHeading}>{filtered.length}</span> {filtered.length === 1 ? "campaign" : "campaigns"}
             </p>
@@ -691,7 +701,7 @@ export default function AllCampaignsPage() {
 
         {/* ================= Creator CTA Band ================= */}
         <section className="px-4">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 p-8 text-white sm:p-12">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-400 to-indigo-700 p-8 text-white sm:p-12">
             {/* Decorative glows */}
             <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-indigo-300/20 blur-3xl" />

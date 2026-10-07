@@ -5,3 +5,16 @@
  ✓ Ready in 6.3s
  ○ Compiling /home ...
  ✓ Compiled /home in 48.4s (2660 modules)
+ ✓ Compiled in 9s (2512 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 9.1s (2646 modules)
+ ✓ Compiled /home in 1149ms (2660 modules)
+ ✓ Compiled /api/wallet-link in 1903ms (162 modules)
+ ✓ Compiled in 6.2s (2660 modules)
+ ✓ Compiled /api/wallet-link in 446ms (162 modules)
+ ✓ Compiled /api/wallet-link in 4.6s (2660 modules)
+ ✓ Compiled (2674 modules)
+ ○ Compiling /404 ...
+ ✓ Compiled /404 in 5.4s (2664 modules)
+ ✓ Compiled /api/wallet-link in 279ms (164 modules)
+[?25h

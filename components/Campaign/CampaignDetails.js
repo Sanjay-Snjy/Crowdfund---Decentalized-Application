@@ -132,6 +132,14 @@ export default function CampaignDetails({ campaignId }) {
     return [first, second, raised.sub(first).sub(second)];
   }, [campaign?.raisedAmount]);
 
+  // Only the next milestone in order can receive evidence / votes / a release.
+  // NOTE: this must stay above the early returns — hooks may never run conditionally.
+  const nextMilestoneIndex = useMemo(() => {
+    if (!milestones?.length) return 0;
+    const index = milestones.findIndex((m) => !m.fundsReleased);
+    return index === -1 ? null : index;
+  }, [milestones]);
+
   if (campaignLoading) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-20 space-y-4">
@@ -168,13 +176,6 @@ export default function CampaignDetails({ campaignId }) {
   const canRefund = !isCreator && fundingClosed && !isSuccessful && userContribution > 0;
   const canForfeitStake = fundingClosed && !isSuccessful && !campaign.stakeForfeited && !campaign.stakeReturned;
   const stakeHeld = toBig(accounting?.creatorStakeHeld ?? campaign.creatorStake);
-
-  // Only the next milestone in order can receive evidence / votes / a release.
-  const nextMilestoneIndex = useMemo(() => {
-    if (!milestones?.length) return 0;
-    const index = milestones.findIndex((m) => !m.fundsReleased);
-    return index === -1 ? null : index;
-  }, [milestones]);
 
   const handleContribute = async () => {
     if (!contributionAmount || parseFloat(contributionAmount) <= 0) { toast.error("Enter a valid amount"); return; }
@@ -276,6 +277,16 @@ export default function CampaignDetails({ campaignId }) {
   const uniqueContributors = Object.values(contributorMap).sort((a, b) => Number(b.total - a.total));
 
   const QUICK_AMOUNTS = ["0.01", "0.05", "0.1", "0.5", "1"];
+
+  // The action card must never render as an empty box: show it only when at
+  // least one of its branches (contribute, completed note, refund, forfeit,
+  // connect-wallet hint) actually applies.
+  const showContribute = !timeLeft.expired && campaign.active && !isCreator && isConnected;
+  const showActionCard = showContribute
+    || Boolean(campaign.completed)
+    || Boolean(canRefund)
+    || Boolean(canForfeitStake)
+    || !isConnected;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
@@ -671,8 +682,9 @@ export default function CampaignDetails({ campaignId }) {
           </div>
 
           {/* Action card */}
+          {showActionCard && (
           <div className="card p-5 space-y-3">
-            {!timeLeft.expired && campaign.active && !isCreator && isConnected && (
+            {showContribute && (
               <>
                 <div className="flex gap-1.5 flex-wrap">
                   {QUICK_AMOUNTS.map((amt) => (
@@ -726,6 +738,7 @@ export default function CampaignDetails({ campaignId }) {
               <p className="text-sm text-center py-2" style={{ color: "var(--color-text-muted)" }}>Connect wallet to contribute</p>
             )}
           </div>
+          )}
         </div>
       </div>
     </div>

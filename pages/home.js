@@ -306,16 +306,14 @@ export default function AllCampaignsPage() {
 
   // The category tiles sit above the results, so scrolling to the #all-campaigns
   // section top carries the view *away* from the campaigns (upwards) and leaves
-  // the cards off-screen. Scroll to the results instead, offset by the pinned
-  // toolbar so the first row of campaign cards is never hidden behind it.
+  // the cards off-screen. Scroll to the results block instead — its
+  // scroll-mt-[220px] keeps the first row clear of the pinned toolbar
+  // (toolbar top 84px + toolbar height + breathing room).
   const scrollToResults = () => {
-    const target = document.getElementById("campaign-results");
-    if (!target) return;
-    const toolbar = document.getElementById("campaign-toolbar");
-    const stickyTop = 84; // keep in sync with the toolbar's top-[84px]
-    const offset = stickyTop + (toolbar?.offsetHeight || 0) + 16;
-    const top = window.scrollY + target.getBoundingClientRect().top - offset;
-    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    document.getElementById("campaign-results")?.scrollIntoView({
+      behavior: "auto",
+      block: "start",
+    });
   };
 
   const sectionHeading = { color: "var(--color-text)" };

@@ -47,6 +47,7 @@ export default function CampaignDetails({ campaignId }) {
   const [evidenceFile, setEvidenceFile] = useState(null);
   const [evidenceNote, setEvidenceNote] = useState("");
   const [busyMilestone, setBusyMilestone] = useState(null);
+  const [rates, setRates] = useState(null);
 
   const { data: campaign, isLoading: campaignLoading } = useCampaign(campaignId);
   const { data: stats } = useCampaignStats(campaignId);
@@ -106,6 +107,16 @@ export default function CampaignDetails({ campaignId }) {
     });
     return () => { cancelled = true; };
   }, [campaign?.metadataHash]);
+
+  // ETH price for the fiat converter (same source as the campaign form)
+  useEffect(() => {
+    let mounted = true;
+    fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=inr,usd")
+      .then((r) => r.json())
+      .then((d) => { if (mounted && d?.ethereum) setRates(d.ethereum); })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   // Fetch creator profile
   useEffect(() => {
@@ -323,6 +334,72 @@ export default function CampaignDetails({ campaignId }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Content */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Contribute card */}
+          {showActionCard && (
+            <div className="card p-5 space-y-3">
+              {showContribute && (
+                <>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {QUICK_AMOUNTS.map((amt) => (
+                      <button key={amt} onClick={() => setContributionAmount(amt)}
+                        className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+                          contributionAmount === amt
+                            ? "bg-indigo-600 text-white"
+                            : "border hover:bg-slate-50 dark:hover:bg-slate-700/30"
+                        }`}
+                        style={contributionAmount === amt ? undefined : { borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
+                        {amt} ETH
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-3">
+                    <input
+                      type="number" step="0.01" min="0.01" placeholder="Amount (ETH)"
+                      value={contributionAmount}
+                      onChange={(e) => setContributionAmount(e.target.value)}
+                      className="input flex-1 min-w-0"
+                    />
+                    {rates && parseFloat(contributionAmount) > 0 && (
+                      <>
+                        <div className="flex flex-col items-center px-3 py-1 rounded-xl border shrink-0" style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}>
+                          <span className="text-[10px] uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>USD</span>
+                          <span className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>${(parseFloat(contributionAmount) * rates.usd).toFixed(2)}</span>
+                        </div>
+                        <div className="flex flex-col items-center px-3 py-1 rounded-xl border shrink-0" style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}>
+                          <span className="text-[10px] uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>INR</span>
+                          <span className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>₹{(parseFloat(contributionAmount) * rates.inr).toFixed(2)}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <button onClick={handleContribute} disabled={contributing || !contributionAmount} className="btn w-full">
+                    {contributing ? "Contributing..." : "Contribute Now"}
+                  </button>
+                  <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
+                    Your donation stays in the smart contract until donors approve each milestone.
+                  </p>
+                </>
+              )}
+
+              {campaign.completed && (
+                <div className="flex items-center gap-2 text-xs" style={{ color: "var(--color-success)" }}>
+                  <FiCheckCircle className="w-3.5 h-3.5" />
+                  <span>Campaign completed — all three milestones were released.</span>
+                </div>
+              )}
+
+              {canRefund && (
+                <button onClick={async () => { await getRefund?.({ args: [campaignId] }); }} disabled={refunding} className="btn btn-danger w-full lg:max-w-xs">
+                  {refunding ? "Processing..." : "Get Refund"}
+                </button>
+              )}
+
+              {!isConnected && (
+                <p className="text-sm text-center py-2" style={{ color: "var(--color-text-muted)" }}>Connect wallet to contribute</p>
+              )}
+            </div>
+          )}
+
           {/* Tabs */}
           <div className="card">
             <div className="border-b flex gap-1 px-1 overflow-x-auto" style={{ borderColor: "var(--color-border)" }}>
@@ -665,58 +742,6 @@ export default function CampaignDetails({ campaignId }) {
                     : "Donations are held in escrow until the target is reached and the milestones are approved."}
             </p>
           </div>
-
-          {/* Action card */}
-          {showActionCard && (
-          <div className="card p-5 space-y-3">
-            {showContribute && (
-              <>
-                <div className="flex gap-1.5 flex-wrap">
-                  {QUICK_AMOUNTS.map((amt) => (
-                    <button key={amt} onClick={() => setContributionAmount(amt)}
-                      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                        contributionAmount === amt
-                          ? "bg-indigo-600 text-white"
-                          : "border hover:bg-slate-50 dark:hover:bg-slate-700/30"
-                      }`}
-                      style={contributionAmount === amt ? undefined : { borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
-                      {amt} ETH
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="number" step="0.01" min="0.01" placeholder="Amount (ETH)"
-                  value={contributionAmount}
-                  onChange={(e) => setContributionAmount(e.target.value)}
-                  className="input"
-                />
-                <button onClick={handleContribute} disabled={contributing || !contributionAmount} className="btn w-full">
-                  {contributing ? "Contributing..." : "Contribute Now"}
-                </button>
-                <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
-                  Your donation stays in the smart contract until donors approve each milestone.
-                </p>
-              </>
-            )}
-
-            {campaign.completed && (
-              <div className="flex items-center gap-2 text-xs" style={{ color: "var(--color-success)" }}>
-                <FiCheckCircle className="w-3.5 h-3.5" />
-                <span>Campaign completed — all three milestones were released.</span>
-              </div>
-            )}
-
-            {canRefund && (
-              <button onClick={async () => { await getRefund?.({ args: [campaignId] }); }} disabled={refunding} className="btn btn-danger w-full">
-                {refunding ? "Processing..." : "Get Refund"}
-              </button>
-            )}
-
-            {!isConnected && (
-              <p className="text-sm text-center py-2" style={{ color: "var(--color-text-muted)" }}>Connect wallet to contribute</p>
-            )}
-          </div>
-          )}
         </div>
       </div>
     </div>

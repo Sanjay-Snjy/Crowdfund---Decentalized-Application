@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { network } from "hardhat";
 
 /**
- * Contract tests for the creator-accountability / milestone-escrow model.
+ * Contract tests for the milestone-escrow model.
  *
  * The suite is written with the Mocha API (`describe` / `it` / `beforeEach`) but
  * ships with a tiny built-in runner, because this Hardhat 3 project only has the
@@ -77,13 +77,10 @@ async function runSuite(suite, prefix, inheritedHooks, results) {
 const { ethers } = await network.create();
 
 const DURATION = 30 * 24 * 60 * 60; // 30 days
-const STAKE_PERCENT = 30n;
 const MILESTONE_PERCENTAGES = [30n, 30n, 40n];
 
 const ONE_ETH = ethers.parseEther("1");
 const TEN_ETH = ethers.parseEther("10");
-
-const stakeFor = (target) => (target * STAKE_PERCENT) / 100n;
 
 async function increaseTime(seconds) {
   await ethers.provider.send("evm_increaseTime", [seconds]);
@@ -122,7 +119,7 @@ let contract;
 let contractAddress;
 let owner, creator, contributor1, contributor2, contributor3, outsider;
 
-describe("CrowdfundingMarketplace — creator stake & milestone escrow", function () {
+describe("CrowdfundingMarketplace — milestone escrow", function () {
   beforeEach(async function () {
     [owner, creator, contributor1, contributor2, contributor3, outsider] =
       await ethers.getSigners();
@@ -131,13 +128,11 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
     contractAddress = await contract.getAddress();
   });
 
-  /** Creates a funded campaign: target 10 ETH, 3 ETH stake, 4 + 3 + 3 ETH donated. */
+  /** Creates a funded campaign: target 10 ETH, funded with 4 + 3 + 3 ETH. */
   async function createFundedCampaign({ target = TEN_ETH, duration = DURATION } = {}) {
     await contract
       .connect(creator)
-      .createCampaign("Test Campaign", "Description", "QmMetaHash", target, duration, {
-        value: stakeFor(target),
-      });
+      .createCampaign("Test Campaign", "Description", "QmMetaHash", target, duration);
     await contract.connect(contributor1).contributeToCampaign(1, { value: ethers.parseEther("4") });
     await contract.connect(contributor2).contributeToCampaign(1, { value: ethers.parseEther("3") });
     await contract.connect(contributor3).contributeToCampaign(1, { value: ethers.parseEther("3") });
@@ -150,74 +145,48 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
     }
   }
 
-  // ── Campaign creation & creator stake ──────────────────────────────────────
-  describe("Campaign creation and creator stake", function () {
-    it("requires a creator stake of 30% of the target", async function () {
-      await expectRevert(
-        contract
-          .connect(creator)
-          .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION, {
-            value: stakeFor(TEN_ETH) - 1n,
-          }),
-        "Creator stake required"
-      );
-
+  // ── Campaign creation ─────────────────────────────────────────────────────
+  describe("Campaign creation", function () {
+    it("creates a campaign without any upfront payment", async function () {
       await contract
         .connect(creator)
-        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION, {
-          value: stakeFor(TEN_ETH),
-        });
+        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION);
 
       const campaign = await contract.getCampaign(1);
       assert.equal(campaign.id, 1n);
       assert.equal(campaign.creator, creator.address);
       assert.equal(campaign.targetAmount, TEN_ETH);
-      assert.equal(campaign.creatorStake, ethers.parseEther("3"), "stake must be 30% of target");
-      assert.equal(campaign.raisedAmount, 0n, "stake is not donor money");
-      assert.equal(campaign.stakeReturned, false);
-      assert.equal(campaign.stakeForfeited, false);
+      assert.equal(campaign.raisedAmount, 0n, "no donor funds yet");
       assert.equal(campaign.completed, false);
-    });
+      assert.equal(campaign.active, true);
 
-    it("holds the stake in the contract and accounts for it separately", async function () {
-      await contract
-        .connect(creator)
-        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION, {
-          value: stakeFor(TEN_ETH),
-        });
-
-      assert.equal(await contract.totalStakesHeld(), ethers.parseEther("3"));
-      assert.equal(await ethers.provider.getBalance(contractAddress), ethers.parseEther("3"));
+      // Creating a campaign must not move any ETH into the contract.
+      assert.equal(await ethers.provider.getBalance(contractAddress), 0n);
 
       const accounting = await contract.getCampaignAccounting(1);
       assert.equal(accounting.donorFundsRaised, 0n);
-      assert.equal(accounting.creatorStakeHeld, ethers.parseEther("3"));
+      assert.equal(accounting.releasedAmountTotal, 0n);
       assert.equal(accounting.lockedDonorFunds, 0n);
-      assert.equal(accounting.stakeLocked, true);
+      assert.equal(accounting.refundableDonorFunds, 0n);
     });
 
-    it("refunds ETH sent above the required stake", async function () {
-      const before = await ethers.provider.getBalance(creator.address);
-      const tx = await contract
-        .connect(creator)
-        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION, {
-          value: ethers.parseEther("5"),
-        });
-      const receipt = await tx.wait();
-      const gasCost = receipt.gasUsed * receipt.gasPrice;
-      const after = await ethers.provider.getBalance(creator.address);
+    it("refuses ETH sent along with the creation transaction", async function () {
+      await expectRevert(
+        contract
+          .connect(creator)
+          .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION, {
+            value: ONE_ETH,
+          })
+      );
 
-      // Only the 3 ETH stake may be kept — the extra 2 ETH is refunded.
-      assert.equal(before - after - gasCost, ethers.parseEther("3"));
-      assert.equal(await contract.totalStakesHeld(), ethers.parseEther("3"));
+      assert.equal(await ethers.provider.getBalance(contractAddress), 0n);
+      assert.equal(await contract.campaignCounter(), 0n);
     });
 
     it("creates the three fixed milestones (30/30/40)", async function () {
       await contract
         .connect(creator)
-        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION, {
-          value: stakeFor(TEN_ETH),
-        });
+        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION);
 
       assert.equal(await contract.getMilestoneCount(1), 3n);
 
@@ -230,11 +199,20 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       });
     });
 
+    it("registers the campaign under its creator", async function () {
+      await contract
+        .connect(creator)
+        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION);
+
+      const created = await contract.getUserCampaigns(creator.address);
+      assert.equal(created.length, 1);
+      assert.equal(created[0], 1n);
+      assert.equal((await contract.getUserCampaigns(outsider.address)).length, 0);
+    });
+
     it("rejects invalid campaign inputs", async function () {
       const send = (title, target, duration) =>
-        contract.connect(creator).createCampaign(title, "Desc", "QmHash", target, duration, {
-          value: ethers.parseEther("3"),
-        });
+        contract.connect(creator).createCampaign(title, "Desc", "QmHash", target, duration);
 
       await expectRevert(send("", TEN_ETH, DURATION), "Title cannot be empty");
       await expectRevert(send("Title", 0n, DURATION), "Target amount must be greater than 0");
@@ -242,7 +220,7 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       await expectRevert(
         contract
           .connect(creator)
-          .createCampaign("Title", "Desc", "", TEN_ETH, DURATION, { value: ethers.parseEther("3") }),
+          .createCampaign("Title", "Desc", "", TEN_ETH, DURATION),
         "Metadata hash cannot be empty"
       );
     });
@@ -253,12 +231,10 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
     beforeEach(async function () {
       await contract
         .connect(creator)
-        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION, {
-          value: stakeFor(TEN_ETH),
-        });
+        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION);
     });
 
-    it("tracks donor funds separately from the stake", async function () {
+    it("holds donor funds in escrow", async function () {
       await contract.connect(contributor1).contributeToCampaign(1, { value: ethers.parseEther("4") });
 
       const campaign = await contract.getCampaign(1);
@@ -266,8 +242,8 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       assert.equal(campaign.contributorsCount, 1n);
       assert.equal(
         await ethers.provider.getBalance(contractAddress),
-        ethers.parseEther("7"),
-        "contract holds stake + donor funds"
+        ethers.parseEther("4"),
+        "the contract holds exactly the donated amount"
       );
       assert.equal(await contract.getContribution(1, contributor1.address), ethers.parseEther("4"));
     });
@@ -309,9 +285,7 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
     it("only accepts evidence after the deadline when the target was reached", async function () {
       await contract
         .connect(creator)
-        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION, {
-          value: stakeFor(TEN_ETH),
-        });
+        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION);
 
       await expectRevert(
         contract.connect(creator).submitMilestoneEvidence(1, 0, "QmEvidence"),
@@ -439,9 +413,7 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       // Refunds of a failed campaign reset the contribution, and with it the vote.
       await contract
         .connect(creator)
-        .createCampaign("Failed", "Desc", "QmHashFailed", TEN_ETH, DURATION, {
-          value: stakeFor(TEN_ETH),
-        });
+        .createCampaign("Failed", "Desc", "QmHashFailed", TEN_ETH, DURATION);
       await contract.connect(contributor1).contributeToCampaign(2, { value: ethers.parseEther("5") });
       await increaseTime(DURATION + 1);
 
@@ -514,9 +486,9 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       const accounting = await contract.getCampaignAccounting(1);
       assert.equal(accounting.lockedDonorFunds, ethers.parseEther("7"));
       assert.equal(
-        accounting.creatorStakeHeld,
-        ethers.parseEther("3"),
-        "the creator stake must stay locked after a release"
+        await ethers.provider.getBalance(contractAddress),
+        ethers.parseEther("7"),
+        "the remaining 70% stays in escrow"
       );
     });
 
@@ -547,10 +519,10 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       );
     });
 
-    it("releases 3 / 3 / 4 ETH across the full lifecycle and returns the stake", async function () {
+    it("releases 3 / 3 / 4 ETH across the full lifecycle and completes the campaign", async function () {
       const startBalance = await ethers.provider.getBalance(creator.address);
       // The creator pays gas for the evidence transactions, so track it to keep
-      // the balance delta limited to the stake and the milestone payments.
+      // the balance delta limited to the milestone payments.
       let creatorGas = 0n;
       const submitEvidence = async (index, cid) => {
         const receipt = await (
@@ -576,28 +548,24 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       const campaign = await contract.getCampaign(1);
       assert.equal(await contract.getReleasedAmount(1), TEN_ETH, "all donor funds released");
       assert.equal(campaign.completed, true);
-      assert.equal(campaign.stakeReturned, true);
-      assert.equal(campaign.stakeForfeited, false);
       assert.equal(campaign.active, false);
       assert.ok(campaign.completedAt > 0n);
 
-      // The last release pays the final 40% (4 ETH) plus the returned 3 ETH stake.
+      // The creator receives the whole escrowed amount: 3 + 3 + 4 ETH.
       const endBalance = await ethers.provider.getBalance(creator.address);
-      // 3 + 3 + 4 ETH of donor funds plus the 3 ETH stake come back to the creator.
       assert.equal(
         endBalance - startBalance + creatorGas,
-        TEN_ETH + ethers.parseEther("3"),
-        "all donor funds released plus the returned stake"
+        TEN_ETH,
+        "every donated wei reaches the creator"
       );
       assert.equal(
         await ethers.provider.getBalance(contractAddress),
         0n,
-        "contract ends empty: no donor funds or stake stranded"
+        "contract ends empty: no donor funds stranded"
       );
-      assert.equal(await contract.totalStakesHeld(), 0n);
     });
 
-    it("returns the stake once and never releases it with a milestone", async function () {
+    it("keeps the remaining escrow locked until the next milestone", async function () {
       await contract.connect(creator).submitMilestoneEvidence(1, 0, "QmEvidenceOne");
       await approveMilestone(0);
 
@@ -608,12 +576,9 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       ).wait();
       const after = await ethers.provider.getBalance(creator.address);
 
-      // Only the 3 ETH milestone share — the stake stays in escrow.
+      // Only the 3 ETH milestone share moves — the other 7 ETH stays in escrow.
       assert.equal(after - before, ethers.parseEther("3"));
-      assert.equal(
-        await ethers.provider.getBalance(contractAddress),
-        ethers.parseEther("3") + ethers.parseEther("7")
-      );
+      assert.equal(await ethers.provider.getBalance(contractAddress), ethers.parseEther("7"));
     });
 
     it("keeps rounding dust out of the contract", async function () {
@@ -621,9 +586,7 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       const oddTarget = ethers.parseEther("7");
       await contract
         .connect(creator)
-        .createCampaign("Odd", "Desc", "QmHashOdd", oddTarget, DURATION, {
-          value: stakeFor(oddTarget),
-        });
+        .createCampaign("Odd", "Desc", "QmHashOdd", oddTarget, DURATION);
 
       const oddDonation = ethers.parseEther("7.123456789012345678");
       await contract.connect(contributor1).contributeToCampaign(2, { value: oddDonation });
@@ -651,12 +614,11 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       assert.equal(await contract.getReleasedAmount(2), oddDonation);
       const oddAccounting = await contract.getCampaignAccounting(2);
       assert.equal(oddAccounting.lockedDonorFunds, 0n, "no wei is permanently locked");
-      assert.equal(oddAccounting.creatorStakeHeld, 0n, "stake was returned");
       // Campaign 2 leaves nothing behind: only campaign 1's escrow remains.
       assert.equal(
         await ethers.provider.getBalance(contractAddress),
-        ethers.parseEther("13"),
-        "campaign 2 (stake + donor funds) is fully settled"
+        TEN_ETH,
+        "campaign 2 is fully settled and campaign 1 still holds its 10 ETH"
       );
     });
 
@@ -674,9 +636,7 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
     beforeEach(async function () {
       await contract
         .connect(creator)
-        .createCampaign("Failing", "Desc", "QmHash", TEN_ETH, DURATION, {
-          value: stakeFor(TEN_ETH),
-        });
+        .createCampaign("Failing", "Desc", "QmHash", TEN_ETH, DURATION);
       await contract.connect(contributor1).contributeToCampaign(1, { value: ethers.parseEther("5") });
       await increaseTime(DURATION + 1);
     });
@@ -694,60 +654,50 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       await expectRevert(contract.connect(contributor1).getRefund(1), "No contribution found");
     });
 
-    it("forfeits the creator stake to the platform treasury", async function () {
-      await contract.connect(outsider).forfeitCreatorStake(1);
-
-      const campaign = await contract.getCampaign(1);
-      assert.equal(campaign.stakeForfeited, true);
-      assert.equal(campaign.creatorStake, 0n);
-      assert.equal(campaign.stakeReturned, false);
-      assert.equal(await contract.totalStakesHeld(), 0n);
-      assert.equal(await contract.totalFeesCollected(), ethers.parseEther("3"));
-
+    it("keeps refundable funds in escrow and never pays the creator", async function () {
+      // A campaign that missed its target can never release a milestone.
       await expectRevert(
-        contract.connect(outsider).forfeitCreatorStake(1),
-        "Stake already forfeited"
+        contract.connect(creator).submitMilestoneEvidence(1, 0, "QmEvidence"),
+        "Campaign target not reached"
+      );
+      await expectRevert(
+        contract.connect(creator).releaseMilestoneFunds(1, 0),
+        "Campaign target not reached"
       );
 
-      // Donors can still refund, and the treasury stays solvent.
+      // The donations stay claimable by the donors, and no platform revenue exists.
+      assert.equal(await ethers.provider.getBalance(contractAddress), ethers.parseEther("5"));
+      assert.equal(await contract.totalFeesCollected(), 0n);
+      await expectRevert(
+        contract.connect(owner).withdrawFees(1n),
+        "Insufficient fee balance"
+      );
+
       await contract.connect(contributor1).getRefund(1);
-      await contract.connect(owner).withdrawFees(ethers.parseEther("3"));
       assert.equal(await ethers.provider.getBalance(contractAddress), 0n);
     });
 
-    it("blocks refunds and stake forfeiture on successful campaigns", async function () {
+    it("blocks refunds on successful campaigns", async function () {
       await contract
         .connect(creator)
-        .createCampaign("Successful", "Desc", "QmHashOk", TEN_ETH, DURATION, {
-          value: stakeFor(TEN_ETH),
-        });
+        .createCampaign("Successful", "Desc", "QmHashOk", TEN_ETH, DURATION);
       await contract.connect(contributor1).contributeToCampaign(2, { value: TEN_ETH });
       await increaseTime(DURATION + 1);
 
       assert.equal(await contract.hasReachedTarget(2), true);
       await expectRevert(contract.connect(contributor1).getRefund(2), "Campaign was successful");
-      await expectRevert(
-        contract.connect(outsider).forfeitCreatorStake(2),
-        "Campaign reached its target"
-      );
     });
 
-    it("blocks refunds and forfeiture while the campaign is still fundraising", async function () {
+    it("blocks refunds while the campaign is still fundraising", async function () {
       const freshContract = await ethers.deployContract("CrowdfundingMarketplace");
       await freshContract.waitForDeployment();
 
       await freshContract
         .connect(creator)
-        .createCampaign("Fresh", "Desc", "QmHash", TEN_ETH, DURATION, {
-          value: stakeFor(TEN_ETH),
-        });
+        .createCampaign("Fresh", "Desc", "QmHash", TEN_ETH, DURATION);
       await freshContract.connect(contributor1).contributeToCampaign(1, { value: ONE_ETH });
 
       await expectRevert(freshContract.connect(contributor1).getRefund(1), "Campaign still active");
-      await expectRevert(
-        freshContract.connect(outsider).forfeitCreatorStake(1),
-        "Campaign still fundraising"
-      );
     });
   });
 
@@ -756,9 +706,7 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
     it("keeps owner-only functions owner-only", async function () {
       await contract
         .connect(creator)
-        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION, {
-          value: stakeFor(TEN_ETH),
-        });
+        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION);
 
       await expectRevert(
         contract.connect(creator).pause(),
@@ -781,9 +729,7 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
     it("pauses campaign activity for everyone", async function () {
       await contract
         .connect(creator)
-        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION, {
-          value: stakeFor(TEN_ETH),
-        });
+        .createCampaign("Title", "Desc", "QmHash", TEN_ETH, DURATION);
       await contract.connect(owner).pause();
 
       await expectRevert(
@@ -796,13 +742,13 @@ describe("CrowdfundingMarketplace — creator stake & milestone escrow", functio
       assert.equal((await contract.getCampaign(1)).raisedAmount, ONE_ETH);
     });
 
-    it("exposes treasury and escrow statistics", async function () {
+    it("exposes escrow statistics", async function () {
       await createFundedCampaign();
 
       const stats = await contract.getContractStats();
       assert.equal(stats[0], 1n, "one campaign");
       assert.equal(stats[1], 0n, "no fees collected at campaign creation");
-      assert.equal(stats[2], ethers.parseEther("13"), "3 ETH stake + 10 ETH donor funds");
+      assert.equal(stats[2], TEN_ETH, "the contract holds exactly the escrowed donations");
 
       const campaignStats = await contract.getCampaignStats(1);
       assert.equal(campaignStats[0], TEN_ETH);

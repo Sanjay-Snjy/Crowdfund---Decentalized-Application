@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CrowdFund DApp — Project Report</title>
+<style>
+  :root {
+    --bg: #07070b;
+    --panel: #10111a;
+    --panel-2: #161826;
+    --panel-3: #1b1e2f;
+    --line: #262a3d;
+    --text: #e7e9f3;
+    --muted: #9aa0b8;
+    --accent: #6366f1;
+    --accent-2: #22d3ee;
+    --ok: #22c55e;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 12% -10%, #1b1d35 0%, var(--bg) 55%);
+    color: var(--text);
+    font: 15.5px/1.68 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  /* ── Header ───────────────────────────────────────────────── */
+  header {
+    padding: 44px 28px 26px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(99,102,241,.13), transparent);
+    text-align: center; display: flex; flex-direction: column; align-items: center;
+  }
+  .eyebrow {
+    font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--accent-2); font-weight: 700; margin: 0 0 10px;
+  }
+  h1 { margin: 0 0 10px; font-size: 30px; line-height: 1.25; letter-spacing: -.02em; }
+  header p.lead { margin: 0; color: var(--muted); max-width: 900px; font-size: 16px; }
+  .meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; 
+  text-align: center;  align-items: center;}
+  .pill {
+    font-size: 12px; color: #cdd2e6; background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px;
+  }
+
+  /* ── Nav ──────────────────────────────────────────────────── */
+  nav {
+    position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; gap: 6px;
+    justify-content: center;
+    padding: 11px 28px; background: rgba(7,7,11,.9); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav a {
+    color: var(--muted); text-decoration: none; font-size: 12.5px;
+    border: 1px solid var(--line); border-radius: 8px; padding: 4px 9px; white-space: nowrap;
+  }
+  nav a:hover { color: #fff; border-color: var(--accent); }
+
+  main { padding: 28px 28px 90px; max-width: 1180px; margin: 0 auto; }
+
+  /* ── Sections ─────────────────────────────────────────────── */
+  section { margin: 0 0 42px; scroll-margin-top: 70px; }
+  h2 {
+    font-size: 21px; margin: 0 0 6px; letter-spacing: -.01em;
+    display: flex; align-items: center; gap: 11px; flex-wrap: wrap;
+  }
+  h2 .n {
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--accent);
+    border-radius: 7px; padding: 3px 8px; flex-shrink: 0;
+  }
+  h3 { font-size: 16px; margin: 26px 0 8px; letter-spacing: -.005em; }
+  h4 { font-size: 14px; margin: 18px 0 6px; color: var(--accent-2); letter-spacing: .02em; }
+  p.note { color: var(--muted); margin: 0 0 16px; max-width: 950px; }
+  ul, ol { padding-left: 20px; }
+  li { margin: 5px 0; }
+  a { color: var(--accent-2); }
+
+  /* ── Cards & grids ────────────────────────────────────────── */
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .grid.two { grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .card h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: .07em; text-transform: uppercase; color: var(--accent-2); }
+  .card ul { margin: 0; padding-left: 18px; color: #cfd3e6; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* ── Callouts ─────────────────────────────────────────────── */
+  .callout {
+    border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    background: var(--panel-2); border-radius: 10px; padding: 13px 16px; margin: 14px 0;
+  }
+  .callout .tag {
+    display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 5px;
+  }
+  .callout p { margin: 4px 0; }
+  .callout.plain { border-left-color: var(--accent-2); }
+  .callout.plain .tag { color: var(--accent-2); }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout.warn .tag { color: var(--warn); }
+  .callout.bad { border-left-color: var(--bad); }
+  .callout.bad .tag { color: var(--bad); }
+  .callout.good { border-left-color: var(--ok); }
+  .callout.good .tag { color: var(--ok); }
+
+  /* ── Code ─────────────────────────────────────────────────── */
+  code, .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px;
+  }
+  code { background: var(--panel-3); border: 1px solid var(--line); border-radius: 5px; padding: 1.5px 5px; }
+  pre {
+    background: #0b0c14; border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; overflow-x: auto; font-size: 12.8px; line-height: 1.6; color: #cfd6f3;
+  }
+  pre code { background: none; border: none; padding: 0; font-size: inherit; }
+
+  /* ── Tables ───────────────────────────────────────────────── */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.6px; min-width: 620px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th {
+    color: var(--muted); font-weight: 600; text-transform: uppercase;
+    font-size: 11.5px; letter-spacing: .07em; background: var(--panel-2);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(99,102,241,.05); }
+  td code { white-space: nowrap; }
+  .nowrap { white-space: nowrap; }
+
+  /* ── Numbered step flow ───────────────────────────────────── */
+  .flow { margin: 16px 0; display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: flex; gap: 14px; padding: 0 0 18px 0; position: relative;
+  }
+  .step:not(:last-child)::before {
+    content: ""; position: absolute; left: 14px; top: 30px; bottom: 0;
+    width: 2px; background: linear-gradient(180deg, var(--accent), rgba(99,102,241,.12));
+  }
+  .step .num {
+    flex-shrink: 0; width: 29px; height: 29px; border-radius: 50%;
+    background: var(--panel-2); border: 2px solid var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 700; z-index: 1;
+  }
+  .step .body { flex: 1; }
+  .step .body strong { display: block; font-size: 14.5px; margin-bottom: 2px; }
+  .step .body p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+  .step .where {
+    display: inline-block; font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--accent-2); border: 1px solid var(--line); background: var(--panel-2);
+    border-radius: 999px; padding: 1px 8px; margin-top: 5px;
+  }
+
+  /* ── Horizontal pipeline diagram ──────────────────────────── */
+  .pipe { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; margin: 16px 0; }
+  .node {
+    flex: 1 1 165px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 11px 13px; font-size: 13px; min-width: 150px;
+  }
+  .node .t { font-weight: 700; display: block; margin-bottom: 3px; font-size: 13.2px; }
+  .node .s { color: var(--muted); font-size: 12.2px; line-height: 1.5; }
+  .node.accent { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(99,102,241,.25) inset; }
+  .node.ok { border-color: rgba(34,197,94,.5); }
+  .node.bad { border-color: rgba(239,68,68,.45); }
+  .arrow {
+    align-self: center; color: var(--accent); font-size: 17px; font-weight: 700;
+    padding: 0 2px;
+  }
+
+  /* ── Layer stack (topology) ───────────────────────────────── */
+  .stack { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+  .band {
+    border: 1px solid var(--line); border-radius: 12px; padding: 12px 15px;
+    background: var(--panel);
+  }
+  .band .bandtitle {
+    font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px; font-weight: 700;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip {
+    font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 5px 10px; color: #d5dae9;
+  }
+  .chip.hot { border-color: var(--accent); color: #fff; }
+  .linkdown { text-align: center; color: var(--accent); font-size: 15px; line-height: 1; }
+
+  /* ── Badges ───────────────────────────────────────────────── */
+  .b { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 1.5px 7px; letter-spacing: .03em; }
+  .b.ok { background: rgba(34,197,94,.15); color: #4ade80; }
+  .b.warn { background: rgba(245,158,11,.15); color: #fbbf24; }
+  .b.bad { background: rgba(239,68,68,.15); color: #f87171; }
+  .b.info { background: rgba(34,211,238,.15); color: #67e8f9; }
+  .b.mute { background: rgba(255,255,255,.07); color: var(--muted); }
+
+  /* ── Q&A ──────────────────────────────────────────────────── */
+  details {
+    border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
+    padding: 12px 16px; margin: 10px 0;
+  }
+  details[open] { background: var(--panel-2); }
+  summary { cursor: pointer; font-weight: 600; font-size: 14.5px; }
+  summary::marker { color: var(--accent); }
+  details p { color: #cfd3e6; margin: 10px 0 4px; }
+  details ul { color: #cfd3e6; }
+
+  /* ── Misc ─────────────────────────────────────────────────── */
+  .kv { display: grid; grid-template-columns: 210px 1fr; gap: 2px 14px; font-size: 14px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0 0 8px; }
+  .toc { columns: 2; column-gap: 26px; font-size: 14px; }
+  .toc a { text-decoration: none; display: block; padding: 3px 0; color: #cfd3e6; }
+  .toc a:hover { color: #fff; }
+  .small { font-size: 13px; color: var(--muted); }
+  hr { border: none; border-top: 1px solid var(--line); margin: 26px 0; }
+  footer {
+    color: var(--muted); font-size: 13px; border-top: 1px solid var(--line);
+    padding: 20px 28px 50px; max-width: 1180px; margin: 0 auto;
+    justify-content: center;
+    text-align: center;
+  }
+  .printbtn {
+    position: fixed; right: 18px; bottom: 18px; z-index: 40;
+    background: var(--accent); color: #fff; border: none; border-radius: 999px;
+    padding: 11px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 10px 30px rgba(99,102,241,.35);
+  }
+  @media print {
+    body { background: #fff; color: #111; }
+    nav, .printbtn { display: none; }
+    header { background: none; border-color: #ddd; }
+    .card, .callout, .band, .node, details, pre, .tablewrap { background: #fff; border-color: #ccc; box-shadow: none; }
+    h2 .n { background: #4f46e5; }
+    .card h3, h4, .node .t, summary { color: #111; }
+    .muted, p.note, .step .body p, .node .s, .small { color: #555; }
+    section { page-break-inside: avoid; }
+    a { color: #1d4ed8; }
+  }
+  @media (max-width: 720px) {
+    .kv { grid-template-columns: 1fr; }
+    .toc { columns: 1; }
+    header, nav, main, footer { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Project -  Detailed Documentation</p>
+  <h1>CrowdFund DApp — a crowdfunding app where the donors release the money</h1>
+  <p class="lead">
+    This is a crowdfunding website built on a blockchain. People donate ETH to a project. The money is
+    not kept by the website or by any company — it is kept inside a smart contract. The creator gets the
+    money in three steps (30%, 30%, then 40%). Before each step the creator has to show proof of work,
+    and the people who donated have to vote <em>yes</em>. If the project does not reach its target, every
+    donor can take their money back. Creating a campaign costs nothing.
+  </p>
+</header>
+
+<nav>
+  <a href="#s1">1 · Project &amp; idea</a>
+  <a href="#s2">2 · Tech stack</a>
+  <a href="#s3">3 · Repository map</a>
+  <a href="#s4">4 · How it connects</a>
+  <a href="#s5">5 · Login &amp; identity</a>
+  <a href="#s6">6 · Main pages</a>
+  <a href="#s7">7 · Running it</a>
+  <a href="#s8">8 · Demo script</a>
+  <a href="#s9">9 · Questions &amp; answers</a>
+  <a href="#s10">10 · Glossary</a>
+  <a href="#s11">11 · Roadmap</a>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s1">
+  <h2><span class="n">1</span>The project and the idea behind it</h2>
+
+  <div class="grid two">
+    <div class="card">
+      <h3>What it is</h3>
+      <ul>
+        <li>A crowdfunding site. People put money into a project they like.</li>
+        <li><strong>The money is held by a smart contract</strong>, not by a bank account and not by the website owner.</li>
+        <li>The creator is paid in <strong>three steps: 30%, 30%, then 40%</strong>.</li>
+        <li>Before each step, the creator posts proof of work (a file), and the donors vote. Only after a "yes" vote does that part of the money move.</li>
+        <li>Creating a campaign is <strong>free</strong>. No deposit, no platform fee.</li>
+        <li>Every move of money is signed in the user's own wallet and can be checked on a block explorer by anybody.</li>
+        <li>If the target is not reached by the deadline, every donor can refund in full.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Problems with normal crowdfunding</h3>
+      <ul>
+        <li>The platform holds the money and decides when to pay it out.</li>
+        <li>All-or-nothing: the creator often receives 100% up front and may never finish the work.</li>
+        <li>Backers have no way to check the accounts themselves.</li>
+        <li>If a project quietly dies after funding, nobody is answerable.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>How this project answers those problems</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Problem</th><th>Answer in this project</th></tr></thead>
+      <tbody>
+        <tr><td>The platform controls the money</td><td><strong>Escrow inside the contract.</strong> The contract holds the donations. The owner cannot move donor money into their own wallet.</td></tr>
+        <tr><td>All the money is paid up front</td><td><strong>Milestone release.</strong> 30 / 30 / 40. Later parts stay locked until earlier work is approved.</td></tr>
+        <tr><td>No proof of work</td><td><strong>Evidence on IPFS.</strong> For each milestone the creator posts a file plus a note, and the file's address is written on-chain with a timestamp.</td></tr>
+        <tr><td>Backers have no say</td><td><strong>Donor voting.</strong> One ETH of donation = one unit of voting power. Approval needs a strict majority of the votes cast, and at least 50% of the power must take part.</td></tr>
+        <tr><td>A deposit would keep new creators out</td><td><strong>Free to launch.</strong> Accountability comes from the escrow, not from money paid up front.</td></tr>
+        <tr><td>No way to check the history</td><td><strong>Public events.</strong> Every action writes an event on-chain, so the whole history can be read on Etherscan.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The four roles in the system</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Role</th><th>What they can do</th><th>What they cannot do</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Creator</strong></td>
+          <td>Create a campaign for free; post milestone proof; receive each approved part of the money</td>
+          <td>Donate to their own campaign, vote, or take money out without donor approval</td>
+        </tr>
+        <tr>
+          <td><strong>Donor</strong></td>
+          <td>Donate ETH; vote on each milestone with power equal to their donation; refund if the target was missed</td>
+          <td>Vote twice, vote without donating, or vote before the proof is posted</td>
+        </tr>
+        <tr>
+          <td><strong>Anyone</strong></td>
+          <td>Press the "release" button once a milestone is approved; read all data for free</td>
+          <td>Change the outcome — they can only finish what the rules already allow</td>
+        </tr>
+        <tr>
+          <td><strong>Owner (admin)</strong></td>
+          <td>Pause the contract, take the platform treasury, switch campaigns on or off, run an emergency withdrawal</td>
+          <td>Release a milestone without donor votes, or take donor escrow as a normal fee</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout plain">
+    <span class="tag">The project in one sentence</span>
+    <p>
+      "It is a Next.js website with one Solidity contract: donors put ETH into the contract, the contract
+      holds it, and it is paid out in three donor-approved parts (30 / 30 / 40), so every payment is a
+      wallet-signed transaction that anyone can check on-chain."
+    </p>
+  </div>
+
+  <h3>Key facts at a glance</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Item</th><th>Value</th><th>Where it is defined</th></tr></thead>
+      <tbody>
+        <tr><td>Networks</td><td>Sepolia testnet (11155111) and a local Hardhat chain (1337)</td><td><code>constants/index.js</code>, <code>web3/hardhat.config.js</code></td></tr>
+        <tr><td>Committed contract address</td><td><code>0x4bbB7cF60C5D11978Edab37e77d8b939988844cA</code></td><td><code>constants/index.js</code></td></tr>
+        <tr><td>Core contract</td><td><code>CrowdfundingMarketplace.sol</code> — 940 lines, Solidity <code>^0.8.19</code> compiled with 0.8.26</td><td><code>web3/contracts/</code></td></tr>
+        <tr><td>Contract tests</td><td><span class="b ok">35 passing tests</span> in 7 test groups</td><td><code>web3/test/CrowdfundingMarketplace.test.js</code></td></tr>
+        <tr><td>Money rules</td><td>Release 30 / 30 / 40 · vote quorum 50% · no launch deposit · creation fee 0</td><td>Solidity constants + <code>constants/index.js</code></td></tr>
+        <tr><td>Server (backend) work</td><td>Only two API routes: file upload to IPFS, and a wallet-profile lookup</td><td><code>pages/api/</code></td></tr>
+        <tr><td>Does the server hold keys or money?</td><td><strong>No.</strong> It only pins files and looks up profiles</td><td>—</td></tr>
+        <tr><td>Off-chain storage</td><td>IPFS (Pinata) for images, metadata and milestone proof files</td><td><code>utils/ipfs.js</code>, <code>pages/api/ipfs.js</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s2">
+  <h2><span class="n">2</span>Tech stack — what was used and why</h2>
+  <p class="note">Each row is a tool used in the project and the reason it is there.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Part of the app</th><th>Technology</th><th>Version</th><th>Why it is here</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Web framework</td><td>Next.js (Pages Router)</td><td>^13.5.7</td>
+          <td>Gives both the pages and the small Node API routes in one project, so the IPFS upload proxy needs no extra server.</td>
+        </tr>
+        <tr>
+          <td>UI library</td><td>React</td><td>18.2.0</td>
+          <td>Builds the campaign cards, forms and dashboards. Reading from the blockchain also happens through React hooks.</td>
+        </tr>
+        <tr>
+          <td>Styling</td><td>Tailwind CSS + <code>@tailwindcss/forms</code></td><td>^3.3.1</td>
+          <td>Small CSS classes keep the look the same everywhere; dark and light themes work from CSS variables.</td>
+        </tr>
+        <tr>
+          <td>Wallet connection</td><td>wagmi</td><td>^1.4.13</td>
+          <td>Turns contract functions into React hooks, so a page can "read" or "write" to the contract like any other piece of data.</td>
+        </tr>
+        <tr>
+          <td>Wallet pop-up UI</td><td>RainbowKit</td><td>^1.3.6</td>
+          <td>Ready-made "Connect Wallet" window. Here it is set to show MetaMask only, to keep things simple.</td>
+        </tr>
+        <tr>
+          <td>Ethereum library</td><td>ethers</td><td>^5.7.2 app<br/>^6.17 scripts</td>
+          <td>Version 5 runs in the browser for money maths (<code>parseEther</code>) and message checks; the Hardhat scripts use version 6.</td>
+        </tr>
+        <tr>
+          <td>Data cache</td><td>TanStack Query</td><td>^4.36.1</td>
+          <td>Keeps contract reads in memory for 5 minutes, so moving between pages does not re-read everything.</td>
+        </tr>
+        <tr>
+          <td>Optional sign-in</td><td>Clerk (<code>@clerk/nextjs</code>)</td><td>^4.31.8</td>
+          <td>Real email / Google sign-in, so a card can show a person's name. Optional — the app runs wallet-only without it.</td>
+        </tr>
+        <tr>
+          <td>Popup messages</td><td>react-hot-toast</td><td>^2.5.2</td>
+          <td>Small messages like "uploading…", "transaction rejected", "donation made".</td>
+        </tr>
+        <tr>
+          <td>Icons</td><td>react-icons (Feather set)</td><td>^5.5.0</td>
+          <td>The same icon style on every card, table and admin control.</td>
+        </tr>
+        <tr>
+          <td>File upload parsing</td><td>formidable</td><td>^3.5.4</td>
+          <td>Reads the uploaded image or proof file inside the API route (the normal Next.js body parser is switched off there).</td>
+        </tr>
+        <tr>
+          <td>Smart contract language</td><td>Solidity</td><td>0.8.26 (<code>^0.8.19</code> pragma)</td>
+          <td>Checks number overflow on its own, which matters because the app does percentage maths on money.</td>
+        </tr>
+        <tr>
+          <td>Contract toolkit</td><td>Hardhat + <code>hardhat-ethers</code> + <code>hardhat-verify</code></td><td>3.12.0 / 4.0 / 3.0</td>
+          <td>Compile, test, deploy and verify the contract from one config file.</td>
+        </tr>
+        <tr>
+          <td>Contract building blocks</td><td>OpenZeppelin Contracts</td><td>^4.8.2</td>
+          <td>Tested pieces for ownership, pause and re-entrancy protection, instead of writing that security code by hand.</td>
+        </tr>
+        <tr>
+          <td>Off-chain file storage</td><td>Pinata (IPFS pinning + gateway)</td><td>REST API</td>
+          <td>Putting images on the blockchain would cost far too much, so only the file's hash address goes on-chain.</td>
+        </tr>
+        <tr>
+          <td>Mobile wallet link</td><td>WalletConnect Cloud project ID</td><td>v2</td>
+          <td>Lets MetaMask mobile connect. The desktop browser extension works without it.</td>
+        </tr>
+        <tr>
+          <td>Price display</td><td>CoinGecko public API</td><td>—</td>
+          <td>Shows the target amount in USD / INR while typing, so the number means something to a person.</td>
+        </tr>
+        <tr>
+          <td>Hosting</td><td>Next.js app (Vercel-style deployment)</td><td>—</td>
+          <td><code>NEXT_PUBLIC_*</code> values go into the browser bundle; secret keys stay on the server.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <span class="tag">Unused packages are still listed</span>
+    <p>
+      <code>package.json</code> also lists <code>axios</code>, <code>web3modal</code>,
+      <code>@formspree/react</code> and <code>@next/font</code>, but no file imports them. They are
+      leftovers from earlier versions. <code>viem</code> is there only because wagmi needs it. Removing
+      them would make the download smaller and would not change any feature.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s3">
+  <h2><span class="n">3</span>Repository map — what lives where</h2>
+  <p class="note">One Next.js app in the main folder, plus a separate Hardhat project inside <code>web3/</code>.</p>
+
+<pre><code>crowd-funding-dapp/
+├── pages/                     # Next.js pages (file name = URL)
+│   ├── index.js               #   /               landing page + login buttons
+│   ├── home.js                #   /home           browse, search, filter campaigns
+│   ├── campaign/[id].js       #   /campaign/:id   full campaign page (tabs, vote, donate)
+│   ├── create-campaign.js     #   /create-campaign
+│   ├── dashboard.js           #   /dashboard      personal overview
+│   ├── my-campaigns.js        #   /my-campaigns
+│   ├── contributions.js       #   /contributions
+│   ├── saved-campaigns.js     #   /saved-campaigns (bookmarks)
+│   ├── admin.js               #   /admin          owner-only controls
+│   ├── campaigns/index.js     #   /campaigns      → redirects to /home
+│   ├── _app.js                #   providers (Clerk → Query → wagmi → RainbowKit)
+│   ├── _document.js           #   html shell, fonts, meta tags
+│   ├── 404.js / _error.js     #   error pages
+│   └── api/                   #   Node API routes (server side only)
+│       ├── ipfs.js            #     POST /api/ipfs?type=file|json  → upload to Pinata
+│       └── wallet-link.js     #     GET / POST /api/wallet-link   → profiles & linking
+├── components/
+│   ├── Campaign/              #   CampaignCard, CampaignDetails, CreateCampaignForm
+│   ├── Dashboard/             #   stats, funding progress, milestone tracker, countdown,
+│   │                          #   quick actions, notifications, bookmarks
+│   ├── Layout/                #   Layout, Header (real), DemoHeader, ErrorBoundary, Footer
+│   └── EthAvatar.js           #   wallet picture used by RainbowKit
+├── hooks/
+│   ├── useContract.js         #   933 lines — every contract read &amp; write as a hook
+│   ├── useBookmarks.js        #   bookmarks kept in localStorage
+│   └── useCampaignDetails.js  #   helper that fetches several campaigns at once
+├── utils/
+│   ├── helpers.js             #   escrow maths, ETH formatting, countdowns, display names
+│   ├── ipfs.js                #   upload / fetch metadata and proof files
+│   └── reactQuery.js          #   query keys, cache times, prefetch
+├── lib/demoMode.js            #   offline demo: sample campaigns, milestones, stats
+├── constants/
+│   ├── index.js               #   contract address, quorum %, milestone plan
+│   └── abi.js                 #   auto-generated contract ABI (do not edit by hand)
+├── config/
+│   ├── wagmi.js               #   chain setup, RPC providers, MetaMask-only connectors
+│   └── clerkAppearance.js     #   Clerk theme that matches the design
+├── styles/globals.css         #   Tailwind layers + light/dark variables
+├── public/                    #   logo, hero images, manifest
+└── web3/                      # ── Hardhat project ──
+    ├── contracts/CrowdfundingMarketplace.sol
+    ├── test/CrowdfundingMarketplace.test.js      # 35 tests, tiny built-in runner
+    ├── scripts/deploy.js, scripts/export-abi.js
+    ├── hardhat.config.js                          # 0.8.26, viaIR, optimizer runs 200
+    └── artifacts/                                 # compiled output (not in git)</code></pre>
+
+  <div class="callout plain">
+    <span class="tag">Who is allowed to move money</span>
+    <p>
+      <strong>Pages</strong> decide what you see, and they show the "connect your wallet" message.
+      <strong>Components</strong> draw the screen and collect what you type.
+      <strong>hooks/useContract.js</strong> is the only place that talks to the blockchain.
+      <strong>The contract</strong> is the only thing that can move money. Nothing else is trusted with it.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s4">
+  <h2><span class="n">4</span>How the pieces connect</h2>
+  <p class="note">
+    Read the diagram from top to bottom. The browser talks to the blockchain directly for money, and it
+    talks to the Next.js server only for files and names.
+  </p>
+
+  <div class="stack">
+    <div class="band">
+      <div class="bandtitle">1 · Browser (the Next.js app running in the user's tab)</div>
+      <div class="chips">
+        <span class="chip hot">Pages &amp; components</span>
+        <span class="chip hot">wagmi hooks</span>
+        <span class="chip hot">RainbowKit window</span>
+        <span class="chip">TanStack Query cache</span>
+        <span class="chip">localStorage (demo flag, bookmarks, theme)</span>
+        <span class="chip">toast messages</span>
+      </div>
+    </div>
+    <div class="linkdown">▼&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▲</div>
+    <div class="band">
+      <div class="bandtitle">2 · Wallet (the user's keys — the server never sees them)</div>
+      <div class="chips">
+        <span class="chip hot">MetaMask extension (desktop)</span>
+        <span class="chip hot">MetaMask mobile through WalletConnect v2</span>
+        <span class="chip">Signs every transaction and message</span>
+      </div>
+    </div>
+    <div class="linkdown">▼ signed transactions / read calls</div>
+    <div class="band">
+      <div class="bandtitle">3 · Ethereum network — Sepolia (11155111) or a local Hardhat chain (1337)</div>
+      <div class="chips">
+        <span class="chip hot">CrowdfundingMarketplace.sol</span>
+        <span class="chip">on-chain data: campaigns, donations, milestones, votes, balances</span>
+        <span class="chip">events → Etherscan</span>
+      </div>
+    </div>
+    <div class="linkdown">▲&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼</div>
+    <div class="band">
+      <div class="bandtitle">4 · Next.js server (Node) — only two jobs, holds no keys and no money</div>
+      <div class="chips">
+        <span class="chip hot">POST /api/ipfs?type=file|json → upload to Pinata (10 MB limit)</span>
+        <span class="chip">/api/wallet-link → wallet profiles and signature linking</span>
+      </div>
+    </div>
+    <div class="linkdown">▼ server-side keys only</div>
+    <div class="band">
+      <div class="bandtitle">5 · Outside services</div>
+      <div class="chips">
+        <span class="chip">Pinata IPFS — store and serve files</span>
+        <span class="chip">Clerk — optional sign-in</span>
+        <span class="chip">WalletConnect Cloud — mobile connect</span>
+        <span class="chip">CoinGecko — ETH → USD / INR price</span>
+        <span class="chip">Sepolia Etherscan — transaction links</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>Who talks to whom, and about what</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>From</th><th>To</th><th>What passes between them</th><th>Trust needed</th></tr></thead>
+      <tbody>
+        <tr><td>Browser page</td><td>Wallet (MetaMask)</td><td>A transaction to sign; the user sees the amount and approves it</td><td>The user is the final gate</td></tr>
+        <tr><td>Wallet</td><td>RPC node → contract</td><td>Signed transactions and read-only calls</td><td>Cryptographic proof</td></tr>
+        <tr><td>Browser page</td><td>Next.js <code>/api/ipfs</code></td><td>An image or proof file, or JSON metadata</td><td>The server must not leak its keys</td></tr>
+        <tr><td><code>/api/ipfs</code></td><td>Pinata</td><td>An upload request with a server-side key</td><td>We trust Pinata to keep the file</td></tr>
+        <tr><td>Browser page</td><td>Pinata gateway</td><td>A file address in, the file out, for display</td><td>Depends on the gateway being up</td></tr>
+        <tr><td>Browser page</td><td>Next.js <code>/api/wallet-link</code></td><td>Wallet addresses in, profile names out</td><td>Lookup only; not a security area</td></tr>
+        <tr><td>Next.js server</td><td>Contract</td><td><strong>Nothing.</strong> The server never signs anything</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout good">
+    <span class="tag">The main design rule</span>
+    <p>
+      The server is there for <strong>convenience, not for holding money</strong>. Even if the whole
+      backend were deleted, every rupee would still be claimable by calling the contract from any wallet.
+      The website only builds those transactions in a friendly way.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s5">
+  <h2><span class="n">5</span>Login and identity</h2>
+  <p class="note">
+    The project has <strong>two different identities</strong>, and this is the key to understanding the
+    login flow.
+  </p>
+
+  <div class="grid two">
+    <div class="card">
+      <h3>Identity A — the person (Clerk)</h3>
+      <ul>
+        <li>Email or Google sign-in through Clerk's window.</li>
+        <li>Gives a display name, a picture and an email address.</li>
+        <li><strong>Fully optional:</strong> it only exists if a real Clerk key is set.</li>
+        <li>It is only for show and credit — no page is locked behind it.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Identity B — the wallet (MetaMask)</h3>
+      <ul>
+        <li>This is the identity that actually signs transactions.</li>
+        <li>It owns the money, the votes and the refunds.</li>
+        <li>Needed for every action that changes something: create, donate, vote, release, refund.</li>
+        <li>Just reading the site works with no wallet at all.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <span class="tag">Important: login does not protect anything</span>
+    <p>
+      There is <strong>no <code>middleware.js</code></strong> in the project, so Clerk does not protect
+      any page on the server. Any page can be opened directly. Pages that need money actions simply show a
+      "Connect your wallet" card and the buttons stay disabled. So the real guard is the blockchain and
+      the user's own wallet, not the login screen.
+    </p>
+  </div>
+
+  <h3>The three ways to enter</h3>
+  <div class="pipe">
+    <div class="node accent">
+      <span class="t">1 · Clerk sign-in</span>
+      <span class="s">Sign In / Sign Up buttons open Clerk's window. It only works if a real Clerk key is set.</span>
+    </div>
+    <div class="arrow">+</div>
+    <div class="node accent">
+      <span class="t">2 · Connect wallet</span>
+      <span class="s">RainbowKit window, MetaMask only. Clerk is not needed at all.</span>
+    </div>
+    <div class="arrow">/</div>
+    <div class="node">
+      <span class="t">3 · Demo Login</span>
+      <span class="s">Saves a <code>crowdfund_demo</code> flag in the browser and opens <code>/home</code> with sample data.</span>
+    </div>
+  </div>
+
+  <div class="callout plain">
+    <span class="tag">A small but real detail</span>
+    <p>
+      The <strong>Demo Login</strong> button is only drawn when Clerk is set up, because it sits inside
+      Clerk's "signed out" block. So on a build without a Clerk key the landing page shows only a
+      "Connect Wallet" button, and demo mode cannot be started by clicking.
+    </p>
+  </div>
+
+  <h3>What happens when the landing page opens</h3>
+  <div class="flow">
+    <div class="step">
+      <div class="num">1</div>
+      <div class="body">
+        <strong>A short loading screen appears first</strong>
+        <p><code>pages/_app.js</code> shows a "Loading…" spinner until the page has mounted, so the wallet
+           state does not flash on the first screen.</p>
+        <span class="where">pages/_app.js</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div class="body">
+        <strong>The providers are set up from the outside in</strong>
+        <p>Clerk (only if the key is valid) → data cache → wagmi (chain and RPC) → RainbowKit (connect
+           window).</p>
+        <span class="where">pages/_app.js, config/wagmi.js</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div class="body">
+        <strong>Clerk checks the session</strong>
+        <p>If a signed-in user is found, demo mode is switched off automatically, because real sign-in wins.</p>
+        <span class="where">pages/index.js</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">4</div>
+      <div class="body">
+        <strong>The buttons appear step by step</strong>
+        <p>A small set of rules decides what to show: if you are signed in and your wallet is connected you
+           get "Explore Campaigns" and "Go to Dashboard"; otherwise you only see the next step you have
+           not finished.</p>
+        <span class="where">pages/index.js</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">5</div>
+      <div class="body">
+        <strong>The live numbers are read from the blockchain</strong>
+        <p>It reads how many campaigns exist, then reads each one to add up the money raised and the number
+           of backers for the three headline figures.</p>
+        <span class="where">pages/index.js</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">6</div>
+      <div class="body">
+        <strong>Images and names come from elsewhere</strong>
+        <p>Campaign images and titles are read from IPFS by their file address, and creator names are
+           fetched in one request from <code>/api/wallet-link</code>.</p>
+        <span class="where">utils/ipfs.js, pages/api/wallet-link.js</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>The header changes with the session</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>When</th><th>Header shown</th><th>What the user sees</th></tr></thead>
+      <tbody>
+        <tr><td>Demo mode is on</td><td><code>DemoHeader</code></td><td>A "Demo · 1.5 ETH" badge, fewer links, and an <strong>Exit Demo</strong> button that clears the flag and goes back to <code>/</code></td></tr>
+        <tr><td>Normal use</td><td><code>Header</code></td><td>Home / Dashboard / Create Campaign, the theme switch, a profile menu (only when Clerk reports a user), and the Connect Wallet / account button</td></tr>
+        <tr><td>Connected wallet matches <code>NEXT_PUBLIC_ADMIN_ADDRESS</code></td><td><code>Header</code> plus one link</td><td>An <strong>Admin Panel</strong> link is added to the menu</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <span class="tag">Two different meanings of "admin"</span>
+    <p>
+      The header decides whether to show the Admin link by comparing the connected wallet with the
+      <code>NEXT_PUBLIC_ADMIN_ADDRESS</code> setting. But the <code>/admin</code> page asks the
+      <strong>contract</strong> who the owner is (<code>owner()</code>) and sends everyone else to the
+      dashboard. The contract is the one that matters; the setting only decides whether the link appears.
+    </p>
+  </div>
+
+  <div class="callout bad">
+    <span class="tag">Known gap — wallet linking is half-built</span>
+    <p>
+      Only the <strong>lookup</strong> part of <code>/api/wallet-link</code> is used by the app. Nothing
+      in the app ever sends the <code>init</code> / <code>verify</code> requests, so the profile list stays
+      empty and creator names fall back to the name stored in the campaign metadata, or to a short address
+      like <code>0x4bbB…44cA</code>. The list is also kept only in the server's memory, so it is lost when
+      the server restarts. The fix is a small database plus a "link wallet" screen.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s6">
+  <h2><span class="n">6</span>The main pages — /home, /dashboard, /create-campaign</h2>
+  <p class="note">These three pages carry most of the app. Here is what each one does.</p>
+
+  <h3>/home — browse campaigns</h3>
+  <div class="grid two">
+    <div class="card">
+      <h3>What is on the page</h3>
+      <ul>
+        <li>A headline area with the numbers and recent activity running across the screen.</li>
+        <li>A <strong>"Trending Now"</strong> row of cards, with left / right arrows to scroll it.</li>
+        <li><strong>"Explore by Category"</strong> tiles. Clicking a tile scrolls down to the results.</li>
+        <li>A search box, a status filter (All / Active / Funded) and a sort menu (Newest, Ending Soon, Most Funded, Most Popular).</li>
+        <li>A <strong>grid / list</strong> switch for the results, plus a count of how many campaigns were found.</li>
+        <li>If nothing matches, a "No campaigns found" message; if there are no campaigns at all, a friendly block with a link to create one.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Where the data comes from</h3>
+      <ul>
+        <li>The list of campaigns comes from the contract, through the wagmi hook layer.</li>
+        <li>Each card's title, description and image come from IPFS, looked up by the file address stored on-chain.</li>
+        <li>Filtering, searching and sorting happen in the browser after the data is loaded.</li>
+        <li>Bookmarks are saved in the browser's local storage, so they survive a refresh.</li>
+        <li>A small price call to CoinGecko turns ETH amounts into USD / INR for display.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout warn">
+    <span class="tag">Scalability note</span>
+    <p>
+      The page asks the contract for every campaign, and the headline numbers need one network call per
+      campaign. That is fine for a few dozen campaigns, but at a few thousand it would need an indexer or
+      paging with totals worked out on the server.
+    </p>
+  </div>
+
+  <h3>/dashboard — the personal overview</h3>
+  <div class="grid two">
+    <div class="card">
+      <h3>What is on the page</h3>
+      <ul>
+        <li>If no wallet is connected (and demo mode is off), it shows a "Connect your wallet" card instead.</li>
+        <li>A greeting with the signed-in name, plus <strong>"New Campaign"</strong> and <strong>"Browse"</strong> buttons.</li>
+        <li>Four small tiles: <strong>Created</strong>, <strong>Contributions</strong>, <strong>Active Campaigns</strong> and the connected wallet address.</li>
+        <li><strong>Recent Transactions</strong>: your last six donations, newest first, with the amount and the date.</li>
+        <li><strong>Your Campaigns</strong>: one row per campaign you created, with a progress bar and a countdown for live ones.</li>
+        <li><strong>Milestone Progress</strong>: for each of your campaigns, each milestone shown as Locked, Pending or Released.</li>
+        <li><strong>Platform Statistics</strong>: total campaigns, total raised, contributions, backers, successful campaigns and treasury.</li>
+        <li><strong>Saved Campaigns</strong> from your bookmarks, and a <strong>bell icon</strong> with notifications.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Where the data comes from</h3>
+      <ul>
+        <li>Your campaigns and donations come from the contract, filtered by your wallet address.</li>
+        <li>The transaction list is built from the donation records of the campaigns you gave to.</li>
+        <li>The numbers in the tiles are simply the sizes of those lists.</li>
+        <li>In <strong>demo mode</strong> the same page renders with fixed sample values, so it can be shown without a wallet or a network.</li>
+        <li>Progress bars and countdowns are calculated in the browser from the amounts and deadlines read on-chain.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>/create-campaign — start a campaign</h3>
+  <div class="grid two">
+    <div class="card">
+      <h3>What is on the page</h3>
+      <ul>
+        <li>Same wallet guard: connect first, or it shows the "Connect your wallet" card.</li>
+        <li>Fields: <strong>title</strong>, <strong>description</strong>, <strong>category</strong> (10 choices), <strong>duration in days</strong>, <strong>target amount in ETH</strong>, <strong>campaign image</strong>, and an optional additional-information box.</li>
+        <li>While you type the target, it shows the same amount in USD / INR.</li>
+        <li>A preview of the fixed release plan: milestone 1 = 30%, milestone 2 = 30%, milestone 3 = 40%, with the ETH value of each one.</li>
+        <li>A short note that launching is free, and a "Create Campaign" button.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>What happens when you press the button</h3>
+      <ul>
+        <li>The image is uploaded to IPFS through the server route, which returns a file address.</li>
+        <li>A JSON file with the title, description and category is uploaded to IPFS as well.</li>
+        <li>The contract is called with that metadata address, the target and the duration. <strong>No ETH is sent</strong> — creating a campaign is free and only costs gas.</li>
+        <li>The page waits for the transaction to be confirmed, shows a success message and opens the new campaign page.</li>
+        <li>If the wallet is on the wrong network, a warning tells you to switch before creating.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout plain">
+    <span class="tag">Why creating is free</span>
+    <p>
+      There is no deposit and no listing fee, so a creator pays only gas. Trust comes from the escrow
+      instead: the creator is paid step by step, and only when the donors approve the proof. The trade-off
+      is that creating a campaign is cheap, so spam control now depends on the donor vote rather than on a
+      deposit.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s7">
+  <h2><span class="n">7</span>Running the project</h2>
+
+  <h3>Local setup in four steps</h3>
+  <div class="flow">
+    <div class="step">
+      <div class="num">1</div>
+      <div class="body"><strong>Install</strong><p><code>npm install</code> in the main folder, and <code>npm install</code> inside <code>web3/</code> as well (the contract project has its own packages).</p></div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div class="body"><strong>Start a local blockchain</strong><p><code>cd web3 &amp;&amp; npx hardhat node</code> — it listens on <code>localhost:8545</code>, chain ID 1337, and prints test accounts that already have coins.</p></div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div class="body"><strong>Deploy the contract</strong><p><code>npx hardhat run scripts/deploy.js --network localhost</code> — the script deploys the contract and prints its address.</p></div>
+    </div>
+    <div class="step">
+      <div class="num">4</div>
+      <div class="body"><strong>Point the website at it</strong><p>Put that address into <code>COMMITTED_CONTRACT_ADDRESS</code> (or set <code>NEXT_PUBLIC_CONTRACT_ADDRESS_OVERRIDE</code> as a temporary switch), fill the RPC and chain values in <code>.env.local</code>, then run <code>npm run dev</code>.</p></div>
+    </div>
+  </div>
+
+  <h3>Settings file (.env.local)</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Setting</th><th>Needed?</th><th>What it is for</th></tr></thead>
+      <tbody>
+        <tr><td><code>NEXT_PUBLIC_RPC_URL</code></td><td>Yes</td><td>The network address the browser reads and writes through</td></tr>
+        <tr><td><code>NEXT_PUBLIC_CHAIN_ID</code>, <code>_CHAIN_NAME</code>, <code>_CHAIN_SYMBOL</code>, <code>_NETWORK</code></td><td>Yes</td><td>Describe the chain to wagmi and RainbowKit</td></tr>
+        <tr><td><code>NEXT_PUBLIC_CONTRACT_ADDRESS</code></td><td>Optional</td><td>An old setting — it is ignored on purpose if it disagrees with the address in the code</td></tr>
+        <tr><td><code>NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID</code></td><td>Yes, for mobile</td><td>A 36-character ID from WalletConnect Cloud; without it, connecting on a phone hangs</td></tr>
+        <tr><td><code>NEXT_PUBLIC_PLATFORM_NAME</code></td><td>Yes</td><td>The name shown inside the wallet</td></tr>
+        <tr><td><code>NEXT_PUBLIC_ADMIN_ADDRESS</code></td><td>Yes</td><td>Shows the Admin Panel link (the contract still decides who may act)</td></tr>
+        <tr><td><code>NEXT_PUBLIC_BLOCK_EXPLORER</code>, <code>_NAME</code></td><td>Optional</td><td>Builds the transaction links</td></tr>
+        <tr><td><code>NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</code></td><td>Optional</td><td>Turns on real sign-in; without it the app runs wallet-only</td></tr>
+        <tr><td><code>PINATA_JWT</code> <span class="b mute">server only</span></td><td>Yes</td><td>The main Pinata key used by the upload route</td></tr>
+        <tr><td><code>PINATA_API_KEY</code> + <code>PINATA_SECRET_KEY</code> <span class="b mute">server only</span></td><td>Backup</td><td>Used when no JWT is set</td></tr>
+        <tr><td><code>PRIVATE_KEY</code>, <code>NETWORK_RPC_URL</code>, <code>ETHERSCAN_API_KEY</code> <span class="b mute">web3 only</span></td><td>For deploy</td><td>Deploy and verify the contract from Hardhat</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <span class="tag">Two things to be careful about</span>
+    <p>
+      <strong>1 ·</strong> <code>NEXT_PUBLIC_*</code> values are baked into the website when it is built,
+      so changing one needs a rebuild and a redeploy — editing the hosting dashboard is not enough.
+      <strong>2 ·</strong> If you deploy a new contract, the campaigns of the old address stop working,
+      because their IDs no longer exist. So deploy and clear or move the old campaign list together.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s8">
+  <h2><span class="n">8</span>Demo script (about 7 minutes)</h2>
+  <p class="note">The steps follow the story from login to the moment the money is settled.</p>
+
+  <div class="flow">
+    <div class="step">
+      <div class="num">1</div>
+      <div class="body">
+        <strong>Landing page — the entry points (1 min)</strong>
+        <p>Show the live numbers, the "how it works" steps and the category tiles. Point out the three ways
+           in: Sign In, Connect Wallet and Demo Login. Say that the numbers on screen are read from the
+           contract, not written into the page.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div class="body">
+        <strong>Demo Login — no wallet needed (30 s)</strong>
+        <p>Click Demo Login to show the whole product offline with sample campaigns. The header changes to
+           the demo version with an Exit Demo button. This is the backup plan if the network is down.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div class="body">
+        <strong>Connect MetaMask and switch to Sepolia (30 s)</strong>
+        <p>Show the network badge and the wallet address on the dashboard, and note that the app warns if
+           the wrong network is selected.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">4</div>
+      <div class="body">
+        <strong>Browse and filter (1 min)</strong>
+        <p>Search, filter by category and status, switch between grid and list, then bookmark a card and
+           show that it appears in Saved Campaigns.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">5</div>
+      <div class="body">
+        <strong>Open a campaign and explain the escrow (1.5 min)</strong>
+        <p>Show the progress, the escrow panel and the three milestone cards with their 30 / 30 / 40
+           shares. Explain that the sidebar numbers come from the contract: money donated, money still
+           locked, money released.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">6</div>
+      <div class="body">
+        <strong>Donate (1 min)</strong>
+        <p>Send a small amount, show the confirmation, then point at the donation and the voting power in
+           the Contributors tab. Say clearly that the money went into the contract, not into a bank
+           account.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">7</div>
+      <div class="body">
+        <strong>Proof and voting (1 min)</strong>
+        <p>On a campaign past its deadline, show the "View evidence" IPFS link and the vote counts with how
+           much power has taken part against the 50% needed. If the creator wallet is available, post a
+           proof file live and show the file address being written on-chain.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">8</div>
+      <div class="body">
+        <strong>Release and complete (1 min)</strong>
+        <p>Show the Release button appearing after approval, open the transaction on Etherscan and name the
+           events it wrote. Finish on a completed campaign where every donation has been paid out.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">9</div>
+      <div class="body">
+        <strong>Dashboard and admin (30 s)</strong>
+        <p>Dashboard: campaigns, donations, milestone tracker and the notification bell. Admin: only
+           reachable by the owner wallet, with pause and treasury controls.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">10</div>
+      <div class="body">
+        <strong>Close with the contract tests (30 s)</strong>
+        <p>Run <code>npm test</code> inside <code>web3/</code> and let the 35 checks scroll — especially
+           the full-lifecycle test that proves 3 / 3 / 4 ETH and an empty contract at the end.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s9">
+  <h2><span class="n">9</span>Likely questions and answers</h2>
+  <p class="note">Click a question to open the answer.</p>
+
+  <details>
+    <summary>"Is the data stored on the blockchain or in a database?"</summary>
+    <p>Everything about money is on-chain inside the contract: campaigns, donations, milestones, votes,
+      released amounts and status. There is no database at all. Only big files — images, metadata, proof
+      files — are kept off-chain on IPFS, and the contract stores just their short file address. The few
+      "database-like" things such as bookmarks, the demo flag and the theme live in the browser's own
+      storage and are not part of the app's data.</p>
+  </details>
+
+  <details>
+    <summary>"What stops a creator from taking the money and disappearing?"</summary>
+    <p>Two things. First, nothing is released before the deadline, and only if the target was reached.
+      Second, even then the creator cannot take the money themselves: they must post proof, and the donors
+      who paid into the campaign must approve it, milestone by milestone, with a majority and 50% of the
+      power taking part. On a campaign that missed its target, no release is possible at all and every
+      donor can refund in full. The realistic worst case is a creator faking convincing proof for a funded
+      campaign — the chain records what was claimed and how people voted, but it cannot check whether a
+      photo is true.</p>
+  </details>
+
+  <details>
+    <summary>"Why 30 / 30 / 40 and not three equal parts?"</summary>
+    <p>The last part is the biggest, so the creator's largest payment depends on really finishing the
+      project. It also soaks up the rounding left over from whole-number maths: Solidity has no decimals,
+      so 40% worked out directly could leave a few tiny units stuck. The third milestone is calculated as
+      whatever is left, so the three payments always add up to exactly 100% of the money held.</p>
+  </details>
+
+  <details>
+    <summary>"What if the donors never vote — is the money stuck forever?"</summary>
+    <p>Yes, and that is a real limitation of this version: a funded campaign whose milestones are never
+      approved keeps its money locked with no end date. Only a campaign that misses its target has a way
+      out, where every donor can refund. The fix would be a timeout or an arbitration path, which is listed
+      in the roadmap.</p>
+  </details>
+
+  <details>
+    <summary>"Who pays the gas fees?"</summary>
+    <p>Whoever signs the transaction. A donor pays gas when donating and when voting; the creator pays gas
+      when creating the campaign and when posting proof; and the person who presses Release pays for that
+      transaction. Since anyone may press Release, the app could even pay for it later.</p>
+  </details>
+
+  <details>
+    <summary>"How exactly is voting power calculated?"</summary>
+    <p>Voting power is simply the amount of ETH that wallet has put into that campaign. There is no token
+      and no separate voting coin. To approve, more than half of the votes cast must say yes, and at least
+      50% of the campaign's total power must take part. That total is fixed when the proof for the
+      milestone is posted. If a donation is refunded it goes back to zero and the power with it.</p>
+  </details>
+
+  <details>
+    <summary>"Does the login do anything for security?"</summary>
+    <p>Not for the money. Clerk is an optional convenience that gives a display name and a picture; there
+      is no server middleware guarding any page. The real security is the wallet signature and the contract
+      rules — anyone can open the pages, but nothing that moves money can happen without a signed
+      transaction from the right account. Clerk here is best described as credit, not as permission.</p>
+  </details>
+
+  <details>
+    <summary>"How does the website know it matches the contract?"</summary>
+    <p>The contract's interface file is generated from the compiled build by <code>npm run export-abi</code>,
+      which rewrites <code>constants/abi.js</code> with a note at the top saying it is auto-generated. The
+      deployed address is written into <code>constants/index.js</code>, and if an old
+      <code>NEXT_PUBLIC_CONTRACT_ADDRESS</code> disagrees, it is ignored with a console warning so the app
+      cannot quietly point at an old deployment.</p>
+  </details>
+
+  <details>
+    <summary>"How was it tested? Was the deployed contract verified?"</summary>
+    <p>There are 35 contract tests covering campaign creation, the escrow, proof, voting, refunds and the
+      admin rules. One of them runs a full campaign and checks the exact payouts (3 / 3 / 4 ETH) and that
+      the contract balance is zero at the end. Hardhat is set up for both Etherscan and Sourcify, so the
+      deployed code can be checked against its source on-chain.</p>
+  </details>
+
+  <details>
+    <summary>"What happens if the contract is paused or a campaign is switched off?"</summary>
+    <p>Pausing blocks every function that moves money — create, donate, proof, vote, release. It is the
+      emergency brake. Switching a campaign off removes it from the browse list. One side effect to flag:
+      the refund function also checks that the campaign is active, so switching off a failed campaign also
+      blocks refunds. That is an inconsistency worth fixing by relaxing that check.</p>
+  </details>
+
+  <details>
+    <summary>"Could the platform owner take the escrow?"</summary>
+    <p>Not through the normal path: the fee withdrawal is capped by the fees collected, which is zero in
+      this setup. But the emergency withdrawal sends the whole contract balance to the owner, and that
+      balance includes locked donor money. It is meant for disaster recovery, but it does mean the owner is
+      trusted in that one case. The first change to make would be a time lock or a multi-signature rule on
+      that function.</p>
+  </details>
+
+  <details>
+    <summary>"What would be added next?"</summary>
+    <p>An indexer (for example a subgraph) so the pages read totals instead of looping over every campaign;
+      a small database for linking wallets to accounts; a second IPFS provider so files are safer; and
+      gasless voting so a user with no ETH for gas can still vote.</p>
+  </details>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s10">
+  <h2><span class="n">10</span>Glossary — the words used in this report</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Word</th><th>Simple meaning</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Wallet</strong></td><td>The app that keeps your private key (here MetaMask). Whoever has the key controls the money.</td></tr>
+        <tr><td><strong>DApp</strong></td><td>A website whose rules run in a smart contract instead of on a normal server.</td></tr>
+        <tr><td><strong>Smart contract</strong></td><td>A program on the blockchain. Its code and data are public and it runs exactly as written.</td></tr>
+        <tr><td><strong>Escrow</strong></td><td>Money held by a neutral party until conditions are met. Here the neutral party is the contract itself.</td></tr>
+        <tr><td><strong>Milestone</strong></td><td>A checkpoint that must be finished and approved before the next part of the money is paid.</td></tr>
+        <tr><td><strong>Quorum</strong></td><td>The smallest share of voting power that must take part for a vote to count (50% here).</td></tr>
+        <tr><td><strong>wei / ETH</strong></td><td>wei is the tiniest unit of Ether (10⁻¹⁸ ETH). The contract counts in wei; the page shows ETH.</td></tr>
+        <tr><td><strong>Gas</strong></td><td>The fee paid to the network for running a transaction. The sender pays it.</td></tr>
+        <tr><td><strong>ABI</strong></td><td>The file that tells the website how to call each contract function and read its answer.</td></tr>
+        <tr><td><strong>IPFS / CID</strong></td><td>File storage where the address is a hash of the file itself, so the address changes if the file changes.</td></tr>
+        <tr><td><strong>Pinning</strong></td><td>Asking a service (Pinata) to keep an IPFS file available for a long time.</td></tr>
+        <tr><td><strong>RPC endpoint</strong></td><td>The web address a browser uses to read from and write to the blockchain.</td></tr>
+        <tr><td><strong>Testnet</strong></td><td>A practice blockchain with coins that have no value — here Sepolia (chain ID 11155111).</td></tr>
+        <tr><td><strong>Event / log</strong></td><td>A public note a contract writes down. It is how the full history can be read on a block explorer.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="s11">
+  <h2><span class="n">11</span>Roadmap — what to build next, in order</h2>
+  <div class="pipe">
+    <div class="node accent">
+      <span class="t">1 · Safety fixes</span>
+      <span class="s">Make the emergency withdrawal safe for escrow money (time lock, multi-signature or a
+        cap), relax the "campaign is active" check on refunds, and add a timeout for a campaign that
+        stalls.</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node">
+      <span class="t">2 · Real storage</span>
+      <span class="s">Move the wallet ↔ account list into a database, and build the "link wallet" screen the
+        API already supports.</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node">
+      <span class="t">3 · Indexing</span>
+      <span class="s">A subgraph or a small event indexer, so lists, totals and notifications come from
+        indexed data instead of looping over every campaign.</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node">
+      <span class="t">4 · Reach and comfort</span>
+      <span class="s">More wallets, a smoother mobile layout, gasless voting, email or push notifications,
+        and an accessibility pass with UI tests.</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node">
+      <span class="t">5 · Money model</span>
+      <span class="s">An optional launch deposit or small platform fee to control spam now that creating a
+        campaign is free, plus a treasury view and support for tokens other than ETH.</span>
+    </div>
+  </div>
+
+  <hr/>
+  <p class="small">
+    A companion file, <code>docs/architecture.html</code>, shows the same system as diagrams (context,
+    provider stack, escrow flow, lifecycle, sequence diagram, deployment pipeline), and
+    <code>docs/ARCHITECTURE.md</code> is the same thing in Markdown. This page is the written version: it
+    explains the system in the order a user meets it, from login to settlement.
+  </p>
+</section>
+
+</main>
+
+<footer>
+  CrowdFund DApp — project report. Written from the files in this project, so what is described here is
+  what the code actually does - Sanjay
+</footer>
+
+
+</body>
+</html>

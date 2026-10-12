@@ -19,9 +19,8 @@ export const CONTRACT_ADDRESS =
 
 export const CAMPAIGN_CREATION_FEE = "0"; // no upfront creation fee
 
-// ── Creator accountability / milestone escrow model ──────────────────────────
+// ── Milestone escrow model ───────────────────────────────────────────────────
 // Must stay in sync with the Solidity constants of the same name.
-export const CREATOR_STAKE_PERCENT = 30; // creator stake, as % of the campaign target
 export const VOTE_QUORUM_PERCENT = 50; // % of donor voting power that must vote
 
 // Fixed fund release schedule of every campaign (30% / 30% / 40%).

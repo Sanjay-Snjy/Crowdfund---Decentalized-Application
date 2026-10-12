@@ -3,16 +3,11 @@ import { useRouter } from "next/router";
 import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
 import { FiUpload, FiX, FiInfo, FiShield, FiLock, FiCheckCircle } from "react-icons/fi";
-import { useAccount, useBalance, useNetwork } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 import { useUser } from "@clerk/nextjs";
 import { useContract } from "../../hooks/useContract";
 import { uploadCampaignMetadata } from "../../utils/ipfs";
-import {
-  CAMPAIGN_CREATION_FEE,
-  CREATOR_STAKE_PERCENT,
-  MILESTONE_SCHEDULE,
-  VOTE_QUORUM_PERCENT,
-} from "../../constants";
+import { MILESTONE_SCHEDULE, VOTE_QUORUM_PERCENT } from "../../constants";
 import { formatEther } from "../../utils/helpers";
 import { useDemoMode } from "../../lib/demoMode";
 
@@ -27,7 +22,6 @@ export default function CreateCampaignForm() {
   const demoMode = useDemoMode();
   const { user } = useUser();
   const { chain } = useNetwork();
-  const { data: balanceData } = useBalance({ address, enabled: Boolean(address) });
   const { useCreateCampaignSimple } = useContract();
   const { createCampaignAsync, isLoading } = useCreateCampaignSimple();
 
@@ -39,29 +33,21 @@ export default function CreateCampaignForm() {
 
   const configuredChainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID || 0);
   const configuredNetworkName = process.env.NEXT_PUBLIC_NETWORK || "the configured network";
-  const creationFeeWei = ethers.utils.parseEther(CAMPAIGN_CREATION_FEE || "0");
-  const walletBalanceWei = balanceData?.value ? ethers.BigNumber.from(balanceData.value.toString()) : ethers.BigNumber.from(0);
 
-  // The creator stake is 30% of the target and is sent together with the
-  // createCampaign transaction; the contract holds it until the campaign completes.
-  const { stakeWei, targetWei } = useMemo(() => {
+  // Creating a campaign is free, so the only value the form derives on the fly is
+  // the target amount in wei; the milestone release plan is fixed.
+  const targetWei = useMemo(() => {
     const amount = parseFloat(formData.targetAmount);
     if (!formData.targetAmount || isNaN(amount) || amount <= 0) {
-      return { stakeWei: ethers.BigNumber.from(0), targetWei: ethers.BigNumber.from(0) };
+      return ethers.BigNumber.from(0);
     }
     try {
-      const parsedTarget = ethers.utils.parseEther(formData.targetAmount);
-      return {
-        targetWei: parsedTarget,
-        stakeWei: parsedTarget.mul(CREATOR_STAKE_PERCENT).div(100),
-      };
+      return ethers.utils.parseEther(formData.targetAmount);
     } catch {
-      return { stakeWei: ethers.BigNumber.from(0), targetWei: ethers.BigNumber.from(0) };
+      return ethers.BigNumber.from(0);
     }
   }, [formData.targetAmount]);
 
-  const stakeDisplay = stakeWei.gt(0) ? formatEther(stakeWei) : "0";
-  const hasEnoughForStake = walletBalanceWei.gte(stakeWei.add(creationFeeWei));
   const releasePlan = MILESTONE_SCHEDULE.map((m) => ({
     ...m,
     amountWei: targetWei.gt(0) ? targetWei.mul(m.percent).div(100) : ethers.BigNumber.from(0),
@@ -93,11 +79,6 @@ export default function CreateCampaignForm() {
     if (!formData.description.trim()) { toast.error("Description required"); return false; }
     if (!formData.targetAmount || parseFloat(formData.targetAmount) <= 0) { toast.error("Valid target amount required"); return false; }
     if (!formData.duration || parseInt(formData.duration) <= 0) { toast.error("Valid duration required"); return false; }
-    if (stakeWei.lte(0)) { toast.error("Enter the target amount to calculate the creator stake"); return false; }
-    if (!hasEnoughForStake) {
-      toast.error(`You need at least ${stakeDisplay} ETH for the creator stake`);
-      return false;
-    }
     return true;
   };
 
@@ -124,11 +105,10 @@ export default function CreateCampaignForm() {
 
       const durationSec = parseInt(formData.duration) * 86400;
 
-      toast.loading("Creating campaign and locking stake...", { id: "create" });
+      toast.loading("Creating campaign...", { id: "create" });
       await createCampaignAsync({
         args: [formData.title, formData.description, uploadResult.metadataHash, targetWei, durationSec],
-        // Stake (30% of target) + creation fee (0 ETH) — held by the contract.
-        value: stakeWei.add(creationFeeWei),
+        // No ETH is sent: creating a campaign is free.
       });
       toast.dismiss("create");
       toast.success("Campaign created!");
@@ -152,16 +132,15 @@ export default function CreateCampaignForm() {
             </p>
           </div>
 
-          {/* Creator stake notice */}
+          {/* Free-to-launch notice */}
           <div className="flex items-start gap-3 px-4 py-3 rounded-2xl bg-indigo-500/10 dark:bg-indigo-900/20 border border-indigo-800/20 dark:border-indigo-800/40 mb-6">
             <FiShield className="w-5 h-5 text-indigo-700 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-300">Creator stake required</p>
+              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-300">Free to launch</p>
               <p className="text-xs text-indigo-500/80 dark:text-indigo-400/70 mt-0.5">
-                You deposit a security stake of {CREATOR_STAKE_PERCENT}% of your target
-                ({stakeDisplay} ETH). It stays locked in the smart contract and is returned only when
-                all three milestones are released. There is no campaign creation fee
-                ({formatEther(CAMPAIGN_CREATION_FEE)} ETH).
+                There is no deposit and no creation fee — you only pay the network gas for the
+                transaction. Donations are held in the smart contract and released in three
+                milestones (30% / 30% / 40%) after your backers approve the evidence you submit.
               </p>
             </div>
           </div>
@@ -251,18 +230,6 @@ export default function CreateCampaignForm() {
                     </>
                   )}
                 </div>
-                {formData.targetAmount > 0 && (
-                  <div
-                    className="mt-2 flex items-center gap-2 text-xs"
-                    style={{ color: hasEnoughForStake ? "var(--color-text-muted)" : "#f87171" }}
-                  >
-                    <FiLock className="w-3.5 h-3.5" />
-                    <span>
-                      Stake to lock: <span className="font-semibold">{stakeDisplay} ETH</span>
-                      {!hasEnoughForStake && ` — your balance is ${formatEther(walletBalanceWei)} ETH`}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -317,7 +284,7 @@ export default function CreateCampaignForm() {
             title={demoMode ? "Demo account - connect a wallet to create campaigns" : ""}
             className="w-full mt-5 py-3 rounded-full bg-indigo-500 text-white font-semibold text-sm transition hover:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {demoMode ? "Demo Account — Create Disabled" : uploading ? "Uploading..." : isLoading ? "Creating..." : `Create Campaign & Lock ${stakeDisplay} ETH Stake`}
+            {demoMode ? "Demo Account — Create Disabled" : uploading ? "Uploading..." : isLoading ? "Creating..." : "Create Campaign"}
           </button>
         </div>
       </div>
@@ -330,19 +297,8 @@ export default function CreateCampaignForm() {
             Donor funds stay in the smart contract and are released milestone by milestone.
           </p>
 
-          {/* Creator stake */}
-          <div className="mt-5 p-4 rounded-xl bg-white/5 border border-white/10">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-300">Creator stake ({CREATOR_STAKE_PERCENT}%)</span>
-              <span className="text-sm font-bold text-indigo-400">{stakeDisplay} ETH</span>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-1.5">
-              Locked until the campaign completes successfully. Donors use it as a signal of commitment.
-            </p>
-          </div>
-
           {/* Milestone schedule (fixed) */}
-          <div className="mt-4 space-y-3">
+          <div className="mt-5 space-y-3">
             {releasePlan.map((m) => (
               <div key={m.index} className="p-3 rounded-xl bg-white/5 border border-white/10">
                 <div className="flex items-center justify-between">
@@ -372,9 +328,9 @@ export default function CreateCampaignForm() {
           <div className="mt-3 flex items-start gap-2">
             <FiCheckCircle className="w-3.5 h-3.5 text-indigo-400 mt-0.5 shrink-0" />
             <p className="text-[11px] text-slate-400">
-              The platform improves accountability through a creator stake, milestone evidence, donor
-              voting and transparent on-chain releases. Submitting evidence does not prove that the
-              work or invoices are genuine — donors judge that themselves.
+              The platform improves accountability through milestone evidence, donor voting and
+              transparent on-chain releases. Submitting evidence does not prove that the work or
+              invoices are genuine — donors judge that themselves.
             </p>
           </div>
         </div>

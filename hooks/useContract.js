@@ -4,72 +4,16 @@ import {
   useContractRead,
   useContractReads,
   useContractWrite,
-  usePrepareContractWrite,
 } from "wagmi";
-import { ethers } from "ethers";
-import {
-  CONTRACT_ADDRESS,
-  CAMPAIGN_CREATION_FEE,
-} from "../constants";
+import { CONTRACT_ADDRESS } from "../constants";
 import { CROWDFUNDING_ABI } from "../constants/abi";
-import { calculateCreatorStakeWei } from "../utils/helpers";
 import { toast } from "react-hot-toast";
 
 export const useContract = () => {
   const { address, isConnected } = useAccount();
 
-  /**
-   * Create a campaign and deposit the mandatory creator stake (30% of the target).
-   * `targetAmount` is expected in wei.
-   */
-  const useCreateCampaign = (
-    title,
-    description,
-    metadataHash,
-    targetAmount,
-    duration
-  ) => {
-    const stake = targetAmount ? calculateCreatorStakeWei(targetAmount) : null;
-
-    const { config, error: prepareError } = usePrepareContractWrite({
-      address: CONTRACT_ADDRESS,
-      abi: CROWDFUNDING_ABI,
-      functionName: "createCampaign",
-      args: title
-        ? [title, description, metadataHash, targetAmount, duration]
-        : undefined,
-      value:
-        stake !== null
-          ? stake.add(ethers.utils.parseEther(CAMPAIGN_CREATION_FEE))
-          : undefined,
-      enabled: Boolean(address && CONTRACT_ADDRESS && title && stake !== null),
-    });
-
-    const { write, writeAsync, isLoading, isSuccess, error } = useContractWrite(
-      {
-        ...config,
-        onSuccess(data) {
-          toast.success("Campaign created successfully!");
-        },
-        onError(error) {
-          console.error("Contract write error:", error);
-          toast.error(error?.message || "Transaction failed");
-        },
-      }
-    );
-
-    return {
-      createCampaign: write,
-      createCampaignAsync: writeAsync,
-      isLoading,
-      isSuccess,
-      error: error || prepareError,
-      isPrepared: Boolean(config?.request),
-    };
-  };
-
-  // Simple create campaign without prepare. Callers must pass the creator stake
-  // as `value` (see calculateCreatorStakeWei) together with the campaign args.
+  // Create a campaign. Starting a campaign is free: no stake and no creation fee
+  // are sent with the transaction.
   const useCreateCampaignSimple = () => {
     const { write, writeAsync, isLoading, isSuccess, error } = useContractWrite(
       {
@@ -77,7 +21,7 @@ export const useContract = () => {
         abi: CROWDFUNDING_ABI,
         functionName: "createCampaign",
         onSuccess(data) {
-          toast.success("Campaign created — creator stake locked in escrow!");
+          toast.success("Campaign created successfully!");
         },
         onError(error) {
           console.error("Contract write error:", error);
@@ -167,33 +111,6 @@ export const useContract = () => {
     return {
       submitMilestoneEvidence: write,
       submitMilestoneEvidenceAsync: writeAsync,
-      isLoading,
-      isSuccess,
-      error,
-    };
-  };
-
-  /**
-   * Forfeit the creator stake of a campaign that failed to reach its target.
-   * Callable by anyone once the deadline has passed.
-   */
-  const useForfeitCreatorStake = () => {
-    const { write, writeAsync, isLoading, isSuccess, error } = useContractWrite({
-      address: CONTRACT_ADDRESS,
-      abi: CROWDFUNDING_ABI,
-      functionName: "forfeitCreatorStake",
-      onSuccess() {
-        toast.success("Creator stake moved to the platform treasury");
-      },
-      onError(err) {
-        console.error("Forfeit creator stake error:", err);
-        toast.error(err?.reason || err?.message || "Failed to forfeit creator stake");
-      },
-    });
-
-    return {
-      forfeitCreatorStake: write,
-      forfeitCreatorStakeAsync: writeAsync,
       isLoading,
       isSuccess,
       error,
@@ -405,8 +322,8 @@ export const useContract = () => {
   };
 
   /**
-   * Separate accounting for a campaign: donor funds, locked creator stake,
-   * released funds and the donor funds still held in escrow.
+   * Separate accounting for a campaign: donor funds raised, funds already released
+   * and the donor funds still held in escrow.
    */
   const useCampaignAccounting = (campaignId) => {
     const { data: raw, ...rest } = useContractRead({
@@ -420,13 +337,11 @@ export const useContract = () => {
     });
 
     const data = raw
-      ? {
+      ?        {
           donorFundsRaised: raw[0],
-          creatorStakeHeld: raw[1],
-          releasedAmountTotal: raw[2],
-          lockedDonorFunds: raw[3],
-          refundableDonorFunds: raw[4],
-          stakeLocked: raw[5],
+          releasedAmountTotal: raw[1],
+          lockedDonorFunds: raw[2],
+          refundableDonorFunds: raw[3],
         }
       : null;
 
@@ -535,9 +450,6 @@ export const useContract = () => {
                   active: campaignData.active,
                   createdAt: campaignData.createdAt,
                   contributorsCount: campaignData.contributorsCount,
-                  creatorStake: campaignData.creatorStake,
-                  stakeReturned: campaignData.stakeReturned,
-                  stakeForfeited: campaignData.stakeForfeited,
                   completedAt: campaignData.completedAt,
                 };
               }
@@ -902,12 +814,10 @@ export const useContract = () => {
   return {
     address,
     isConnected,
-    useCreateCampaign,
     useCreateCampaignSimple,
     useContributeToCampaignSimple,
     useGetRefund,
     useSubmitMilestoneEvidence,
-    useForfeitCreatorStake,
     useVoteOnMilestone,
     useReleaseMilestoneFunds,
     useCampaignMilestones,

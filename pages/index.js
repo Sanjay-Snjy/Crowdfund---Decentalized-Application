@@ -167,9 +167,9 @@ export default function Home() {
     },
     {
       icon: FiShield,
-      title: "Creator Stake Commitment",
+      title: "Free to Launch",
       description:
-        "Creators lock 30% of their target in escrow and get it back only after completing every milestone.",
+        "Starting a campaign costs nothing — no deposit and no platform fee, only network gas.",
     },
     {
       icon: FiFlag,

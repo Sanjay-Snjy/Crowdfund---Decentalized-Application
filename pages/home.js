@@ -712,13 +712,13 @@ export default function AllCampaignsPage() {
                   Have an idea worth funding?
                 </h2>
                 <p className="mt-2 max-w-xl text-sm text-indigo-100 sm:text-base">
-                  Launch your campaign in minutes. Lock your 30% creator stake, hit milestones,
-                  and let backers vote on every release — fully on-chain, fully transparent.
+                  Launch your campaign in minutes, hit milestones, and let backers vote on every
+                  release — fully on-chain, fully transparent.
                 </p>
                 <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-xs text-indigo-100">
                   <span className="flex items-center gap-1.5"><FiCheckCircle className="h-3.5 w-3.5" /> Milestone-based escrow</span>
                   <span className="flex items-center gap-1.5"><FiCheckCircle className="h-3.5 w-3.5" /> Backer-approved releases</span>
-                  <span className="flex items-center gap-1.5"><FiCheckCircle className="h-3.5 w-3.5" /> Stake returned on success</span>
+                  <span className="flex items-center gap-1.5"><FiCheckCircle className="h-3.5 w-3.5" /> Free to launch — no deposit</span>
                 </div>
               </div>
               <button

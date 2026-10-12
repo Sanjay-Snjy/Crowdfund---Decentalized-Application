@@ -27,12 +27,6 @@ export const CROWDFUNDING_ABI = [
         "internalType": "uint256",
         "name": "totalReleased",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "stakeReturned",
-        "type": "uint256"
       }
     ],
     "name": "CampaignCompleted",
@@ -136,81 +130,6 @@ export const CROWDFUNDING_ABI = [
       }
     ],
     "name": "ContributionMade",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "campaignId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "CreatorStakeDeposited",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "campaignId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "CreatorStakeForfeited",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "campaignId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "CreatorStakeReturned",
     "type": "event"
   },
   {
@@ -556,19 +475,6 @@ export const CROWDFUNDING_ABI = [
   },
   {
     "inputs": [],
-    "name": "STAKE_PERCENT",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "VOTE_QUORUM_PERCENT",
     "outputs": [
       {
@@ -803,21 +709,6 @@ export const CROWDFUNDING_ABI = [
       },
       {
         "internalType": "uint256",
-        "name": "creatorStake",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "stakeReturned",
-        "type": "bool"
-      },
-      {
-        "internalType": "bool",
-        "name": "stakeForfeited",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
         "name": "completedAt",
         "type": "uint256"
       }
@@ -892,7 +783,7 @@ export const CROWDFUNDING_ABI = [
     ],
     "name": "createCampaign",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -929,19 +820,6 @@ export const CROWDFUNDING_ABI = [
   {
     "inputs": [],
     "name": "emergencyWithdraw",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_campaignId",
-        "type": "uint256"
-      }
-    ],
-    "name": "forfeitCreatorStake",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1022,21 +900,6 @@ export const CROWDFUNDING_ABI = [
             "internalType": "uint256",
             "name": "contributorsCount",
             "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "creatorStake",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "stakeReturned",
-            "type": "bool"
-          },
-          {
-            "internalType": "bool",
-            "name": "stakeForfeited",
-            "type": "bool"
           },
           {
             "internalType": "uint256",
@@ -1126,21 +989,6 @@ export const CROWDFUNDING_ABI = [
           },
           {
             "internalType": "uint256",
-            "name": "creatorStake",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "stakeReturned",
-            "type": "bool"
-          },
-          {
-            "internalType": "bool",
-            "name": "stakeForfeited",
-            "type": "bool"
-          },
-          {
-            "internalType": "uint256",
             "name": "completedAt",
             "type": "uint256"
           }
@@ -1170,11 +1018,6 @@ export const CROWDFUNDING_ABI = [
       },
       {
         "internalType": "uint256",
-        "name": "creatorStakeHeld",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "releasedAmountTotal",
         "type": "uint256"
       },
@@ -1187,11 +1030,6 @@ export const CROWDFUNDING_ABI = [
         "internalType": "uint256",
         "name": "refundableDonorFunds",
         "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "stakeLocked",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1858,19 +1696,6 @@ export const CROWDFUNDING_ABI = [
   {
     "inputs": [],
     "name": "totalFeesCollected",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalStakesHeld",
     "outputs": [
       {
         "internalType": "uint256",

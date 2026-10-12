@@ -7,27 +7,25 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 
 /**
  * @title CrowdfundingMarketplace
- * @dev Decentralized crowdfunding with creator accountability and milestone escrow.
+ * @dev Decentralized crowdfunding with milestone escrow and donor-approved releases.
  *
  * Trust model
  * -----------
- * 1. A creator deposits a CREATOR STAKE equal to STAKE_PERCENT (30%) of the campaign
- *    target. The stake is held by this contract and is accounted separately from
- *    donor money. It is never used to fund milestone releases.
- * 2. Donors contribute ETH. All donor funds stay in this contract until a milestone
- *    is approved by the donors.
- * 3. Every campaign has exactly MILESTONE_COUNT (3) milestones with fixed shares of
+ * 1. Donors contribute ETH. All donor funds stay in this contract until a milestone
+ *    is approved by the donors; nothing is released up front.
+ * 2. Every campaign has exactly MILESTONE_COUNT (3) milestones with fixed shares of
  *    the escrowed donor funds: 30% / 30% / 40%. The last milestone also receives any
  *    rounding remainder, so the three releases always account for exactly 100% of the
  *    escrowed donor funds.
- * 4. After the funding deadline, and only when the target was reached, the creator
+ * 3. After the funding deadline, and only when the target was reached, the creator
  *    completes work and submits an IPFS CID as evidence for the next milestone.
  *    Donors then vote with voting power proportional to their current contribution.
- * 5. A milestone releases its share only when its own vote is approved AND every
+ * 4. A milestone releases its share only when its own vote is approved AND every
  *    earlier milestone has already been released. Milestones can never be skipped.
- * 6. When the final milestone is released the campaign is completed and the creator
- *    stake is returned. If a campaign fails to reach its target, donors refund their
- *    contributions and the creator stake is forfeited to the platform treasury.
+ * 5. When the final milestone is released the campaign is completed. If a campaign
+ *    fails to reach its target, donors refund their contributions.
+ *
+ * Creating a campaign is free: no deposit and no creation fee are charged.
  *
  * What the chain does and does not guarantee
  * ------------------------------------------
@@ -41,9 +39,6 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
     // Fund release model constants
     // ─────────────────────────────────────────────────────────────────────────
 
-    /// @dev Creator stake, expressed as a percentage of the campaign target.
-    uint256 public constant STAKE_PERCENT = 30;
-
     /// @dev Fixed milestone shares of the escrowed donor funds. 30 + 30 + 40 = 100.
     uint256 public constant MILESTONE_1_PERCENT = 30;
     uint256 public constant MILESTONE_2_PERCENT = 30;
@@ -56,8 +51,7 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
     ///      in a milestone vote before the milestone can be approved.
     uint256 public constant VOTE_QUORUM_PERCENT = 50;
 
-    /// @dev Campaign creation fee. Kept at zero: the creator stake is the commitment
-    ///      mechanism, no additional fee is charged.
+    /// @dev Campaign creation fee. Kept at zero: launching a campaign is free.
     uint256 public constant CAMPAIGN_CREATION_FEE = 0 ether;
 
     // Events
@@ -68,24 +62,6 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         uint256 targetAmount,
         uint256 deadline,
         string metadataHash
-    );
-
-    event CreatorStakeDeposited(
-        uint256 indexed campaignId,
-        address indexed creator,
-        uint256 amount
-    );
-
-    event CreatorStakeReturned(
-        uint256 indexed campaignId,
-        address indexed creator,
-        uint256 amount
-    );
-
-    event CreatorStakeForfeited(
-        uint256 indexed campaignId,
-        address indexed creator,
-        uint256 amount
     );
 
     event ContributionMade(
@@ -162,8 +138,7 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
     event CampaignCompleted(
         uint256 indexed campaignId,
         address indexed creator,
-        uint256 totalReleased,
-        uint256 stakeReturned
+        uint256 totalReleased
     );
 
     // Structs
@@ -175,16 +150,12 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         string description;
         string metadataHash; // IPFS hash for images and additional data
         uint256 targetAmount;
-        uint256 raisedAmount; // donor funds only — never includes the creator stake
+        uint256 raisedAmount; // donor funds held in escrow for this campaign
         uint256 deadline;
         bool completed; // true once every milestone has been released
         bool active;
         uint256 createdAt;
         uint256 contributorsCount;
-        // ── creator accountability accounting ──
-        uint256 creatorStake; // 30% of targetAmount, held by this contract
-        bool stakeReturned; // stake sent back after successful completion
-        bool stakeForfeited; // stake sent to the platform treasury after a failed campaign
         uint256 completedAt;
     }
 
@@ -216,8 +187,7 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
     }
 
     // State variables
-    uint256 public totalFeesCollected; // platform treasury: fees + forfeited creator stakes
-    uint256 public totalStakesHeld; // creator stakes currently locked in this contract
+    uint256 public totalFeesCollected; // platform treasury (creation fees; currently zero)
     uint256 public campaignCounter;
 
     mapping(uint256 => Campaign) public campaigns;
@@ -266,9 +236,9 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
     /**
      * @dev Create a new crowdfunding campaign.
      *
-     * The caller must send at least the creator stake, which is
-     * STAKE_PERCENT (30%) of `_targetAmount`. Any excess is refunded.
-     * The three fixed milestones (30% / 30% / 40%) are created with the campaign.
+     * Creating a campaign is free — no deposit and no creation fee are charged — and it
+     * cannot be sent any ETH. The three fixed milestones (30% / 30% / 40%) are created
+     * with the campaign.
      */
     function createCampaign(
         string memory _title,
@@ -276,14 +246,11 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         string memory _metadataHash,
         uint256 _targetAmount,
         uint256 _duration
-    ) external payable whenNotPaused nonReentrant {
+    ) external whenNotPaused nonReentrant {
         require(_targetAmount > 0, "Target amount must be greater than 0");
         require(_duration > 0, "Duration must be greater than 0");
         require(bytes(_title).length > 0, "Title cannot be empty");
         require(bytes(_metadataHash).length > 0, "Metadata hash cannot be empty");
-
-        uint256 stake = (_targetAmount * STAKE_PERCENT) / 100;
-        require(msg.value >= CAMPAIGN_CREATION_FEE + stake, "Creator stake required");
 
         campaignCounter++;
         uint256 campaignId = campaignCounter;
@@ -302,22 +269,13 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
             active: true,
             createdAt: block.timestamp,
             contributorsCount: 0,
-            creatorStake: stake,
-            stakeReturned: false,
-            stakeForfeited: false,
             completedAt: 0
         });
 
         userCampaigns[msg.sender].push(campaignId);
-        totalStakesHeld += stake;
         totalFeesCollected += CAMPAIGN_CREATION_FEE;
 
         _initializeMilestones(campaignId);
-
-        // Refund anything sent above the required stake.
-        if (msg.value > stake) {
-            payable(msg.sender).transfer(msg.value - stake);
-        }
 
         emit CampaignCreated(
             campaignId,
@@ -326,7 +284,6 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
             deadline,
             _metadataHash
         );
-        emit CreatorStakeDeposited(campaignId, msg.sender, stake);
     }
 
     /**
@@ -467,8 +424,8 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
      *
      * Callable by anyone once the donors approved the milestone with a majority of the
      * voting power that participated and enough voting power participated (quorum).
-     * Only the milestone's own share is transferred — never the creator stake, and
-     * never more than one milestone at a time.
+     * Only the milestone's own share is transferred — never more than one milestone at
+     * a time.
      */
     function releaseMilestoneFunds(uint256 _campaignId, uint256 _milestoneIndex)
         external
@@ -510,30 +467,6 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         if (_milestoneIndex == MILESTONE_COUNT - 1) {
             _completeCampaign(_campaignId);
         }
-    }
-
-    /**
-     * @dev Forfeit the creator stake of a campaign that failed to reach its target.
-     *
-     * Donors get their contributions back through getRefund(); the stake that secured
-     * the campaign is moved to the platform treasury instead of being returned.
-     */
-    function forfeitCreatorStake(uint256 _campaignId) external nonReentrant {
-        require(_campaignId > 0 && _campaignId <= campaignCounter, "Invalid campaign ID");
-
-        Campaign storage campaign = campaigns[_campaignId];
-        require(block.timestamp >= campaign.deadline, "Campaign still fundraising");
-        require(!hasReachedTarget(_campaignId), "Campaign reached its target");
-        require(!campaign.stakeForfeited, "Stake already forfeited");
-        require(!campaign.stakeReturned, "Stake already returned");
-
-        uint256 stake = campaign.creatorStake;
-        campaign.stakeForfeited = true;
-        campaign.creatorStake = 0;
-        totalStakesHeld -= stake;
-        totalFeesCollected += stake;
-
-        emit CreatorStakeForfeited(_campaignId, campaign.creator, stake);
     }
 
     /**
@@ -639,35 +572,29 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
     }
 
     /**
-     * @dev Separate accounting view: donor funds, locked stake, released funds and
-     *      the donor funds that are still locked in escrow.
+     * @dev Separate accounting view: donor funds, released funds and the donor funds
+     *      that are still locked in escrow.
      */
     function getCampaignAccounting(uint256 _campaignId)
         external
         view
         returns (
             uint256 donorFundsRaised,
-            uint256 creatorStakeHeld,
             uint256 releasedAmountTotal,
             uint256 lockedDonorFunds,
-            uint256 refundableDonorFunds,
-            bool stakeLocked
+            uint256 refundableDonorFunds
         )
     {
         require(_campaignId > 0 && _campaignId <= campaignCounter, "Invalid campaign ID");
         Campaign storage campaign = campaigns[_campaignId];
 
         donorFundsRaised = campaign.raisedAmount;
-        creatorStakeHeld = campaign.stakeReturned || campaign.stakeForfeited
-            ? 0
-            : campaign.creatorStake;
         releasedAmountTotal = releasedAmount[_campaignId];
         lockedDonorFunds = campaign.raisedAmount - releasedAmountTotal;
         refundableDonorFunds = !hasReachedTarget(_campaignId) &&
             block.timestamp >= campaign.deadline
             ? campaign.raisedAmount
             : 0;
-        stakeLocked = creatorStakeHeld > 0;
     }
 
     // Admin
@@ -691,7 +618,7 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
 
     /**
      * @dev Withdraw platform treasury funds (admin only).
-     *      The treasury holds collected fees plus forfeited creator stakes.
+     *      The treasury holds collected platform fees (currently zero).
      */
     function withdrawFees(uint256 _amount) external onlyOwner nonReentrant {
         require(_amount <= totalFeesCollected, "Insufficient fee balance");
@@ -990,7 +917,7 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
     }
 
     /**
-     * @dev Mark the campaign as completed and return the creator stake.
+     * @dev Mark the campaign as completed once every milestone has been released.
      */
     function _completeCampaign(uint256 _campaignId) internal {
         Campaign storage campaign = campaigns[_campaignId];
@@ -999,19 +926,10 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         campaign.completedAt = block.timestamp;
         campaign.active = false;
 
-        uint256 stake = campaign.creatorStake;
-        if (stake > 0) {
-            totalStakesHeld -= stake;
-            campaign.stakeReturned = true;
-            campaign.creator.transfer(stake);
-            emit CreatorStakeReturned(_campaignId, campaign.creator, stake);
-        }
-
         emit CampaignCompleted(
             _campaignId,
             campaign.creator,
-            releasedAmount[_campaignId],
-            stake
+            releasedAmount[_campaignId]
         );
     }
 

@@ -15,19 +15,19 @@ This application combines a modern React frontend with smart contracts deployed 
 - Connect wallet using RainbowKit and Wagmi
 - Create and manage crowdfunding campaigns
 - Contribute funds to campaigns directly from the dApp
-- Creator accountability: a creator stake of 30% of the target is locked in escrow
+- Free to launch: no creator deposit and no platform creation fee
 - Milestone escrow: donated funds are released 30% / 30% / 40%, in order, on donor approval
 - Creator submits IPFS evidence per milestone; donors vote weighted by their contribution
-- Refunds for donors when a campaign misses its target (and then the creator stake is forfeited)
+- Full refunds for donors when a campaign misses its target
 - View campaign details, contribution status, and funding progress
 - Display transparent blockchain-backed statistics
 - Use a responsive UI built with Next.js and Tailwind CSS
 - Explore the whole UI in demo mode without connecting a wallet
 
-## Fund release model (creator accountability)
+## Fund release model (milestone escrow)
 
 ```text
-CREATE CAMPAIGN  ->  creator locks a stake of 30% of the target
+CREATE CAMPAIGN  ->  free to launch: no deposit and no creation fee
         |
 DONATIONS        ->  donor funds stay in the smart contract (never released up front)
         |
@@ -35,15 +35,16 @@ MILESTONE 1      ->  creator uploads evidence (IPFS CID) -> donors vote -> 30% r
 MILESTONE 2      ->  creator uploads evidence (IPFS CID) -> donors vote -> 30% released
 MILESTONE 3      ->  creator uploads evidence (IPFS CID) -> donors vote -> 40% released
         |
-CAMPAIGN COMPLETED  ->  creator stake is returned
+CAMPAIGN COMPLETED  ->  every donated wei has been released to the creator
+
+MISSED TARGET    ->  donors refund their contributions in full
 ```
 
 Rules enforced by `web3/contracts/CrowdfundingMarketplace.sol`:
 
-- `creatorStake = targetAmount * 30 / 100`, required as `msg.value` on creation (any excess is refunded).
-  The contract keeps donor funds and the stake in separate accounting (`raisedAmount` never includes it).
-- The stake is **never** released together with a milestone; it is returned only when the campaign
-  completes all three milestones.
+- Creating a campaign is free and cannot be sent any ETH: there is no creator stake and no creation fee.
+- Donations are held by the contract in `raisedAmount` and nothing is released up front — no money moves
+  to the creator until a milestone has been approved by the donors.
 - Every campaign has exactly three fixed milestones (30% / 30% / 40%). The last milestone receives the
   rounding remainder, so the three releases always account for exactly 100% of the escrowed donor funds
   and no wei is permanently stuck.
@@ -52,14 +53,15 @@ Rules enforced by `web3/contracts/CrowdfundingMarketplace.sol`:
 - Voting power equals a donor's contribution to that campaign. A milestone is approved when a strict
   majority of the participating voting power approves **and** at least 50% of the campaign's voting power
   took part (quorum). Refunding a contribution removes that voting power.
-- Failed campaign: donors refund their contribution via `getRefund`, and `forfeitCreatorStake` moves the
-  creator stake to the platform treasury instead of returning it.
+- Failed campaign: donors refund their contribution via `getRefund`. A campaign that missed its target
+  can never release a milestone, and donations that are never claimed simply stay in the contract for
+  their donors.
 
 **What the blockchain proves, and what it does not.** The contract records that evidence was submitted,
 who submitted it, when, how donors voted, what passed, how much was released and by which transaction.
 It cannot prove that a photo, invoice or video is genuine, or that funds were spent as described — donors
-judge that themselves when they vote. The platform only improves accountability through the creator
-stake, milestone evidence, donor voting and transparent on-chain releases.
+judge that themselves when they vote. The platform improves accountability through milestone evidence,
+donor voting and transparent on-chain releases.
 
 ## Tech Stack
 
@@ -74,18 +76,17 @@ stake, milestone evidence, donor voting and transparent on-chain releases.
 - web3: Hardhat project containing Solidity smart contracts, deployment scripts and tests
 - constants: Contract ABI (generated from the compiled artifact) and environment-specific values
 - hooks: `useContract.js` exposes every contract interaction as a wagmi hook
-- utils: Helper functions (stake/escrow math formatting) and IPFS-related utilities
+- utils: Helper functions (escrow math, ETH formatting, countdowns) and IPFS-related utilities
 
 ### Smart contract entry points
 
 | Function | Who | Purpose |
 |---|---|---|
-| `createCampaign(title, description, metadataHash, target, duration)` | creator | Creates the campaign, locks the 30% stake and the three fixed milestones |
+| `createCampaign(title, description, metadataHash, target, duration)` | creator | Creates the campaign and its three fixed milestones; free to launch |
 | `contributeToCampaign(id)` | anyone but the creator | Adds donor funds to the escrow |
 | `submitMilestoneEvidence(id, index, evidenceCID)` | creator | Attaches the IPFS evidence CID of the next milestone and opens voting |
 | `voteOnMilestone(id, index, approve)` | donors | Weighted vote (voting power = contribution) |
-| `releaseMilestoneFunds(id, index)` | anyone | Releases the approved share; completes the campaign and returns the stake on the last milestone |
-| `forfeitCreatorStake(id)` | anyone | Moves the stake of a failed campaign to the treasury |
+| `releaseMilestoneFunds(id, index)` | anyone | Releases the approved share; completes the campaign on the last milestone |
 | `getRefund(id)` | donors | Refunds a contribution when the target was missed |
 | `getMilestones(id)`, `milestoneReleaseAmount(id, i)`, `milestoneApproved(id, i)`, `getCampaignAccounting(id)` | anyone | Read the escrow state |
 
@@ -111,7 +112,7 @@ Run the smart contract tests and refresh the frontend ABI whenever the contract 
 
 ```bash
 cd CF/web3
-npm test            # contract test suite (creator stake, escrow, voting, refunds)
+npm test            # contract test suite (milestone escrow, voting, refunds)
 npm run export-abi  # regenerates ../constants/abi.js from the compiled artifact
 ```
 
@@ -171,6 +172,5 @@ hosting provider (e.g. Vercel) environment variables for the deployed site.
 - Deploying a new contract version invalidates campaigns created by an older version: this release replaces
   the previous "withdraw all funds at once" flow, so an old deployment should not be reused.
 - Known limitation: if a funded campaign is abandoned before its milestones are approved, the remaining
-  escrow has no time-based escape hatch — donors decide, so unapproved funds stay locked. The
-  `forfeitCreatorStake` path only applies to campaigns that missed their target.
+  escrow has no time-based escape hatch — donors decide, so unapproved funds stay locked.
 - Collaborator test commit by prajwal-a-m-5555

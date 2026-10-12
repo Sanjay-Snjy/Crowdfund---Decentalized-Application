@@ -11,7 +11,6 @@ import DeadlineCountdown from "../components/Dashboard/DeadlineCountdown";
 
 import MilestoneTracker from "../components/Dashboard/MilestoneTracker";
 
-import CreatorStakeStatus from "../components/Dashboard/CreatorStakeStatus";
 import BookmarkedCampaigns from "../components/Dashboard/BookmarkedCampaigns";
 import { useContract } from "../hooks/useContract";
 import { CONTRACT_ADDRESS } from "../constants";
@@ -315,8 +314,6 @@ function Dashboard() {
                     </div>
                     {/* Feature #1: Funding Progress Bars */}
                     <FundingProgress campaign={c} />
-                    {/* Creator stake status (returned / forfeited / locked) */}
-                    <CreatorStakeStatus campaign={c} />
                   </div>
                 ))}
               </div>

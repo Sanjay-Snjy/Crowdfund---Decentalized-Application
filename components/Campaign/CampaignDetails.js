@@ -6,7 +6,7 @@ import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
 import {
   FiUser, FiClock, FiTarget, FiShare2, FiHeart, FiUsers, FiCalendar, FiBookmark,
-  FiUpload, FiExternalLink, FiShield, FiLock, FiUnlock, FiCheckCircle, FiAlertTriangle,
+  FiUpload, FiExternalLink, FiShield, FiLock, FiUnlock, FiCheckCircle,
 } from "react-icons/fi";
 import { useContract } from "../../hooks/useContract";
 import { getFromIPFS, uploadToIPFS, uploadJSONToIPFS } from "../../utils/ipfs";
@@ -36,7 +36,7 @@ export default function CampaignDetails({ campaignId }) {
   const { toggle, isBookmarked } = useBookmarks();
   const {
     useCampaign, useCampaignStats, useContributeToCampaignSimple, useGetRefund,
-    useSubmitMilestoneEvidence, useForfeitCreatorStake, useVoteOnMilestone,
+    useSubmitMilestoneEvidence, useVoteOnMilestone,
     useReleaseMilestoneFunds, useCampaignMilestones, useContribution, useCampaignAccounting,
   } = useContract();
 
@@ -55,7 +55,6 @@ export default function CampaignDetails({ campaignId }) {
   const { contribute, isLoading: contributing } = useContributeToCampaignSimple();
   const { getRefund, isLoading: refunding } = useGetRefund();
   const { submitMilestoneEvidence, isLoading: submittingEvidence } = useSubmitMilestoneEvidence();
-  const { forfeitCreatorStake, isLoading: forfeiting } = useForfeitCreatorStake();
   const { voteOnMilestone, isLoading: voting } = useVoteOnMilestone();
   const { releaseMilestoneFunds, isLoading: releasing } = useReleaseMilestoneFunds();
   const { data: milestones, count: milestonesCount, isLoading: loadingMilestones, refetch: refetchMilestones } = useCampaignMilestones(campaignId);
@@ -174,8 +173,6 @@ export default function CampaignDetails({ campaignId }) {
   const isSuccessful = parseFloat(raised) >= parseFloat(target);
   const fundingClosed = timeLeft.expired;
   const canRefund = !isCreator && fundingClosed && !isSuccessful && userContribution > 0;
-  const canForfeitStake = fundingClosed && !isSuccessful && !campaign.stakeForfeited && !campaign.stakeReturned;
-  const stakeHeld = toBig(accounting?.creatorStakeHeld ?? campaign.creatorStake);
 
   const handleContribute = async () => {
     if (!contributionAmount || parseFloat(contributionAmount) <= 0) { toast.error("Enter a valid amount"); return; }
@@ -245,13 +242,6 @@ export default function CampaignDetails({ campaignId }) {
     } catch (err) { console.error(err); }
   };
 
-  const handleForfeitStake = async () => {
-    try {
-      await forfeitCreatorStake?.({ args: [campaignId] });
-      refetchAccounting?.();
-    } catch (err) { console.error(err); }
-  };
-
   const handleShare = async () => {
     const ok = await copyToClipboard(window.location.href);
     toast.success(ok ? "Link copied!" : "Failed to copy");
@@ -285,7 +275,6 @@ export default function CampaignDetails({ campaignId }) {
   const showActionCard = showContribute
     || Boolean(campaign.completed)
     || Boolean(canRefund)
-    || Boolean(canForfeitStake)
     || !isConnected;
 
   return (
@@ -325,11 +314,6 @@ export default function CampaignDetails({ campaignId }) {
           <div className="mt-2 flex items-center gap-3 text-sm" style={{ color: "var(--color-text-muted)" }}>
             <span className="flex items-center gap-1"><FiUser className="w-3.5 h-3.5" /> {creatorName}</span>
             {isCreator && <span className="badge badge-neutral">(You)</span>}
-            {stakeHeld.gt(0) && (
-              <span className="flex items-center gap-1" title="Creator stake locked in the smart contract">
-                <FiShield className="w-3.5 h-3.5" /> {formatEther(stakeHeld)} ETH stake locked
-              </span>
-            )}
           </div>
 
           <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>{campaign.description}</p>
@@ -404,10 +388,10 @@ export default function CampaignDetails({ campaignId }) {
                   <div className="p-4 rounded-lg border" style={{ borderColor: "var(--color-border)", background: "var(--color-surface-raised)" }}>
                     <h4 className="text-sm font-semibold mb-2" style={{ color: "var(--color-text)" }}>How the funds move</h4>
                     <ul className="text-xs space-y-1.5" style={{ color: "var(--color-text-secondary)" }}>
-                      <li>1. The creator locked a stake of {formatEther(campaign.creatorStake || 0)} ETH — refunded only on completion.</li>
-                      <li>2. Donations stay in the smart contract; nothing is released up front.</li>
-                      <li>3. Each milestone unlocks 30% / 30% / 40% of the donated funds, in order, after donors approve the submitted evidence.</li>
-                      <li>4. If the target is missed, donors refund their contribution and the creator stake is forfeited.</li>
+                      <li>1. Donations stay in the smart contract; nothing is released up front.</li>
+                      <li>2. Each milestone unlocks 30% / 30% / 40% of the donated funds, in order, after donors approve the submitted evidence.</li>
+                      <li>3. If the target is missed, every donor can refund their contribution in full.</li>
+                      <li>4. If the target is reached, the whole amount is released across the three approved milestones.</li>
                     </ul>
                   </div>
                 </div>
@@ -656,16 +640,15 @@ export default function CampaignDetails({ campaignId }) {
             )}
           </div>
 
-          {/* Escrow + stake card */}
+          {/* Escrow card */}
           <div className="card p-5 space-y-3">
             <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: "var(--color-text)" }}>
-              <FiLock className="w-4 h-4" /> Escrow &amp; creator stake
+              <FiLock className="w-4 h-4" /> Escrow breakdown
             </h3>
             {[
               { label: "Donor funds raised", value: formatEther(toBig(accounting?.donorFundsRaised ?? campaign.raisedAmount)) },
               { label: "Still locked in escrow", value: formatEther(toBig(accounting?.lockedDonorFunds ?? campaign.raisedAmount)) },
               { label: "Released to creator", value: formatEther(toBig(accounting?.releasedAmountTotal)) },
-              { label: "Creator stake held", value: formatEther(stakeHeld) },
             ].map((row) => (
               <div key={row.label} className="flex items-center justify-between text-xs">
                 <span style={{ color: "var(--color-text-muted)" }}>{row.label}</span>
@@ -673,11 +656,13 @@ export default function CampaignDetails({ campaignId }) {
               </div>
             ))}
             <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
-              {campaign.stakeReturned
-                ? "The campaign completed and the creator stake was returned."
-                : campaign.stakeForfeited
-                  ? "The campaign missed its target — the creator stake was forfeited."
-                  : "The stake is returned only when the campaign completes all milestones."}
+              {campaign.completed
+                ? "The campaign completed — every donated wei was released to the creator."
+                : isSuccessful
+                  ? "The funding target was reached. The remaining escrow is released milestone by milestone."
+                  : fundingClosed
+                    ? "The target was missed — donors can refund their contribution in full."
+                    : "Donations are held in escrow until the target is reached and the milestones are approved."}
             </p>
           </div>
 
@@ -717,20 +702,13 @@ export default function CampaignDetails({ campaignId }) {
             {campaign.completed && (
               <div className="flex items-center gap-2 text-xs" style={{ color: "var(--color-success)" }}>
                 <FiCheckCircle className="w-3.5 h-3.5" />
-                <span>Campaign completed — all milestones released and the creator stake returned.</span>
+                <span>Campaign completed — all three milestones were released.</span>
               </div>
             )}
 
             {canRefund && (
               <button onClick={async () => { await getRefund?.({ args: [campaignId] }); }} disabled={refunding} className="btn btn-danger w-full">
                 {refunding ? "Processing..." : "Get Refund"}
-              </button>
-            )}
-
-            {canForfeitStake && (
-              <button onClick={handleForfeitStake} disabled={forfeiting} className="btn btn-secondary w-full">
-                <FiAlertTriangle className="w-3.5 h-3.5" />
-                {forfeiting ? "Processing..." : "Forfeit creator stake"}
               </button>
             )}
 

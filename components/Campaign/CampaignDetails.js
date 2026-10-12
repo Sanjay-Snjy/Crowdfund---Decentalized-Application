@@ -856,12 +856,12 @@ export default function CampaignDetails({ campaignId }) {
       {/* Community vote modal */}
       {showVoteModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(15, 23, 42, 0.6)" }}
+          className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={() => setShowVoteModal(false)}
         >
           <div
             className="card w-full max-w-lg p-5 space-y-4 max-h-[90vh] overflow-y-auto"
+            style={{ background: "var(--card)" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">

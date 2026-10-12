@@ -20,6 +20,31 @@ import { CROWDFUNDING_ABI } from "../../constants/abi";
 
 const TABS = ["Overview", "Milestones", "Contributors"];
 
+// Community "support" votes: three quick questions plus optional remarks. They are
+// community feedback (kept in the voter's browser) and never move funds.
+const COMMUNITY_VOTES_KEY = "cf-community-votes";
+
+const VOTE_QUESTIONS = [
+  {
+    id: "worthFunding",
+    short: "Worth funding",
+    label: "Is this campaign's goal worth funding?",
+    options: ["Yes, definitely", "Not sure", "No"],
+  },
+  {
+    id: "planTrust",
+    short: "Milestone plan",
+    label: "Do the milestones (30% / 30% / 40%) and the evidence rule convince you?",
+    options: ["Yes, they do", "Needs more proof", "No"],
+  },
+  {
+    id: "wouldSupport",
+    short: "Would support",
+    label: "Would you donate to or recommend this campaign?",
+    options: ["I would donate", "I would recommend", "Not right now"],
+  },
+];
+
 const toBig = (value) => {
   if (value === undefined || value === null || value === "") return ethers.BigNumber.from(0);
   try {
@@ -48,6 +73,10 @@ export default function CampaignDetails({ campaignId }) {
   const [evidenceNote, setEvidenceNote] = useState("");
   const [busyMilestone, setBusyMilestone] = useState(null);
   const [rates, setRates] = useState(null);
+  const [communityVotes, setCommunityVotes] = useState({});
+  const [showVoteModal, setShowVoteModal] = useState(false);
+  const [voteAnswers, setVoteAnswers] = useState({});
+  const [voteRemark, setVoteRemark] = useState("");
 
   const { data: campaign, isLoading: campaignLoading } = useCampaign(campaignId);
   const { data: stats } = useCampaignStats(campaignId);
@@ -118,6 +147,16 @@ export default function CampaignDetails({ campaignId }) {
     return () => { mounted = false; };
   }, []);
 
+  // Hydrate the community votes recorded in this browser.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(COMMUNITY_VOTES_KEY);
+      setCommunityVotes(raw ? JSON.parse(raw) : {});
+    } catch {
+      setCommunityVotes({});
+    }
+  }, []);
+
   // Fetch creator profile
   useEffect(() => {
     if (!campaign?.creator) { setCreatorProfile(null); return; }
@@ -184,6 +223,35 @@ export default function CampaignDetails({ campaignId }) {
   const isSuccessful = parseFloat(raised) >= parseFloat(target);
   const fundingClosed = timeLeft.expired;
   const canRefund = !isCreator && fundingClosed && !isSuccessful && userContribution > 0;
+
+  // Community vote: anyone — donor or visitor — can say why they back this campaign.
+  // It is community feedback kept in this browser and never moves funds.
+  const myVote = communityVotes?.[campaignId] || null;
+  const voteCount = myVote ? 1 : 0;
+  const voteComplete = VOTE_QUESTIONS.every((q) => Boolean(voteAnswers[q.id]));
+
+  const openVoteModal = () => {
+    setVoteAnswers(myVote?.answers ? { ...myVote.answers } : {});
+    setVoteRemark(myVote?.remark || "");
+    setShowVoteModal(true);
+  };
+
+  const handleSubmitVote = () => {
+    if (!voteComplete) { toast.error("Answer all three questions"); return; }
+    const entry = {
+      answers: { ...voteAnswers },
+      remark: voteRemark.trim(),
+      voter: address || null,
+      at: new Date().toISOString(),
+    };
+    setCommunityVotes((prev) => {
+      const next = { ...prev, [campaignId]: entry };
+      try { window.localStorage.setItem(COMMUNITY_VOTES_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+    setShowVoteModal(false);
+    toast.success(myVote ? "Your vote was updated" : "Thanks for voting!");
+  };
 
   const handleContribute = async () => {
     if (!contributionAmount || parseFloat(contributionAmount) <= 0) { toast.error("Enter a valid amount"); return; }
@@ -680,6 +748,46 @@ export default function CampaignDetails({ campaignId }) {
 
         {/* Right: Sidebar */}
         <div className="space-y-4">
+          {/* Community vote card — visible to everyone, donors and visitors alike */}
+          <div className="card p-5 space-y-3">
+            <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: "var(--color-text)" }}>
+              <FiCheckCircle className="w-4 h-4" /> Community vote
+            </h3>
+
+            <div className="flex items-end gap-2">
+              <span className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{voteCount}</span>
+              <span className="text-xs mb-1" style={{ color: "var(--color-text-muted)" }}>
+                {voteCount === 1 ? "supporter has voted" : "supporters have voted"}
+              </span>
+            </div>
+            <p className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
+              Answer three quick questions and tell other donors why this campaign deserves their support.
+            </p>
+
+            {myVote ? (
+              <>
+                <div className="p-3 rounded-lg space-y-1.5 text-xs" style={{ background: "var(--color-surface-raised)" }}>
+                  {VOTE_QUESTIONS.map((q) => (
+                    <div key={q.id} className="flex items-start justify-between gap-3">
+                      <span style={{ color: "var(--color-text-muted)" }}>{q.short}</span>
+                      <span className="font-medium text-right" style={{ color: "var(--color-text)" }}>{myVote.answers?.[q.id]}</span>
+                    </div>
+                  ))}
+                  {myVote.remark ? (
+                    <p className="pt-1 italic" style={{ color: "var(--color-text-secondary)" }}>&ldquo;{myVote.remark}&rdquo;</p>
+                  ) : null}
+                </div>
+                <button onClick={openVoteModal} className="btn btn-secondary w-full">Edit my vote</button>
+              </>
+            ) : (
+              <button onClick={openVoteModal} className="btn w-full">Vote for this campaign</button>
+            )}
+
+            <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
+              Community votes are off-chain feedback kept in this browser — they show support but never move funds.
+            </p>
+          </div>
+
           {/* Progress card */}
           <div className="card p-5">
             <div className="flex items-center justify-between text-sm mb-2">
@@ -744,6 +852,76 @@ export default function CampaignDetails({ campaignId }) {
           </div>
         </div>
       </div>
+
+      {/* Community vote modal */}
+      {showVoteModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(15, 23, 42, 0.6)" }}
+          onClick={() => setShowVoteModal(false)}
+        >
+          <div
+            className="card w-full max-w-lg p-5 space-y-4 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-base font-semibold" style={{ color: "var(--color-text)" }}>Vote for this campaign</h3>
+                <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>
+                  Your answers help other donors decide whether to contribute.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowVoteModal(false)}
+                aria-label="Close"
+                className="text-xl leading-none px-1 rounded hover:opacity-70"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                ×
+              </button>
+            </div>
+
+            {VOTE_QUESTIONS.map((q) => (
+              <div key={q.id} className="space-y-2">
+                <p className="text-sm font-medium" style={{ color: "var(--color-text)" }}>{q.label}</p>
+                <div className="flex flex-wrap gap-2">
+                  {q.options.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => setVoteAnswers((prev) => ({ ...prev, [q.id]: option }))}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        voteAnswers[q.id] === option ? "bg-indigo-600 text-white border-transparent" : "hover:bg-slate-50 dark:hover:bg-slate-700/30"
+                      }`}
+                      style={voteAnswers[q.id] === option ? undefined : { borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div className="space-y-2">
+              <p className="text-sm font-medium" style={{ color: "var(--color-text)" }}>Additional remarks</p>
+              <textarea
+                rows={3}
+                value={voteRemark}
+                onChange={(e) => setVoteRemark(e.target.value)}
+                placeholder="Why do you want this campaign to succeed?"
+                className="input resize-none text-sm"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShowVoteModal(false)} className="btn btn-secondary">Cancel</button>
+              <button onClick={handleSubmitVote} disabled={!voteComplete} className="btn">
+                {myVote ? "Update my vote" : "Submit vote"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

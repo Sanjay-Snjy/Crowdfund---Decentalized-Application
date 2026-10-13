@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);
 
   try {
-    db.init();
+    await db.init();
     privateNoStore(res);
 
     const guard = await requireAdmin(req);
@@ -34,8 +34,8 @@ export default async function handler(req, res) {
 
     // Which campaigns to report on: an explicit id, or the campaigns known from
     // indexed events / the metadata cache (newest first).
-    const cached = db.campaigns.listCampaigns({ limit: 200 });
-    const fromEvents = db.chainEvents.listCampaignIdsWithEvents();
+    const cached = await db.campaigns.listCampaigns({ limit: 200 });
+    const fromEvents = await db.chainEvents.listCampaignIdsWithEvents();
     const ids = Number.isFinite(single)
       ? [single]
       : [...new Set([...cached.map((campaign) => campaign.campaignId), ...fromEvents])]
@@ -89,8 +89,11 @@ export default async function handler(req, res) {
     const releases =
       req.query.releases === "0"
         ? []
-        : db.chainEvents.listFundReleases({ campaignId: Number.isFinite(single) ? single : null, limit: 50 });
-    const refunds = db.chainEvents.listTransactions(
+        : await db.chainEvents.listFundReleases({
+            campaignId: Number.isFinite(single) ? single : null,
+            limit: 50,
+          });
+    const refunds = await db.chainEvents.listTransactions(
       { chainId: config.chainId, contractAddress: config.contractAddress, eventType: "refund" },
       { limit: 25 }
     );

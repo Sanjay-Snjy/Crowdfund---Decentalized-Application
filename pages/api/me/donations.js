@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);
 
   try {
-    db.init();
+    await db.init();
     privateNoStore(res);
 
     const guard = await requireUser(req);
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
     const config = getChainConfig();
     const { identity } = guard;
-    const rows = db.chainEvents.listDonationsForIdentity({
+    const rows = await db.chainEvents.listDonationsForIdentity({
       userId: identity.userId,
       walletAddress: identity.user?.wallet_address || null,
       limit: 100,

@@ -10,6 +10,16 @@ import path from "node:path";
 
 export function useTempDatabase(prefix = "crowdfund-test") {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `${prefix}-`));
+
+  // Tests always run against a throwaway local SQLite file: a hosted libSQL URL in
+  // the developer's environment must never be used as a test target.
+  delete process.env.TURSO_DATABASE_URL;
+  delete process.env.TURSO_AUTH_TOKEN;
+  delete process.env.LIBSQL_DATABASE_URL;
+  delete process.env.LIBSQL_AUTH_TOKEN;
+  delete process.env.CF_LIBSQL_URL;
+  delete process.env.CF_LIBSQL_TOKEN;
+
   process.env.CF_DATABASE_PATH = path.join(dir, "test.db");
   return dir;
 }

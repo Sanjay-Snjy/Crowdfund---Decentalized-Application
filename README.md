@@ -164,6 +164,25 @@ hosting provider (e.g. Vercel) environment variables for the deployed site.
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Optional | Clerk publishable key (if Clerk auth is enabled) |
 | `PINATA_API_KEY`, `PINATA_SECRET_API_KEY`, `PINATA_JWT` | ✅ (server-side) | Pinata credentials used by API routes only — **do not** give these a `NEXT_PUBLIC_` prefix |
 
+### Persistence (required on Vercel and similar hosts)
+
+The user profiles, CrowdFund User IDs, sessions, indexed donations and rewards live in a
+database. Two back ends are supported and the app picks one from the environment:
+
+* **Hosted libSQL (Turso)** — set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`. Required on
+  hosts with a read-only or ephemeral filesystem (Vercel, Netlify): a SQLite file cannot be
+  created there and would not survive a cold start. Free tier is enough: `turso db create
+  crowdfund`, then `turso db show crowdfund --url` and `turso db tokens create crowdfund`.
+* **Local SQLite file** — the default when neither variable is set; nothing to configure for
+  local development. Override the path with `CF_DATABASE_PATH`.
+
+Migrations run automatically on the first request, so deploy after setting the variables and
+the schema is created for you. Without a reachable database the API answers
+`503 Database unavailable` with the missing variable names instead of a blank 500.
+
+See [docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md) for the full environment table,
+verification commands and test results.
+
 ## Notes
 
 - Make sure your contract address and network settings match your deployed environment.

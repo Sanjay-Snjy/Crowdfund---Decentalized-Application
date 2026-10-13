@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   if (!["GET", "PATCH"].includes(req.method)) return methodNotAllowed(res, ["GET", "PATCH"]);
 
   try {
-    db.init();
+    await db.init();
     privateNoStore(res);
 
     const guard = await requireUser(req);
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
         return badRequest(res, "Nothing to update");
       }
 
-      const updated = db.users.updateUserProfile({
+      const updated = await db.users.updateUserProfile({
         userId: identity.userId,
         displayName,
         publicDisplay,
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
       identity.user = updated;
     }
 
-    const rewards = computeRewards({
+    const rewards = await computeRewards({
       userId: identity.userId,
       walletAddress: identity.user?.wallet_address || null,
       cfUserId: identity.user?.cf_user_id || null,

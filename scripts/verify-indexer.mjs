@@ -20,11 +20,12 @@ import { getReadContract } from "../lib/chain/provider.js";
 const blocksArgIndex = process.argv.indexOf("--blocks");
 const BLOCKS = blocksArgIndex !== -1 ? Number(process.argv[blocksArgIndex + 1]) : 50000;
 
-db.init();
+await db.init();
 const config = getChainConfig();
 const contract = getReadContract();
+const backend = db.backend();
 
-console.log(`Database   : ${db.path()}`);
+console.log(`Database   : ${await db.path()} (${backend.kind})`);
 console.log(`Network    : ${config.networkKey} (chain ${config.chainId})`);
 console.log(`Contract   : ${config.contractAddress}`);
 console.log(`Block range: last ${BLOCKS} blocks\n`);
@@ -66,7 +67,7 @@ let mismatches = 0;
 let missing = 0;
 
 for (const expected of contributions) {
-  const row = db.chainEvents.getEventByKey({
+  const row = await db.chainEvents.getEventByKey({
     chainId: config.chainId,
     contractAddress: config.contractAddress,
     txHash: expected.txHash,
@@ -91,8 +92,8 @@ for (const expected of contributions) {
   }
 }
 
-const indexedContributions = db.chainEvents.countTransactions({ eventType: "contribution" });
-const indexedRefunds = db.chainEvents.countTransactions({ eventType: "refund" });
+const indexedContributions = await db.chainEvents.countTransactions({ eventType: "contribution" });
+const indexedRefunds = await db.chainEvents.countTransactions({ eventType: "refund" });
 
 console.log(
   `\nIndexed rows: ${indexedContributions} contribution(s), ${indexedRefunds} refund(s). ` +
@@ -100,7 +101,7 @@ console.log(
 );
 
 // Duplicate-identity check: the unique index must make one log → one row.
-const duplicates = db.driver.query(
+const duplicates = await db.driver.query(
   `SELECT tx_hash, log_index, COUNT(*) AS occurrences
      FROM chain_transactions
     GROUP BY chain_id, contract_address, tx_hash, log_index

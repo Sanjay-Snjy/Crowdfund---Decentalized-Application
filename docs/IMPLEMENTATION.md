@@ -136,16 +136,52 @@ countdown. New views: `recoveryEscrowPool`, `recoveryUnlocksAt`, `recoveryEligib
 
 ## 3. Database
 
-* Engine: Node's built-in `node:sqlite` (`lib/db/driver.js`) — no new dependency, no native
-  build step. File: `data/crowdfund.db`, override with `CF_DATABASE_PATH`.
+One interface, two back ends, chosen by configuration (`lib/db/driver.js`):
+
+| Back end | Selected when | Used for |
+| --- | --- | --- |
+| **Hosted libSQL** (Turso) | `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` are set | Production / any host with a read-only or ephemeral filesystem (Vercel, Netlify). Reached over HTTP/WebSocket by `@libsql/client`, so nothing is written to disk. |
+| **Local SQLite file** | otherwise (or `CF_DATABASE_PATH`) | Local development, tests, and hosts with a persistent volume. Node's built-in `node:sqlite`. |
+
+Both speak SQLite SQL, so the schema, the `?` placeholders, `ON CONFLICT`, `AUTOINCREMENT`
+and `UPDATE … RETURNING` are identical — the schema in `lib/db/schema.js` is used unchanged.
+
+* **Why the hosted back end exists:** the first production deployment returned
+  `{"error":"Internal server error"}` from every DB-backed route. The cause was not the
+  code: a serverless filesystem is read-only and ephemeral, so `data/crowdfund.db` could
+  neither be created nor survive a cold start (reproduced locally as
+  `EPERM: operation not permitted, mkdir`). A reachable database is now required on such
+  hosts, and the API answers `503 Database unavailable` with the missing variable names
+  instead of a blank 500 when it is not configured.
 * Migrations are append-only and applied exactly once, tracked in `schema_migrations`
-  (`lib/db/schema.js`, `lib/db/migrate.js`). `db.init()` runs before any query batch, so no
-  manual migration step is required — starting the app or running any API route migrates.
+  (`lib/db/schema.js`, `lib/db/migrate.js`). `await db.init()` runs before any query batch,
+  so no manual migration step is required — the first request (or the first script run)
+  creates the schema. Each migration is applied in one atomic request (a libSQL batch, or a
+  `BEGIN IMMEDIATE` transaction on the local file).
+* Every store function is async now (the hosted back end is a network call).
 * Tables: `users`, `counters` (the CF-ID sequence), `auth_nonces`, `sessions`,
   `chain_transactions`, `sync_state`, `reward_events`, `campaign_cache`, `admin_audit`
   and `schema_migrations`.
-* Back up / reset: the database is a single file. `cp data/crowdfund.db backup.db` to back
-  up; `rm data/crowdfund.db*` to start clean (the schema rebuilds on next request).
+* Back up / reset (local file): `cp data/crowdfund.db backup.db` to back up;
+  `rm data/crowdfund.db*` to start clean. Hosted libSQL: use the Turso dashboard/CLI.
+
+### Configuring the hosted database (one-time, ~2 minutes)
+
+1. Create a database at <https://turso.tech> (free tier is enough) — install the CLI with
+   `npm i -g turso` and run `turso db create crowdfund`, or use the dashboard.
+2. Get the connection URL: `turso db show crowdfund --url` → `libsql://crowdfund-<org>.turso.io`.
+3. Create a token: `turso db tokens create crowdfund`.
+4. Set both in the deployment environment (Vercel → Project → Settings → Environment
+   Variables) for **Production and Preview**, then redeploy:
+   `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`.
+5. That is all — no migration command. Hit any page; the first API request creates the
+   schema. Verify with `node scripts/verify-indexer.mjs` (it prints the active back end).
+
+To check the schema/rows from a shell without exposing the token:
+
+```bash
+TURSO_DATABASE_URL=... TURSO_AUTH_TOKEN=... node scripts/verify-indexer.mjs
+```
 
 ---
 
@@ -157,7 +193,9 @@ countdown. New views: `recoveryEscrowPool`, `recoveryUnlocksAt`, `recoveryEligib
 | `NEXT_PUBLIC_RPC_URL`, `SEPOLIA_RPC_URL`, `NETWORK_RPC_URL` | RPC (browser / server preferred / hardhat) | `NEXT_PUBLIC_RPC_URL` set |
 | `NEXT_PUBLIC_BLOCK_EXPLORER`, `NEXT_PUBLIC_BLOCK_EXPLORER_NAME` | explorer links | set |
 | `NEXT_PUBLIC_CONTRACT_ADDRESS` / `CF_CONTRACT_ADDRESS` / `NEXT_PUBLIC_CONTRACT_ADDRESS_OVERRIDE` | override the committed deployed address | **not set** (uses `constants/index.js`) |
-| `CF_DATABASE_PATH` | SQLite file path | not set (default `data/crowdfund.db`) |
+| `TURSO_DATABASE_URL` | hosted libSQL URL — **required on Vercel/serverless** | **not set yet — the deployment cannot persist without it** |
+| `TURSO_AUTH_TOKEN` | hosted libSQL auth token (server-only) | **not set yet** |
+| `CF_DATABASE_PATH` | local SQLite file path (dev / volume hosts) | not set (default `data/crowdfund.db`) |
 | `CF_INDEX_START_BLOCK`, `CF_INDEX_LOOKBACK_BLOCKS`, `CF_CONFIRMATIONS_REQUIRED` | indexer range/confirmation policy | not set (defaults) |
 | `CLERK_SECRET_KEY` | verifies Clerk sessions server-side | **missing — see limitations** |
 | `CLERK_WEBHOOK_SIGNING_SECRET` | verifies `/api/webhooks/clerk` signatures | **missing** |
@@ -176,7 +214,9 @@ countdown. New views: `recoveryEscrowPool`, `recoveryUnlocksAt`, `recoveryEligib
 npm install
 cd web3 && npm install && cd ..
 
-# database: nothing to run — migrations apply on first request.
+# database: nothing to run — migrations apply on the first request.
+# (hosted libSQL: export TURSO_DATABASE_URL + TURSO_AUTH_TOKEN first)
+
 # optional admin bootstrap (no API endpoint can set a role):
 node scripts/grant-admin.mjs --list
 node scripts/grant-admin.mjs --wallet 0xYourWalletAddress
@@ -190,6 +230,7 @@ npm run build && npm start
 # verification
 node tests/identity.test.js                  # CF IDs, idempotency, nonces, sessions
 node tests/indexer.test.js                   # event indexing, dedupe, rewards, admin filters
+node tests/libsql-driver.test.js             # the hosted-libSQL code path (no credentials needed)
 node tests/api-smoke.mjs http://localhost:1112   # end-to-end API + authz (needs the dev server)
 node scripts/verify-indexer.mjs              # live indexer health against the configured RPC
 
@@ -211,6 +252,7 @@ npm run export-abi       # regenerate constants/abi.js from the compiled artifac
 | --- | --- | --- |
 | Identity / DB unit tests | `node tests/identity.test.js` | **10 passed, 0 failed** — including concurrent multi-process registration never reusing an ID |
 | Indexer / rewards unit tests | `node tests/indexer.test.js` | **9 passed, 0 failed** — pending events excluded, re-index never duplicates, refunds reverse eligibility |
+| Hosted-libSQL path | `node tests/libsql-driver.test.js` | **8 passed, 0 failed** — batched migrations, `UPDATE … RETURNING` ID allocation, `ON CONFLICT DO NOTHING` idempotency, transactions in the AsyncLocalStorage scope, donation totals, and a loud failure when a URL is set without a token |
 | API smoke (live dev server) | `node tests/api-smoke.mjs http://localhost:1112` | **22 passed, 0 failed** — 401/403 authorization, nonce replay rejection, wallet session → CF-0004, admin sees newest CF-0006, no email leakage, 5 confirmed donations / 0.255 ETH, Sepolia explorer links |
 | Contract suite (existing) | `cd web3 && npm test` | **35 passed, 0 failing** |
 | Contract recovery suite (new) | `cd web3 && npm run test:recovery` | **11 passed, 0 failing** — pro-rata claim once only, escrow never over-paid, funds already released accounted for, countdown restarts on evidence, premature recovery and unauthorized withdrawal rejected |
@@ -229,10 +271,20 @@ in the browser by rendering the component tree against a seeded query rather tha
 in as a real administrator — the *server* side of that path is covered by the API smoke test
 (401 → 403 → admin 200).
 
+The hosted-libSQL suite injects a libSQL-compatible client in front of a local file, so it
+proves the driver's remote branch (one statement per `execute`, batched writes, ResultSet
+shapes, transaction scope) without Turso credentials. The **network transport itself is not
+yet verified** — that is the one remaining check, and it needs `TURSO_DATABASE_URL` +
+`TURSO_AUTH_TOKEN` (see §3 and §7).
+
 ---
 
 ## 7. Configuration you still have to supply
 
+0. **`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`** — the deployed site cannot store users or
+   donations without them (read-only filesystem). Setup is in §3. Once they are set, the
+   only remaining verification is one request against the live site (or
+   `node scripts/verify-indexer.mjs`) to confirm the transport works end to end.
 1. **`CLERK_SECRET_KEY` and `CLERK_WEBHOOK_SIGNING_SECRET`** — without them `middleware.js`
    stays a no-op and Clerk sessions cannot be verified server-side, so registrations
    currently flow through the signed-wallet path only. Set both, then add the webhook

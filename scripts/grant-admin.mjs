@@ -61,10 +61,10 @@ function printUser(user) {
 }
 
 const args = parseArgs(process.argv);
-const databaseFile = db.init();
+const databaseFile = await db.init();
 
 if (args.list) {
-  const rows = db.driver.query(
+  const rows = await db.driver.query(
     `SELECT cf_user_id, role, display_name, wallet_address, clerk_user_id
        FROM users WHERE role = 'admin' ORDER BY cf_seq ASC`
   );
@@ -83,17 +83,17 @@ if (args.wallet) {
     process.exit(2);
   }
   user =
-    db.users.getUserByWallet(address) ||
-    db.users.ensureUserFromWallet({ address, displayName: `Wallet ${address.slice(0, 6)}` });
+    (await db.users.getUserByWallet(address)) ||
+    (await db.users.ensureUserFromWallet({ address, displayName: `Wallet ${address.slice(0, 6)}` }));
 } else if (args.clerk) {
-  user = db.users.getUserByClerkId(args.clerk);
+  user = await db.users.getUserByClerkId(args.clerk);
   if (!user) {
     console.error(`No CrowdFund profile is linked to Clerk user ${args.clerk} yet.`);
     console.error("The profile is created by the Clerk webhook or the user's first signed-in request.");
     process.exit(1);
   }
 } else if (args.cf) {
-  user = db.users.getUserByCfUserId(args.cf);
+  user = await db.users.getUserByCfUserId(args.cf);
   if (!user) {
     console.error(`No user with CrowdFund User ID ${args.cf}`);
     process.exit(1);
@@ -103,8 +103,8 @@ if (args.wallet) {
   process.exit(2);
 }
 
-const updated = db.users.setUserRole(user.id, args.revoke ? "user" : "admin");
-db.driver.run(
+const updated = await db.users.setUserRole(user.id, args.revoke ? "user" : "admin");
+await db.driver.run(
   `INSERT INTO admin_audit (actor, action, subject, detail, created_at) VALUES (?, ?, ?, ?, ?)`,
   [
     "cli",

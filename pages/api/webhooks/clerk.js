@@ -130,12 +130,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    db.init();
+    await db.init();
     const type = event?.type;
 
     if (type === "user.created" || type === "user.updated") {
       const data = event.data || {};
-      const user = db.users.ensureUserFromClerk({
+      const user = await db.users.ensureUserFromClerk({
         clerkUserId: data.id,
         firstName: data.first_name,
         lastName: data.last_name,
@@ -144,8 +144,8 @@ export default async function handler(req, res) {
         registeredAt: data.created_at,
       });
 
-      db.users.attachUserToWalletHistory(user.id, user.wallet_address);
-      db.driver.run(
+      await db.users.attachUserToWalletHistory(user.id, user.wallet_address);
+      await db.driver.run(
         `INSERT INTO admin_audit (actor, action, subject, detail, created_at)
          VALUES (?, ?, ?, ?, ?)`,
         [
@@ -167,11 +167,11 @@ export default async function handler(req, res) {
 
     if (type === "user.deleted") {
       const clerkUserId = event.data?.id;
-      const existing = db.users.getUserByClerkId(clerkUserId);
+      const existing = await db.users.getUserByClerkId(clerkUserId);
       if (existing) {
         // Retain the record (donation history and rewards must not disappear) but
         // detach the private Clerk association so the id can never be reused.
-        db.driver.run(
+        await db.driver.run(
           `UPDATE users SET clerk_user_id = NULL, updated_at = ? WHERE id = ?`,
           [Math.floor(Date.now() / 1000), existing.id]
         );

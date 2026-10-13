@@ -37,7 +37,7 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);
 
   try {
-    db.init();
+    await db.init();
     privateNoStore(res);
 
     const guard = await requireAdmin(req);
@@ -69,9 +69,9 @@ export default async function handler(req, res) {
       search: search || null,
     };
 
-    const rows = db.chainEvents.listTransactions(filters, { limit, page });
-    const total = db.chainEvents.countTransactions(filters);
-    const totals = db.chainEvents.transactionTotals(filters);
+    const rows = await db.chainEvents.listTransactions(filters, { limit, page });
+    const total = await db.chainEvents.countTransactions(filters);
+    const totals = await db.chainEvents.transactionTotals(filters);
 
     const transactions = rows.map((row) => ({
       txHash: row.txHash,
@@ -97,7 +97,7 @@ export default async function handler(req, res) {
     }));
 
     // Campaign list for the filter dropdown (cached metadata, refreshed from chain state).
-    const campaigns = db.campaigns.listCampaigns({ limit: 200 }).map((campaign) => ({
+    const campaigns = (await db.campaigns.listCampaigns({ limit: 200 })).map((campaign) => ({
       campaignId: campaign.campaignId,
       title: campaign.title,
       active: campaign.active,

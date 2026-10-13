@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);
 
   try {
-    db.init();
+    await db.init();
     privateNoStore(res);
 
     const guard = await requireAdmin(req);
@@ -30,17 +30,17 @@ export default async function handler(req, res) {
     const config = getChainConfig();
     const now = Math.floor(Date.now() / 1000);
 
-    const totals = db.chainEvents.transactionTotals({
+    const totals = await db.chainEvents.transactionTotals({
       chainId: config.chainId,
       contractAddress: config.contractAddress,
     });
 
     const users = {
-      total: db.users.countUsers(),
-      admins: db.users.countAdminUsers(),
-      last7Days: countUsersSince(now - 7 * 24 * 60 * 60),
-      last24Hours: countUsersSince(now - 24 * 60 * 60),
-      withWallet: countUsersWithWallet(),
+      total: await db.users.countUsers(),
+      admins: await db.users.countAdminUsers(),
+      last7Days: await countUsersSince(now - 7 * 24 * 60 * 60),
+      last24Hours: await countUsersSince(now - 24 * 60 * 60),
+      withWallet: await countUsersWithWallet(),
     };
 
     const chain = await contractSummary();
@@ -58,11 +58,11 @@ export default async function handler(req, res) {
         eventsByType: totals.eventsByType,
       },
       campaigns: {
-        cached: db.campaigns.listCampaigns({ limit: 500 }).length,
+        cached: (await db.campaigns.listCampaigns({ limit: 500 })).length,
         onChainTotal: chain?.totalCampaigns ?? null,
       },
       chain,
-      indexer: indexerStatus(),
+      indexer: await indexerStatus(),
       network: {
         chainId: config.chainId,
         explorerName: config.explorerName,
@@ -75,16 +75,16 @@ export default async function handler(req, res) {
   }
 }
 
-function countUsersSince(since) {
-  const row = db.driver.getRow(
+async function countUsersSince(since) {
+  const row = await db.driver.getRow(
     "SELECT COUNT(*) AS total FROM users WHERE status = 'active' AND registered_at >= ?",
     [since]
   );
   return Number(row?.total || 0);
 }
 
-function countUsersWithWallet() {
-  const row = db.driver.getRow(
+async function countUsersWithWallet() {
+  const row = await db.driver.getRow(
     "SELECT COUNT(*) AS total FROM users WHERE status = 'active' AND wallet_address IS NOT NULL"
   );
   return Number(row?.total || 0);

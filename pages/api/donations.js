@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);
 
   try {
-    db.init();
+    await db.init();
     const config = getChainConfig();
 
     // Refresh from chain (throttled) so newly confirmed donations appear.
@@ -36,8 +36,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "campaignId must be a number" });
     }
 
-    const rows = db.chainEvents.listRecentDonations({ campaignId, limit });
-    const labels = db.users.publicDonorLabels(rows.map((row) => row.donorWallet));
+    const rows = await db.chainEvents.listRecentDonations({ campaignId, limit });
+    const labels = await db.users.publicDonorLabels(rows.map((row) => row.donorWallet));
 
     const donations = rows.map((row) => {
       const label = row.donorWallet ? labels.get(row.donorWallet) : null;

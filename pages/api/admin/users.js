@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);
 
   try {
-    db.init();
+    await db.init();
     privateNoStore(res);
 
     const guard = await requireAdmin(req);
@@ -28,8 +28,12 @@ export default async function handler(req, res) {
     const offset = clampInt(req.query.offset, { min: 0, max: 100000, fallback: 0 });
     const beforeId = req.query.beforeId ? Number.parseInt(req.query.beforeId, 10) : null;
 
-    const users = db.users.listRecentUsers({ limit, offset, beforeId: Number.isFinite(beforeId) ? beforeId : null });
-    const total = db.users.countUsers();
+    const users = await db.users.listRecentUsers({
+      limit,
+      offset,
+      beforeId: Number.isFinite(beforeId) ? beforeId : null,
+    });
+    const total = await db.users.countUsers();
 
     res.setHeader("X-Total-Count", String(total));
 

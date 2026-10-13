@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);
 
   try {
-    db.init();
+    await db.init();
     privateNoStore(res);
 
     const guard = await requireUser(req);
@@ -24,8 +24,8 @@ export default async function handler(req, res) {
     const walletAddress = identity.user.wallet_address || null;
 
     // Keep the persistent ledger in step with the verified records before reading.
-    const ledger = syncRewardLedger({ userId: identity.userId, walletAddress });
-    const rewards = computeRewards({
+    const ledger = await syncRewardLedger({ userId: identity.userId, walletAddress });
+    const rewards = await computeRewards({
       userId: identity.userId,
       walletAddress,
       cfUserId: identity.user.cf_user_id,

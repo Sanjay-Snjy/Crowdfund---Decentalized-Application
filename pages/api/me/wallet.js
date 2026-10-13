@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);
 
   try {
-    db.init();
+    await db.init();
     privateNoStore(res);
 
     const guard = await requireUser(req);
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
 
     // Reuse the same verification primitives, but do not mint a new session: the
     // caller is already authenticated, this only proves the wallet.
-    const verification = verifyWalletSignature({
+    const verification = await verifyWalletSignature({
       address,
       signature,
       message,
@@ -46,16 +46,19 @@ export default async function handler(req, res) {
       return res.status(verification.status).json({ error: verification.error });
     }
 
-    const linked = db.users.linkWalletToUser({
+    const linked = await db.users.linkWalletToUser({
       userId: guard.identity.userId,
       address,
     });
 
-    const attached = db.users.attachUserToWalletHistory(linked.id, address);
+    const attached = await db.users.attachUserToWalletHistory(linked.id, address);
 
     // Rebuild the reward ledger so donations made before linking now count.
     const { syncRewardLedger } = await import("../../../lib/rewards/index.js");
-    const ledger = syncRewardLedger({ userId: linked.id, walletAddress: linked.wallet_address });
+    const ledger = await syncRewardLedger({
+      userId: linked.id,
+      walletAddress: linked.wallet_address,
+    });
 
     return res.status(200).json({
       linked: true,

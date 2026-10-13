@@ -26,7 +26,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    db.init();
+    await db.init();
     const config = getChainConfig();
 
     if (!config.contractAddress) {
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     }
 
     // Indexed donations for this campaign (verified events only).
-    const indexed = db.chainEvents.listRecentDonations({ campaignId, limit: 50 });
+    const indexed = await db.chainEvents.listRecentDonations({ campaignId, limit: 50 });
     const confirmedWei = indexed
       .filter((row) => row.status === "confirmed")
       .reduce((sum, row) => sum + BigInt(row.amountWei || "0"), 0n)

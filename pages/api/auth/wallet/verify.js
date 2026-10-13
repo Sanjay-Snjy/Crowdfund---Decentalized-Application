@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);
 
   try {
-    db.init();
+    await db.init();
 
     const body = await readJson(req, 32 * 1024);
     const address = body?.address;
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       return badRequest(res, "The signed message is required");
     }
 
-    const result = verifyWalletSignature({ address, signature, message, nonce, purpose });
+    const result = await verifyWalletSignature({ address, signature, message, nonce, purpose });
     if (!result.ok) {
       return res.status(result.status).json({ error: result.error });
     }

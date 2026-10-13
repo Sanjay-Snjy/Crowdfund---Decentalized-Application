@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);
 
   try {
-    db.init();
+    await db.init();
 
     const body = await readJson(req, 8 * 1024);
     const address = body?.address;
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
     if (!isAddressLike(address)) return badRequest(res, "A valid wallet address is required");
 
-    const challenge = requestWalletNonce({ address, purpose });
+    const challenge = await requestWalletNonce({ address, purpose });
     if (!challenge) return badRequest(res, "Invalid wallet address");
 
     res.setHeader("Cache-Control", "no-store");

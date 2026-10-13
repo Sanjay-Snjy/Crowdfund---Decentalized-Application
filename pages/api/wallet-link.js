@@ -36,7 +36,7 @@ function profileFromRow(row) {
 }
 
 async function handleGet(req, res) {
-  db.init();
+  await db.init();
   privateNoStore(res);
 
   const { clerkUserId, walletAddresses } = req.query;
@@ -60,7 +60,7 @@ async function handleGet(req, res) {
     if (list.length === 0) return res.status(200).json({ walletProfiles: [] });
 
     const placeholders = list.map(() => "?").join(",");
-    const rows = db.driver.query(
+    const rows = await db.driver.query(
       `SELECT wallet_address, cf_user_id, display_name, public_display, wallet_linked_at
          FROM users
         WHERE status = 'active' AND wallet_address IN (${placeholders})`,
@@ -74,7 +74,7 @@ async function handleGet(req, res) {
 }
 
 async function handlePost(req, res) {
-  db.init();
+  await db.init();
   privateNoStore(res);
 
   const body = await readJson(req, 32 * 1024);
@@ -83,14 +83,14 @@ async function handlePost(req, res) {
   if (!isAddressLike(walletAddress)) return badRequest(res, "A valid wallet address is required");
 
   if (action === "init") {
-    const challenge = requestWalletNonce({ address: walletAddress, purpose: "user" });
+    const challenge = await requestWalletNonce({ address: walletAddress, purpose: "user" });
     if (!challenge) return badRequest(res, "Invalid wallet address");
     // `nonce` keeps the old response shape; `message` is what the wallet signs.
     return res.status(200).json({ nonce: challenge.message, nonceValue: challenge.nonce, message: challenge.message });
   }
 
   if (action === "verify") {
-    const result = verifyWalletSignature({
+    const result = await verifyWalletSignature({
       address: walletAddress,
       signature: body?.signature,
       message: body?.message || body?.nonce,

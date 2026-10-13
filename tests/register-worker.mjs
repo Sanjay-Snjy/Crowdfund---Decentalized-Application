@@ -12,7 +12,7 @@ const ids = [];
 
 for (let i = 0; i < count; i += 1) {
   const index = start + i;
-  const user = ensureUserFromClerk({
+  const user = await ensureUserFromClerk({
     clerkUserId: `user_parallel_${index}`,
     displayName: `Parallel ${index}`,
   });

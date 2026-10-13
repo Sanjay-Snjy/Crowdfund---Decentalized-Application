@@ -2,7 +2,13 @@
 /**
  * Live API smoke test against a running dev/production server.
  *
- *   node tests/api-smoke.mjs [baseUrl]
+ *   node tests/api-smoke.mjs [baseUrl]                 # full run (creates test profiles)
+ *   node tests/api-smoke.mjs [baseUrl] --read-only     # safe against a production deploy
+ *
+ * `--read-only` runs only checks that write nothing: it verifies the database-backed
+ * routes boot and answer (401 where authentication is required, real data where the
+ * endpoint is public) and that none of them return the generic
+ * `{"error":"Internal server error"}` body. Use it against the deployed site.
  *
  * Covers the security-critical paths end to end:
  *   - unauthenticated access to /api/admin/* is rejected (401);
@@ -53,6 +59,92 @@ function cookieFrom(headers) {
   const entry = (headers || []).find((value) => value.startsWith("cf_session="));
   if (!entry) return null;
   return entry.split(";")[0];
+}
+
+const READ_ONLY = process.argv.includes("--read-only") || process.env.SMOKE_READ_ONLY === "1";
+
+function summarizeAndExit() {
+  const failed = results.filter((result) => !result.ok);
+  console.log(`\n  ${results.length - failed.length} passed, ${failed.length} failed\n`);
+  process.exit(failed.length > 0 ? 1 : 0);
+}
+
+// ── 0. Read-only mode: prove the database-backed routes answer ──────────────
+//
+// This is the check for the failure this project actually hit in production: a host
+// with no reachable database returned a generic 500 from every DB-backed route.
+if (READ_ONLY) {
+  const guarded = [
+    "/api/admin/users",
+    "/api/admin/transactions",
+    "/api/admin/stats",
+    "/api/admin/campaigns",
+    "/api/me",
+    "/api/me/donations",
+    "/api/rewards/me",
+  ];
+
+  for (const path of guarded) {
+    const response = await call(path);
+    const generic500 = response.status === 500 || response.payload?.error === "Internal server error";
+    record(
+      `${path} refuses anonymous access`,
+      response.status === 401 && !generic500,
+      generic500 ? "500 Internal server error" : `status ${response.status}`
+    );
+  }
+
+  const donations = await call("/api/donations?limit=5");
+  record(
+    "/api/donations answers with chain-backed rows",
+    donations.status === 200 && Array.isArray(donations.payload?.donations),
+    donations.status === 200
+      ? `${donations.payload.donations.length} row(s)`
+      : `status ${donations.status} ${donations.payload?.error || ""} ${donations.payload?.hint || ""}`.trim()
+  );
+
+  if (donations.status === 200) {
+    record(
+      "donations link to the configured network's explorer",
+      donations.payload.donations.every(
+        (row) => !row.explorerUrl || row.explorerUrl.startsWith(donations.payload.network.explorerBase)
+      ),
+      donations.payload.network?.explorerName || "unknown explorer"
+    );
+    record(
+      "unlinked wallets never receive a fabricated CrowdFund User ID",
+      donations.payload.donations.every(
+        (row) => row.donor.cfUserId === null || /^CF-\d{4,}$/.test(row.donor.cfUserId)
+      ),
+      "labels verified"
+    );
+  }
+
+  const funding = await call("/api/campaigns/1/funding");
+  record(
+    "/api/campaigns/1/funding answers from chain state",
+    funding.status === 200 && Boolean(funding.payload?.campaign),
+    `status ${funding.status}`
+  );
+
+  const session = await call("/api/auth/session");
+  record(
+    "/api/auth/session reports an anonymous visitor",
+    session.status === 200 && session.payload?.authenticated === false,
+    `status ${session.status}, clerkConfigured=${session.payload?.clerkConfigured}`
+  );
+
+  const profiles = await call(
+    "/api/wallet-link?walletAddresses=0x1111111111111111111111111111111111111111"
+  );
+  record(
+    "/api/wallet-link reports public wallet labels",
+    profiles.status === 200 && Array.isArray(profiles.payload?.walletProfiles),
+    `status ${profiles.status}`
+  );
+
+  console.log("\n  Read-only mode: nothing was written to the database.\n");
+  summarizeAndExit();
 }
 
 // ── 1. Unauthenticated admin access is refused ───────────────────────────────

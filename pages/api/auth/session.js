@@ -29,11 +29,11 @@ export default async function handler(req, res) {
   if (!["GET", "DELETE"].includes(req.method)) return methodNotAllowed(res, ["GET", "DELETE"]);
 
   try {
-    db.init();
+    await db.init();
     privateNoStore(res);
 
     if (req.method === "DELETE") {
-      signOut(req, res);
+      await signOut(req, res);
       return res.status(200).json({ authenticated: false });
     }
 

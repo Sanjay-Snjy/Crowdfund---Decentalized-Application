@@ -98,7 +98,7 @@ test.before(async () => {
     rewards: await import("../lib/rewards/index.js"),
   };
 
-  repo.db.init();
+  await repo.db.init();
 });
 
 test.after(async () => {
@@ -108,10 +108,13 @@ test.after(async () => {
 
 test("indexes real contract events into verified donation records", async () => {
   // Donor A has a CrowdFund profile with a linked wallet; donor B does not.
-  const donorA = repo.db.users.ensureUserFromWallet({ address: DONOR_A, displayName: "Donor A" });
-  repo.db.users.linkWalletToUser({ userId: donorA.id, address: DONOR_A });
+  const donorA = await repo.db.users.ensureUserFromWallet({
+    address: DONOR_A,
+    displayName: "Donor A",
+  });
+  await repo.db.users.linkWalletToUser({ userId: donorA.id, address: DONOR_A });
 
-  repo.db.campaigns.upsertCampaign({
+  await repo.db.campaigns.upsertCampaign({
     chainId: CHAIN_ID,
     contractAddress: CONTRACT,
     campaignId: 1,
@@ -129,7 +132,7 @@ test("indexes real contract events into verified donation records", async () => 
   assert.equal(result.events.total, scenarioLogs.length);
   assert.equal(result.events.inserted, scenarioLogs.length);
 
-  const donations = repo.db.chainEvents.listRecentDonations({ limit: 10 });
+  const donations = await repo.db.chainEvents.listRecentDonations({ limit: 10 });
   assert.equal(donations.length, 3, "only contributions become donation records");
 
   const newest = donations[0];
@@ -140,7 +143,7 @@ test("indexes real contract events into verified donation records", async () => 
   assert.equal(newest.confirmations, 4);
   assert.ok(newest.txHash.startsWith("0x"), "the transaction hash is preserved");
 
-  const campaignOne = repo.db.chainEvents.listRecentDonations({ campaignId: 1 });
+  const campaignOne = await repo.db.chainEvents.listRecentDonations({ campaignId: 1 });
   assert.equal(campaignOne.length, 2, "each donation is tied to its own campaign");
   assert.deepEqual(
     campaignOne.map((row) => row.amountWei).sort(),
@@ -156,8 +159,8 @@ test("indexes real contract events into verified donation records", async () => 
   );
 });
 
-test("donations from wallets without a profile keep the raw wallet and get no CrowdFund ID", () => {
-  const donations = repo.db.chainEvents.listRecentDonations({ limit: 10 });
+test("donations from wallets without a profile keep the raw wallet and get no CrowdFund ID", async () => {
+  const donations = await repo.db.chainEvents.listRecentDonations({ limit: 10 });
   const fromB = donations.find((row) => row.donorWallet === DONOR_B.toLowerCase());
 
   assert.ok(fromB);
@@ -168,16 +171,16 @@ test("donations from wallets without a profile keep the raw wallet and get no Cr
 });
 
 test("re-indexing the same range never duplicates a donation", async () => {
-  const before = repo.db.chainEvents.countTransactions({ eventType: "contribution" });
+  const before = await repo.db.chainEvents.countTransactions({ eventType: "contribution" });
   const result = await repo.indexer.syncChainEvents({ mode: "deep" });
-  const after = repo.db.chainEvents.countTransactions({ eventType: "contribution" });
+  const after = await repo.db.chainEvents.countTransactions({ eventType: "contribution" });
 
   assert.equal(result.events.inserted, 0, "nothing is inserted twice");
   assert.equal(after, before, "the donation count is unchanged");
 });
 
-test("refunds reverse reward eligibility for the refunded contribution", () => {
-  const donations = repo.db.chainEvents.listRecentDonations({ limit: 10 });
+test("refunds reverse reward eligibility for the refunded contribution", async () => {
+  const donations = await repo.db.chainEvents.listRecentDonations({ limit: 10 });
   const refunded = donations.find((row) => row.campaignId === 2);
   const stillEligible = donations.find((row) => row.campaignId === 1 && row.donorWallet === DONOR_A.toLowerCase());
 
@@ -186,9 +189,9 @@ test("refunds reverse reward eligibility for the refunded contribution", () => {
   assert.equal(stillEligible.rewardEligible, true);
 });
 
-test("rewards are computed only from confirmed, non-refunded contributions", () => {
-  const donorA = repo.db.users.getUserByWallet(DONOR_A);
-  const rewards = repo.rewards.computeRewards({ userId: donorA.id, walletAddress: DONOR_A });
+test("rewards are computed only from confirmed, non-refunded contributions", async () => {
+  const donorA = await repo.db.users.getUserByWallet(DONOR_A);
+  const rewards = await repo.rewards.computeRewards({ userId: donorA.id, walletAddress: DONOR_A });
 
   assert.equal(rewards.points, 400, "0.4 ETH eligible volume at 1000 points/ETH");
   assert.equal(rewards.eligibleWei, eth("0.4").toString());
@@ -205,16 +208,16 @@ test("rewards are computed only from confirmed, non-refunded contributions", () 
   assert.equal(refundedRow.points, 0);
 });
 
-test("the reward ledger is idempotent and holds one row per eligible contribution", () => {
-  const donorA = repo.db.users.getUserByWallet(DONOR_A);
+test("the reward ledger is idempotent and holds one row per eligible contribution", async () => {
+  const donorA = await repo.db.users.getUserByWallet(DONOR_A);
 
-  const first = repo.rewards.syncRewardLedger({ userId: donorA.id, walletAddress: DONOR_A });
-  const second = repo.rewards.syncRewardLedger({ userId: donorA.id, walletAddress: DONOR_A });
+  const first = await repo.rewards.syncRewardLedger({ userId: donorA.id, walletAddress: DONOR_A });
+  const second = await repo.rewards.syncRewardLedger({ userId: donorA.id, walletAddress: DONOR_A });
 
   assert.equal(first.awarded, 0, "the indexer already awarded the eligible contribution");
   assert.equal(second.awarded, 0, "a second sync awards nothing new");
 
-  const ledger = repo.db.driver.query(
+  const ledger = await repo.db.driver.query(
     "SELECT reward_type, points, source_transaction_id, reversed_at FROM reward_events WHERE user_id = ?",
     [donorA.id]
   );
@@ -223,12 +226,12 @@ test("the reward ledger is idempotent and holds one row per eligible contributio
   assert.equal(ledger[0].reward_type, "points");
   assert.equal(Number(ledger[0].points), 400);
   assert.equal(ledger[0].reversed_at, null, "an eligible contribution is not reversed");
-  assert.equal(repo.rewards.rewardLedgerPoints(donorA.id), 400);
+  assert.equal(await repo.rewards.rewardLedgerPoints(donorA.id), 400);
 });
 
-test("a contribution can never be awarded points twice (database constraint)", () => {
-  const donorA = repo.db.users.getUserByWallet(DONOR_A);
-  const ledger = repo.db.driver.query(
+test("a contribution can never be awarded points twice (database constraint)", async () => {
+  const donorA = await repo.db.users.getUserByWallet(DONOR_A);
+  const ledger = await repo.db.driver.query(
     "SELECT source_transaction_id FROM reward_events WHERE user_id = ?",
     [donorA.id]
   );
@@ -238,7 +241,7 @@ test("a contribution can never be awarded points twice (database constraint)", (
 
   // The UNIQUE (user_id, reward_type, source_transaction_id) index is what makes the
   // ledger idempotent; prove it by attempting a duplicate write.
-  assert.throws(() =>
+  await assert.rejects(() =>
     repo.db.driver.run(
       `INSERT INTO reward_events (user_id, reward_type, points, source_transaction_id, created_at)
        VALUES (?, 'points', 1, ?, 0)`,
@@ -269,22 +272,28 @@ test("pending events are never counted as confirmed donations", async () => {
   const result = await repo.indexer.syncChainEvents({ mode: "deep" });
   assert.equal(result.ok, true, JSON.stringify(result));
 
-  const pending = repo.db.chainEvents.listTransactions(
+  const pending = await repo.db.chainEvents.listTransactions(
     { status: "pending", eventType: "contribution" },
     { limit: 10 }
   );
   assert.equal(pending.length, 1, "the tip block is indexed as pending");
   assert.equal(pending[0].amountWei, eth("0.05").toString());
 
-  const confirmedList = repo.db.chainEvents.listRecentDonations({ campaignId: 1, limit: 10 });
+  const confirmedList = await repo.db.chainEvents.listRecentDonations({
+    campaignId: 1,
+    limit: 10,
+  });
   assert.equal(
     confirmedList.some((row) => row.amountWei === eth("0.05").toString()),
     false,
     "a pending donation is not shown as a confirmed donation"
   );
 
-  const donorB = repo.db.users.ensureUserFromWallet({ address: DONOR_B, displayName: "Donor B" });
-  const rewards = repo.rewards.computeRewards({ userId: donorB.id, walletAddress: DONOR_B });
+  const donorB = await repo.db.users.ensureUserFromWallet({
+    address: DONOR_B,
+    displayName: "Donor B",
+  });
+  const rewards = await repo.rewards.computeRewards({ userId: donorB.id, walletAddress: DONOR_B });
   assert.equal(rewards.points, 0, "pending contributions earn no points");
   assert.equal(rewards.eligibleWei, "0");
 
@@ -301,7 +310,7 @@ test("admin filters, search and totals work across campaigns", async () => {
   const resync = await repo.indexer.syncChainEvents({ mode: "deep" });
   assert.equal(resync.ok, true, JSON.stringify(resync));
 
-  const all = repo.db.chainEvents.listTransactions({}, { limit: 50 });
+  const all = await repo.db.chainEvents.listTransactions({}, { limit: 50 });
   assert.ok(all.length >= 6, "every indexed category is stored");
 
   const byType = new Set(all.map((row) => row.eventType));
@@ -310,22 +319,31 @@ test("admin filters, search and totals work across campaigns", async () => {
   assert.equal(byType.has("milestone_released"), true);
   assert.equal(byType.has("campaign_created"), true);
 
-  const onlyCampaignTwo = repo.db.chainEvents.listTransactions({ campaignId: 2 }, { limit: 50 });
+  const onlyCampaignTwo = await repo.db.chainEvents.listTransactions(
+    { campaignId: 2 },
+    { limit: 50 }
+  );
   assert.equal(onlyCampaignTwo.every((row) => row.campaignId === 2), true);
 
-  const byCfId = repo.db.chainEvents.listTransactions({ cfUserId: "CF-0001" }, { limit: 50 });
+  const byCfId = await repo.db.chainEvents.listTransactions(
+    { cfUserId: "CF-0001" },
+    { limit: 50 }
+  );
   assert.equal(byCfId.length > 0, true);
   assert.equal(byCfId.every((row) => row.cfUserId === "CF-0001"), true);
 
-  const byHash = repo.db.chainEvents.listTransactions({ search: "aaaa" }, { limit: 50 });
+  const byHash = await repo.db.chainEvents.listTransactions({ search: "aaaa" }, { limit: 50 });
   assert.equal(byHash.length, 1);
   assert.equal(byHash[0].txHash, "0x" + "aa".repeat(32));
 
-  const byCampaignName = repo.db.chainEvents.listTransactions({ search: "solar" }, { limit: 50 });
+  const byCampaignName = await repo.db.chainEvents.listTransactions(
+    { search: "solar" },
+    { limit: 50 }
+  );
   assert.equal(byCampaignName.length > 0, true);
 
   // The main stub serves three contributions (the tip-only log lived on the other stub).
-  const totals = repo.db.chainEvents.transactionTotals({});
+  const totals = await repo.db.chainEvents.transactionTotals({});
   assert.equal(totals.confirmedDonations, 3);
   assert.equal(totals.confirmedWei, eth("0.7").toString());
   assert.equal(totals.rewardEligibleWei, eth("0.6").toString(), "the refunded 0.1 ETH is excluded");
@@ -333,10 +351,10 @@ test("admin filters, search and totals work across campaigns", async () => {
   // longer exists in this stub's chain) and can never be shown as a donation.
   assert.equal(totals.pendingDonations, 1);
 
-  const campaignTotals = repo.db.chainEvents.transactionTotals({ campaignId: 1 });
+  const campaignTotals = await repo.db.chainEvents.transactionTotals({ campaignId: 1 });
   assert.equal(campaignTotals.confirmedWei, eth("0.6").toString());
 
-  const releases = repo.db.chainEvents.listFundReleases({ campaignId: 1 });
+  const releases = await repo.db.chainEvents.listFundReleases({ campaignId: 1 });
   assert.equal(releases.length, 1);
   assert.equal(releases[0].extra.milestoneIndex, 0);
   assert.equal(releases[0].amountWei, eth("0.18").toString());

@@ -2,33 +2,21 @@
   - Local:        http://localhost:1112
   - Environments: .env.local
 
- ✓ Ready in 5.9s
+ ✓ Ready in 4.8s
+ ✓ Compiled /middleware in 447ms
  ○ Compiling /404 ...
- ✓ Compiled /404 in 35.5s (2636 modules)
+ ✓ Compiled /404 in 25.6s (2506 modules)
  ○ Compiling /home ...
- ✓ Compiled /home in 25.8s (2723 modules)
+ ✓ Compiled /home in 17.2s (2718 modules)
+ ✓ Compiled /api/donations in 1586ms (2729 modules)
  ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 3.5s (2767 modules)
- ✓ Compiled /admin in 1544ms (2793 modules)
- ✓ Compiled /contributions in 999ms (2799 modules)
- ✓ Compiled /create-campaign in 1114ms (2807 modules)
- ✓ Compiled /campaign/[id] in 1364ms (2819 modules)
- ○ Compiling /my-campaigns ...
- ✓ Compiled /my-campaigns in 4.8s (2825 modules)
- ✓ Compiled /saved-campaigns in 1220ms (2831 modules)
- ✓ Compiled /api/auth/session in 333ms (257 modules)
- ✓ Compiled /api/rewards/me in 338ms (259 modules)
- ✓ Compiled /api/admin/stats in 263ms (261 modules)
- ✓ Compiled /api/campaigns/[id]/funding in 307ms (263 modules)
- ✓ Compiled /api/admin/users in 353ms (263 modules)
- ✓ Compiled /api/admin/transactions in 298ms (265 modules)
- ✓ Compiled /api/auth/wallet/nonce in 354ms (267 modules)
- ✓ Compiled /api/auth/wallet/verify in 636ms (269 modules)
- ✓ Compiled /api/me in 291ms (271 modules)
- ✓ Compiled /api/admin/campaigns in 200ms (213 modules)
- ✓ Compiled /api/donations in 162ms (109 modules)
- ✓ Compiled /api/rewards/me in 132ms (111 modules)
- ○ Compiling /home ...
- ✓ Compiled /home in 3.7s (2719 modules)
- ✓ Compiled /dashboard in 2.6s (2757 modules)
- ✓ Compiled /api/auth/session in 167ms (220 modules)
+ ✓ Compiled /dashboard in 3.3s (2773 modules)
+ ✓ Compiled /admin in 882ms (2799 modules)
+ ✓ Compiled /api/admin/users in 96ms (242 modules)
+ ✓ Compiled /api/admin/transactions in 98ms (244 modules)
+ ✓ Compiled /api/auth/wallet/nonce in 124ms (246 modules)
+ ✓ Compiled /api/auth/wallet/verify in 103ms (248 modules)
+ ✓ Compiled /api/me in 116ms (250 modules)
+ ✓ Compiled /api/admin/stats in 152ms (252 modules)
+ ✓ Compiled /api/admin/campaigns in 139ms (254 modules)
+ ✓ Compiled /api/rewards/me in 151ms (256 modules)

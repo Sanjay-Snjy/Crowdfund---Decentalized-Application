@@ -26,6 +26,28 @@ const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "crowdfund-libsql-"));
 const dbFile = path.join(tempDir, "libsql.db");
 
 // ── A minimal libSQL client over the local driver ────────────────────────────
+/**
+ * Reproduces the REAL `@libsql/client` (0.18) ResultSet shape, which is what the
+ * deployed host uses:
+ *   - `columns` is an array of plain STRINGS (`Array<string>`), not `{ name }` objects;
+ *   - every row is array-like AND object-like (`row.amount_wei` and `row[0]` both work),
+ *     with a `length` property.
+ *
+ * Getting this wrong is invisible to the local SQLite path, so it is modelled
+ * exactly here: an earlier stub returned `columns: [{ name }]` with value arrays,
+ * which made the driver's mapping look correct while every hosted-database read
+ * actually returned rows whose fields were all `undefined`.
+ */
+function makeLibsqlRow(record) {
+  const names = Object.keys(record);
+  const row = { length: names.length };
+  names.forEach((name, index) => {
+    row[index] = record[name];
+    row[name] = record[name];
+  });
+  return row;
+}
+
 function createFakeLibsqlClient() {
   const database = new DatabaseSync(dbFile);
   database.exec("PRAGMA foreign_keys = ON;");
@@ -39,6 +61,7 @@ function createFakeLibsqlClient() {
       const result = statement.run(...params);
       return {
         columns: [],
+        columnTypes: [],
         rows: [],
         rowsAffected: Number(result.changes ?? 0),
         lastInsertRowid:
@@ -47,10 +70,11 @@ function createFakeLibsqlClient() {
     }
 
     const records = statement.all(...params);
-    const columns = records.length > 0 ? Object.keys(records[0]).map((name) => ({ name })) : [];
+    const columns = records.length > 0 ? Object.keys(records[0]) : [];
     return {
       columns,
-      rows: records.map((record) => Object.values(record)),
+      columnTypes: columns.map(() => ""),
+      rows: records.map(makeLibsqlRow),
       rowsAffected: 0,
       lastInsertRowid: undefined,
     };

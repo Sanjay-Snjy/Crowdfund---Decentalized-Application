@@ -2,21 +2,22 @@
   - Local:        http://localhost:1112
   - Environments: .env.local
 
- ✓ Ready in 4.8s
- ✓ Compiled /middleware in 447ms
- ○ Compiling /404 ...
- ✓ Compiled /404 in 25.6s (2506 modules)
+ ✓ Ready in 3.7s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 31.1s (2636 modules)
  ○ Compiling /home ...
- ✓ Compiled /home in 17.2s (2718 modules)
- ✓ Compiled /api/donations in 1586ms (2729 modules)
- ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 3.3s (2773 modules)
- ✓ Compiled /admin in 882ms (2799 modules)
- ✓ Compiled /api/admin/users in 96ms (242 modules)
- ✓ Compiled /api/admin/transactions in 98ms (244 modules)
- ✓ Compiled /api/auth/wallet/nonce in 124ms (246 modules)
- ✓ Compiled /api/auth/wallet/verify in 103ms (248 modules)
- ✓ Compiled /api/me in 116ms (250 modules)
- ✓ Compiled /api/admin/stats in 152ms (252 modules)
- ✓ Compiled /api/admin/campaigns in 139ms (254 modules)
- ✓ Compiled /api/rewards/me in 151ms (256 modules)
+ ✓ Compiled /home in 16.4s (2723 modules)
+ ✓ Compiled /api/admin/users in 145ms (203 modules)
+ ✓ Compiled /api/admin/transactions in 101ms (205 modules)
+ ✓ Compiled /api/auth/wallet/nonce in 114ms (207 modules)
+ ✓ Compiled /api/auth/wallet/verify in 93ms (209 modules)
+ ✓ Compiled /api/me in 126ms (211 modules)
+ ✓ Compiled /api/auth/session in 119ms (213 modules)
+ ✓ Compiled /api/admin/stats in 117ms (215 modules)
+ ✓ Compiled /api/admin/campaigns in 321ms (217 modules)
+ ○ Compiling /api/wallet-link ...
+ ✓ Compiled /api/wallet-link in 3.6s (2743 modules)
+ ✓ Compiled /api/rewards/me in 309ms (221 modules)
+ ✓ Compiled /dashboard in 2.5s (2789 modules)
+ ✓ Compiled /admin in 1316ms (2815 modules)
+ ✓ Compiled /api/campaigns/[id]/funding in 202ms (258 modules)

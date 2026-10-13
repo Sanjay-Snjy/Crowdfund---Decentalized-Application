@@ -15,9 +15,12 @@ import useIdentity from "../../hooks/useIdentity";
 import { ErrorState, LoadingState } from "../Common/AsyncStates";
 
 export default function AdminGate({ children }) {
-  const { identity, isLoading, isAdmin, signInWithWallet, refresh, connectedAddress } = useIdentity();
+  const { identity, loading, isAdmin, signInWithWallet, refresh, connectedAddress } = useIdentity();
 
-  if (isLoading) {
+  // Until /api/auth/session answers, nothing is known about the visitor — render the
+  // skeleton, never the "access required" panel (its field is `loading`, not
+  // `isLoading`; reading a name the hook does not expose made this flash the gate).
+  if (loading) {
     return (
       <div className="card rounded-2xl p-5">
         <LoadingState rows={3} height="h-16" label="Checking administrator access" />

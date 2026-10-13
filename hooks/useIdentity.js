@@ -5,6 +5,13 @@
  * signed wallet session) so the UI can show the CrowdFund User ID and the admin
  * entry point. The server is always the authority: anything this hook exposes is
  * only used to decide what to RENDER, never what is allowed.
+ *
+ * Returns: `loading` (true until the session has been read — render a skeleton,
+ * never a gate, while it is true), `identity`, `error`, `isSignedIn`, `cfUserId`,
+ * `isAdmin`, `source`, `refresh`, `signInWithWallet`, `linkWallet`, `signOut` and
+ * `connectedAddress`. There is deliberately no `isLoading`: a consumer reading a
+ * name this hook does not expose gets `undefined`, which is falsy and silently turns
+ * a loading guard into an "access required" flash.
  */
 import { useCallback, useEffect, useState } from "react";
 import { useAccount, useSignMessage } from "wagmi";

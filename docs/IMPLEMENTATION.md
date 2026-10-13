@@ -232,6 +232,7 @@ node tests/identity.test.js                  # CF IDs, idempotency, nonces, sess
 node tests/indexer.test.js                   # event indexing, dedupe, rewards, admin filters
 node tests/libsql-driver.test.js             # the hosted-libSQL code path (no credentials needed)
 node tests/env-template.test.js              # the committed template must never carry a real secret
+node tests/identity-hook-contract.test.js    # every field read off useIdentity must exist (no type-checker on .js)
 node tests/api-smoke.mjs http://localhost:1112   # end-to-end API + authz (needs the dev server)
 node scripts/verify-indexer.mjs              # live indexer health against the configured RPC
 
@@ -254,6 +255,7 @@ npm run export-abi       # regenerate constants/abi.js from the compiled artifac
 | Identity / DB unit tests | `node tests/identity.test.js` | **10 passed, 0 failed** — including concurrent multi-process registration never reusing an ID |
 | Indexer / rewards unit tests | `node tests/indexer.test.js` | **11 passed, 0 failed** — pending events excluded, re-index never duplicates, refunds reverse eligibility, and a database with no sync cursor backfills from `CF_INDEX_START_BLOCK` (a per-run block budget resumes instead of skipping history) |
 | Environment template guard | `node tests/env-template.test.js` | **3 passed, 0 failed** — `.env.example` documents every variable the app reads and contains no real database host, JWT, provider key or private key |
+| Client identity hook contract | `node tests/identity-hook-contract.test.js` | **2 passed, 0 failed** — every property a consumer destructures from `useIdentity()` exists in its return object, so a mistyped name (the `isLoading` vs `loading` mismatch that flashed the admin gate on every load) cannot slip through again |
 | Hosted-libSQL path | `node tests/libsql-driver.test.js` | **8 passed, 0 failed** — batched migrations, `UPDATE … RETURNING` ID allocation, `ON CONFLICT DO NOTHING` idempotency, transactions in the AsyncLocalStorage scope, donation totals, and a loud failure when a URL is set without a token |
 | API smoke (live dev server) | `node tests/api-smoke.mjs http://localhost:1112` | **22 passed, 0 failed** — 401/403 authorization, nonce replay rejection, wallet session → CF-0004, admin sees newest CF-0006, no email leakage, 5 confirmed donations / 0.255 ETH, Sepolia explorer links |
 | Contract suite (existing) | `cd web3 && npm test` | **35 passed, 0 failing** |

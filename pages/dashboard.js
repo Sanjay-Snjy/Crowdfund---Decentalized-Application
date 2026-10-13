@@ -12,6 +12,10 @@ import DeadlineCountdown from "../components/Dashboard/DeadlineCountdown";
 import MilestoneTracker from "../components/Dashboard/MilestoneTracker";
 
 import BookmarkedCampaigns from "../components/Dashboard/BookmarkedCampaigns";
+import IdentityPanel from "../components/Profile/IdentityPanel";
+import RewardBadges from "../components/Rewards/RewardBadges";
+import RecentDonations from "../components/Donations/RecentDonations";
+import MyDonations from "../components/Donations/MyDonations";
 import { useContract } from "../hooks/useContract";
 import { CONTRACT_ADDRESS } from "../constants";
 import { CROWDFUNDING_ABI } from "../constants/abi";
@@ -274,6 +278,12 @@ function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* CrowdFund identity + donor rewards (verified server-side) */}
+          <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <IdentityPanel />
+            <RewardBadges />
+          </div>
+
           {/* Recent transactions */}
           <div className="lg:col-span-2 card p-5 rounded-2xl">
             <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--color-text)" }}>Recent Transactions</h3>
@@ -344,6 +354,12 @@ function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* Community donation activity + my verified donation history */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RecentDonations limit={6} title="Recent Community Donations" />
+          <MyDonations />
+        </div>
 
         {/* Feature #18: Bookmarked Campaigns + Platform Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useSignMessage } from "wagmi";
-import { FiSun, FiMoon, FiUser, FiLogOut } from "react-icons/fi";
+import { FiSun, FiMoon, FiUser, FiShield, FiLink } from "react-icons/fi";
+import useIdentity from "../../hooks/useIdentity";
 
 const NAV_ITEMS = [
   { id: "home", label: "Home", path: "/home" },
@@ -18,6 +19,7 @@ export default function Header({ onMenuToggle, isCollapsed }) {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const { user, isLoaded, isSignedIn } = useUser();
+  const identity = useIdentity();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -53,12 +55,14 @@ export default function Header({ onMenuToggle, isCollapsed }) {
     setWalletUserName(fallbackName);
   }, [isLoaded, isSignedIn, user]);
 
+  // The Admin Panel link is shown when either the server-verified CrowdFund
+  // profile has the admin role, or the connected wallet matches the configured
+  // admin address / contract owner. Showing it is only a convenience — the server
+  // enforces authorization for every /api/admin/* call.
   useEffect(() => {
     const adminAddress = process.env.NEXT_PUBLIC_ADMIN_ADDRESS;
-    setIsAdmin(
-      address?.toLowerCase() === adminAddress?.toLowerCase()
-    );
-  }, [address]);
+    setIsAdmin(identity.isAdmin || address?.toLowerCase() === adminAddress?.toLowerCase());
+  }, [address, identity.isAdmin]);
 
   const toggleTheme = () => {
     setIsDark((prev) => {
@@ -149,8 +153,8 @@ export default function Header({ onMenuToggle, isCollapsed }) {
             )}
           </button>
 
-          {/* Profile Button (only show when signed in) */}
-          {isSignedIn && (
+          {/* Profile button — shown for a Clerk session or a signed wallet session */}
+          {(isSignedIn || identity.isSignedIn) && (
             <div className="relative group">
               <button
                 type="button"
@@ -180,11 +184,23 @@ export default function Header({ onMenuToggle, isCollapsed }) {
               <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-800">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {walletUserName}
+                    {walletUserName || "CrowdFund member"}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {user?.primaryEmailAddress?.emailAddress}
+                  {/* CrowdFund User ID is the only application-facing identifier. */}
+                  <p className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate">
+                    {identity.cfUserId || "No CrowdFund ID yet"}
                   </p>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    <span className={`badge ${identity.identity?.walletAddress || address ? "badge-success" : "badge-neutral"}`}>
+                      <FiLink className="mr-1 h-2.5 w-2.5" />
+                      {identity.identity?.walletAddress || address ? "Wallet connected" : "No wallet"}
+                    </span>
+                    {identity.isAdmin && (
+                      <span className="badge badge-success">
+                        <FiShield className="mr-1 h-2.5 w-2.5" /> Admin
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <Link
                   href="/my-campaigns"
@@ -196,8 +212,17 @@ export default function Header({ onMenuToggle, isCollapsed }) {
                   href="/contributions"
                   className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  My Contributions
+                  My Contributions & Rewards
                 </Link>
+                {identity.isSignedIn && !isSignedIn && (
+                  <button
+                    type="button"
+                    onClick={() => identity.signOut()}
+                    className="block w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    Sign out of wallet session
+                  </button>
+                )}
               </div>
             </div>
           )}

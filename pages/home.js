@@ -27,6 +27,7 @@ import {
 import { getCreatorDisplayName, calculateProgress } from "../utils/helpers";
 import { getFromIPFS } from "../utils/ipfs";
 import CampaignCard from "../components/Campaign/CampaignCard";
+import RecentDonations from "../components/Donations/RecentDonations";
 import { useDemoMode, DEMO_ACTIVE_CAMPAIGNS, DEMO_TRANSACTION_FEED } from "../lib/demoMode";
 
 const CATEGORIES = [
@@ -695,6 +696,15 @@ export default function AllCampaignsPage() {
               </div>
             )}
           </div>
+        </section>
+
+        {/* ============ Community donation activity (public, on-chain) ============ */}
+        <section className="px-4 pb-2">
+          <RecentDonations
+            limit={6}
+            title="Community Donation Activity"
+            description="Confirmed contributions across every campaign, straight from the deployed contract."
+          />
         </section>
 
         {/* ================= Creator CTA Band ================= */}

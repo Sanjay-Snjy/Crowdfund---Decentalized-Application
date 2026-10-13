@@ -17,6 +17,8 @@ import {
 } from "../../utils/helpers";
 import { CONTRACT_ADDRESS, MILESTONE_SCHEDULE, VOTE_QUORUM_PERCENT } from "../../constants";
 import { CROWDFUNDING_ABI } from "../../constants/abi";
+import FundingStatus from "./FundingStatus";
+import RecentDonations from "../Donations/RecentDonations";
 
 const TABS = ["Overview", "Milestones", "Contributors"];
 
@@ -539,6 +541,18 @@ export default function CampaignDetails({ campaignId }) {
                       <li>4. If the target is reached, the whole amount is released across the three approved milestones.</li>
                     </ul>
                   </div>
+
+                  {/* Verified escrow / funding status read from the contract */}
+                  <FundingStatus campaignId={campaignId} />
+
+                  {/* Confirmed on-chain donors with transaction links */}
+                  <RecentDonations
+                    campaignId={campaignId}
+                    limit={6}
+                    title="Recent Donors"
+                    description="Confirmed contributions recorded in the campaign's escrow"
+                    showCampaign={false}
+                  />
                 </div>
               )}
 

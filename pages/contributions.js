@@ -9,6 +9,9 @@ import { CONTRACT_ADDRESS } from "../constants";
 import { CROWDFUNDING_ABI } from "../constants/abi";
 import Link from "next/link";
 import { useDemoMode, DEMO_USERNAME } from "../lib/demoMode";
+import IdentityPanel from "../components/Profile/IdentityPanel";
+import RewardBadges from "../components/Rewards/RewardBadges";
+import MyDonations from "../components/Donations/MyDonations";
 
 export default function ContributionsPage() {
   const { address, isConnected } = useAccount();
@@ -105,6 +108,15 @@ export default function ContributionsPage() {
           <div className="card p-4 rounded-3xl"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "var(--color-accent-light)", color: "var(--color-accent)" }}><FiHeart className="w-5 h-5" /></div><div><p className="text-lg font-bold" style={{ color: "var(--color-text)" }}>{contributions.length}</p><p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Projects Supported</p></div></div></div>
           <div className="card p-4 rounded-3xl"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "var(--color-accent-light)", color: "var(--color-accent)" }}><FiTrendingUp className="w-5 h-5" /></div><div><p className="text-lg font-bold" style={{ color: "var(--color-text)" }}>{contributions.length > 0 ? (total / contributions.length).toFixed(4) : "0"}</p><p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Avg Contribution</p></div></div></div>
         </div>
+        {/* CrowdFund identity and rewards — the same CrowdFund User ID used in the admin dashboard */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <IdentityPanel />
+          <RewardBadges />
+        </div>
+
+        {/* Verified on-chain donation history (transaction hashes + explorer links) */}
+        <MyDonations title="Verified Donation History" limit={10} />
+
         {loading ? (
           <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="skeleton h-20" />)}</div>
         ) : contributions.length > 0 ? (

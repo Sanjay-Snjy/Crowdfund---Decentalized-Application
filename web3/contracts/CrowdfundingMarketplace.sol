@@ -24,6 +24,10 @@ import "@openzeppelin/contracts/security/Pausable.sol";
  *    earlier milestone has already been released. Milestones can never be skipped.
  * 5. When the final milestone is released the campaign is completed. If a campaign
  *    fails to reach its target, donors refund their contributions.
+ * 6. Recovery: if a funded campaign is abandoned (no milestone activity for
+ *    MILESTONE_INACTIVITY_PERIOD plus RECOVERY_GRACE_PERIOD), donors can claim
+ *    their pro-rata share of the remaining escrow. Recovery is one-way — once a
+ *    donor claims, milestone releases and refunds for that campaign are closed.
  *
  * Creating a campaign is free: no deposit and no creation fee are charged.
  *
@@ -53,6 +57,16 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
 
     /// @dev Campaign creation fee. Kept at zero: launching a campaign is free.
     uint256 public constant CAMPAIGN_CREATION_FEE = 0 ether;
+
+    /// @dev Milestone inactivity period. A campaign that reached its target but has
+    ///      had no milestone activity (evidence submission or fund release) for this
+    ///      long starts the recovery countdown.
+    uint256 public constant MILESTONE_INACTIVITY_PERIOD = 90 days;
+
+    /// @dev Extra grace period added on top of the inactivity period before donors
+    ///      may claim their share of the escrow back. Long delays are legitimate, so
+    ///      recovery is deliberately slow to become available.
+    uint256 public constant RECOVERY_GRACE_PERIOD = 30 days;
 
     // Events
 
@@ -141,6 +155,20 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         uint256 totalReleased
     );
 
+    /// @dev Emitted the first time a donor claims recovery for an abandoned campaign.
+    ///      From this point on the campaign's milestones can no longer be released.
+    event CampaignRecoveryEnabled(
+        uint256 indexed campaignId,
+        uint256 escrowPool,
+        uint256 claimBase
+    );
+
+    event RecoveryClaimed(
+        uint256 indexed campaignId,
+        address indexed contributor,
+        uint256 amount
+    );
+
     // Structs
 
     struct Campaign {
@@ -157,6 +185,13 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         uint256 createdAt;
         uint256 contributorsCount;
         uint256 completedAt;
+        // ── recovery accounting ──
+        uint256 totalContributed; // sum of every contribution (refunds subtract again)
+        uint256 lastActivityAt; // last evidence submission or fund release
+        bool recoveryMode; // donors started recovering an abandoned campaign
+        uint256 recoveryPool; // escrow snapshot taken when recovery mode was enabled
+        uint256 recoveryBase; // totalContributed snapshot taken at the same moment
+        uint256 recoveryClaimed; // total already paid out through recovery claims
     }
 
     struct Contribution {
@@ -195,6 +230,7 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
     mapping(uint256 => Contribution[]) public campaignContributions;
     mapping(uint256 => Milestone[]) public campaignMilestones;
     mapping(uint256 => mapping(uint256 => mapping(address => bool))) public milestoneVoted;
+    mapping(uint256 => mapping(address => bool)) public recoveryClaimedBy;
     mapping(uint256 => uint256) public releasedAmount;
     mapping(address => uint256[]) public userCampaigns;
     mapping(address => uint256[]) public userContributions;
@@ -269,7 +305,15 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
             active: true,
             createdAt: block.timestamp,
             contributorsCount: 0,
-            completedAt: 0
+            completedAt: 0,
+            totalContributed: 0,
+            // The countdown starts at the funding deadline: a campaign cannot be
+            // abandoned before donors have had their full fundraising window.
+            lastActivityAt: deadline,
+            recoveryMode: false,
+            recoveryPool: 0,
+            recoveryBase: 0,
+            recoveryClaimed: 0
         });
 
         userCampaigns[msg.sender].push(campaignId);
@@ -311,6 +355,7 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
 
         contributions[_campaignId][msg.sender] += msg.value;
         campaign.raisedAmount += msg.value;
+        campaign.totalContributed += msg.value;
 
         campaignContributions[_campaignId].push(Contribution({
             contributor: msg.sender,
@@ -350,6 +395,7 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
     {
         require(block.timestamp >= campaigns[_campaignId].deadline, "Campaign still fundraising");
         require(hasReachedTarget(_campaignId), "Campaign target not reached");
+        require(!campaigns[_campaignId].recoveryMode, "Campaign is in donor recovery");
         require(
             _milestoneIndex == 0 ||
                 campaignMilestones[_campaignId][_milestoneIndex - 1].fundsReleased,
@@ -367,6 +413,9 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         milestone.voteRequested = true;
         // Voting power is capped by the donor funds that are actually escrowed.
         milestone.totalVotingPower = campaigns[_campaignId].raisedAmount;
+        // Submitting evidence resets the abandonment countdown: the creator is
+        // actively working on the campaign again.
+        campaigns[_campaignId].lastActivityAt = block.timestamp;
 
         emit MilestoneCompleted(_campaignId, _milestoneIndex);
         emit MilestoneVoteRequested(_campaignId, _milestoneIndex);
@@ -402,6 +451,7 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         require(weight > 0, "Only contributors can vote");
 
         Milestone storage milestone = campaignMilestones[_campaignId][_milestoneIndex];
+        require(!campaigns[_campaignId].recoveryMode, "Campaign is in donor recovery");
         require(milestone.evidenceSubmitted, "Milestone evidence not submitted");
         require(!milestone.fundsReleased, "Funds already released for this milestone");
         require(!milestoneVoted[_campaignId][_milestoneIndex][msg.sender], "Contributor already voted");
@@ -435,6 +485,9 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
     {
         require(block.timestamp >= campaigns[_campaignId].deadline, "Campaign still fundraising");
         require(hasReachedTarget(_campaignId), "Campaign target not reached");
+        // Once donors have started recovering an abandoned campaign, no further
+        // milestone share may be released to the creator.
+        require(!campaigns[_campaignId].recoveryMode, "Campaign is in donor recovery");
         require(
             _milestoneIndex == 0 ||
                 campaignMilestones[_campaignId][_milestoneIndex - 1].fundsReleased,
@@ -452,6 +505,7 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         milestone.amount = amount;
         milestone.fundsReleased = true;
         milestone.approved = true;
+        campaigns[_campaignId].lastActivityAt = block.timestamp;
 
         releasedAmount[_campaignId] += amount;
         campaigns[_campaignId].creator.transfer(amount);
@@ -481,6 +535,10 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         nonReentrant
     {
         Campaign storage campaign = campaigns[_campaignId];
+        // Once donors have started recovering an abandoned campaign the escrow is
+        // distributed by claimRecoveryShare, so refunds are closed to avoid paying
+        // the same funds twice.
+        require(!campaign.recoveryMode, "Campaign is in donor recovery");
         require(campaign.raisedAmount < campaign.targetAmount, "Campaign was successful");
         require(contributions[_campaignId][msg.sender] > 0, "No contribution found");
 
@@ -491,6 +549,8 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         // Without this, raisedAmount could exceed the actual contract balance
         // after multiple refunds, breaking future withdrawal and refund logic.
         campaign.raisedAmount -= refundAmount;
+        // Keep the donor-share base in sync as well (used by recovery claims).
+        campaign.totalContributed -= refundAmount;
 
         payable(msg.sender).transfer(refundAmount);
 
@@ -510,6 +570,7 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
         uint256 refundAmount = contributions[_campaignId][_contributor];
         contributions[_campaignId][_contributor] = 0;
         campaigns[_campaignId].raisedAmount -= refundAmount;
+        campaigns[_campaignId].totalContributed -= refundAmount;
 
         payable(_contributor).transfer(refundAmount);
 
@@ -590,11 +651,163 @@ contract CrowdfundingMarketplace is ReentrancyGuard, Ownable, Pausable {
 
         donorFundsRaised = campaign.raisedAmount;
         releasedAmountTotal = releasedAmount[_campaignId];
-        lockedDonorFunds = campaign.raisedAmount - releasedAmountTotal;
+        // Donor funds still escrowed: everything collected minus what has been paid
+        // out to the creator and minus approved recovery claims.
+        lockedDonorFunds = campaign.raisedAmount - releasedAmountTotal - campaign.recoveryClaimed;
         refundableDonorFunds = !hasReachedTarget(_campaignId) &&
             block.timestamp >= campaign.deadline
             ? campaign.raisedAmount
             : 0;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Abandoned-campaign recovery
+    //
+    // A funded campaign whose milestones are never approved used to leave the
+    // remaining escrow locked forever. Recovery gives donors a slow, explicit exit:
+    // after MILESTONE_INACTIVITY_PERIOD + RECOVERY_GRACE_PERIOD without any
+    // milestone activity, each donor can claim their pro-rata share of whatever is
+    // still in escrow. A campaign that merely ran late is not affected — any
+    // evidence submission or release restarts the countdown.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * @dev Donor funds still held in escrow for a campaign: what was collected minus
+     *      everything already paid out to the creator (released milestones) and to
+     *      the donors themselves (recovery claims).
+     *
+     *      `raisedAmount` is deliberately left untouched by recovery claims: it is the
+     *      campaign's historical funding total (and what hasReachedTarget relies on),
+     *      while this view answers "how much is still locked right now".
+     */
+    function recoveryEscrowPool(uint256 _campaignId) public view returns (uint256) {
+        if (_campaignId == 0 || _campaignId > campaignCounter) return 0;
+        Campaign storage campaign = campaigns[_campaignId];
+        uint256 paidOut = releasedAmount[_campaignId] + campaign.recoveryClaimed;
+        if (campaign.raisedAmount <= paidOut) return 0;
+        return campaign.raisedAmount - paidOut;
+    }
+
+    /**
+     * @dev Timestamp at which donor recovery becomes available. Counted from the
+     *      later of the funding deadline and the last milestone activity (evidence
+     *      submission or fund release), so a consistently active campaign can never
+     *      be recovered while a milestone release is still realistic.
+     */
+    function recoveryUnlocksAt(uint256 _campaignId) public view returns (uint256) {
+        if (_campaignId == 0 || _campaignId > campaignCounter) return 0;
+        Campaign storage campaign = campaigns[_campaignId];
+        uint256 inactivityStart = campaign.lastActivityAt > campaign.deadline
+            ? campaign.lastActivityAt
+            : campaign.deadline;
+        return inactivityStart + MILESTONE_INACTIVITY_PERIOD + RECOVERY_GRACE_PERIOD;
+    }
+
+    /**
+     * @dev True when donors may claim their share of the escrow back.
+     *
+     * Only a campaign that DID reach its target is recoverable — a campaign that
+     * missed its target already has getRefund for every donor.
+     */
+    function recoveryEligible(uint256 _campaignId) public view returns (bool) {
+        if (_campaignId == 0 || _campaignId > campaignCounter) return false;
+
+        Campaign storage campaign = campaigns[_campaignId];
+        if (campaign.completed) return false;
+        if (!hasReachedTarget(_campaignId)) return false;
+        if (recoveryEscrowPool(_campaignId) == 0) return false;
+        if (block.timestamp < recoveryUnlocksAt(_campaignId)) return false;
+        return true;
+    }
+
+    /**
+     * @dev What a specific donor can still recover. Zero when recovery is not
+     *      available, when the address never contributed, or after the single claim.
+     */
+    function recoveryClaimable(uint256 _campaignId, address _donor) external view returns (uint256) {
+        if (!recoveryEligible(_campaignId)) return 0;
+        if (recoveryClaimedBy[_campaignId][_donor]) return 0;
+
+        Campaign storage campaign = campaigns[_campaignId];
+        uint256 contribution = contributions[_campaignId][_donor];
+        if (contribution == 0) return 0;
+
+        uint256 pool = campaign.recoveryMode ? campaign.recoveryPool : recoveryEscrowPool(_campaignId);
+        uint256 base = campaign.recoveryMode ? campaign.recoveryBase : campaign.totalContributed;
+        if (base == 0) return 0;
+
+        return (contribution * pool) / base;
+    }
+
+    /**
+     * @dev Aggregated recovery state used by the UI (single read).
+     */
+    function getRecoveryState(uint256 _campaignId)
+        external
+        view
+        returns (
+            bool eligible,
+            bool enabled,
+            uint256 pool,
+            uint256 base,
+            uint256 claimed,
+            uint256 escrow,
+            uint256 unlocksAt
+        )
+    {
+        Campaign storage campaign = campaigns[_campaignId];
+        eligible = recoveryEligible(_campaignId);
+        enabled = campaign.recoveryMode;
+        pool = campaign.recoveryMode ? campaign.recoveryPool : recoveryEscrowPool(_campaignId);
+        base = campaign.recoveryMode ? campaign.recoveryBase : campaign.totalContributed;
+        claimed = campaign.recoveryClaimed;
+        escrow = recoveryEscrowPool(_campaignId);
+        unlocksAt = recoveryUnlocksAt(_campaignId);
+    }
+
+    /**
+     * @dev Claim the caller's share of the escrow of an abandoned campaign.
+     *
+     * Pro-rata by contribution against a pool and a base that are frozen the first
+     * time any donor claims, so every donor's share is deterministic, the sum of all
+     * claims can never exceed the frozen pool, and no donor can ever claim twice.
+     * The pool is the escrow that is genuinely left, so funds already released to
+     * the creator are accounted for automatically.
+     */
+    function claimRecoveryShare(uint256 _campaignId) external nonReentrant {
+        require(recoveryEligible(_campaignId), "Recovery not available");
+        require(!recoveryClaimedBy[_campaignId][msg.sender], "Recovery already claimed");
+
+        Campaign storage campaign = campaigns[_campaignId];
+        uint256 contribution = contributions[_campaignId][msg.sender];
+        require(contribution > 0, "No contribution to recover");
+
+        if (!campaign.recoveryMode) {
+            campaign.recoveryMode = true;
+            campaign.recoveryPool = recoveryEscrowPool(_campaignId);
+            campaign.recoveryBase = campaign.totalContributed;
+            emit CampaignRecoveryEnabled(_campaignId, campaign.recoveryPool, campaign.recoveryBase);
+        }
+
+        require(campaign.recoveryBase > 0, "Recovery base is zero");
+
+        uint256 share = (contribution * campaign.recoveryPool) / campaign.recoveryBase;
+        require(share > 0, "Recovery share is zero");
+        require(campaign.recoveryClaimed + share <= campaign.recoveryPool, "Recovery pool exhausted");
+
+        // ── checks-effects-interactions: all state first, transfer last ──
+        recoveryClaimedBy[_campaignId][msg.sender] = true;
+        campaign.recoveryClaimed += share;
+        // Zeroing the contribution is what makes a claim a once-only action and keeps
+        // withdraw/refund paths from paying the same wei again.
+        contributions[_campaignId][msg.sender] = 0;
+        // Shrink the donor-share base so the remaining donors still split the frozen
+        // pool proportionally to their original contributions.
+        campaign.totalContributed -= contribution;
+
+        payable(msg.sender).transfer(share);
+
+        emit RecoveryClaimed(_campaignId, msg.sender, share);
     }
 
     // Admin

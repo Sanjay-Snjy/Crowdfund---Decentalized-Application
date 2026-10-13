@@ -9,6 +9,18 @@ import { CONTRACT_ADDRESS } from "../constants";
 import { CROWDFUNDING_ABI } from "../constants/abi";
 import { toast } from "react-hot-toast";
 
+/**
+ * Does the ABI the app is built against know about the abandoned-campaign
+ * recovery functions?
+ *
+ * The committed ABI must match the DEPLOYED contract: contracts deployed before the
+ * recovery feature simply do not have these functions, so the UI hides the
+ * recovery controls instead of sending a call that would revert.
+ */
+export const SUPPORTS_RECOVERY = CROWDFUNDING_ABI.some(
+  (entry) => entry.type === "function" && entry.name === "claimRecoveryShare"
+);
+
 export const useContract = () => {
   const { address, isConnected } = useAccount();
 
@@ -157,6 +169,36 @@ export const useContract = () => {
     return {
       releaseMilestoneFunds: write,
       releaseMilestoneFundsAsync: writeAsync,
+      isLoading,
+      isSuccess,
+      error,
+    };
+  };
+
+  /**
+   * Claim a donor's share of the escrow of an abandoned campaign.
+   *
+   * Only available on contracts deployed from the recovery-capable source and only
+   * once the contract itself reports `recoveryEligible` — the contract enforces the
+   * timing, the pro-rata share and the once-only rule; this is just the trigger.
+   */
+  const useClaimRecoveryShare = () => {
+    const { write, writeAsync, isLoading, isSuccess, error } = useContractWrite({
+      address: CONTRACT_ADDRESS,
+      abi: CROWDFUNDING_ABI,
+      functionName: "claimRecoveryShare",
+      onSuccess() {
+        toast.success("Recovery claimed — your escrow share is being returned!");
+      },
+      onError(err) {
+        console.error("Claim recovery error:", err);
+        toast.error(err?.reason || err?.message || "Failed to claim recovery");
+      },
+    });
+
+    return {
+      claimRecoveryShare: write,
+      claimRecoveryShareAsync: writeAsync,
       isLoading,
       isSuccess,
       error,
@@ -820,6 +862,7 @@ export const useContract = () => {
     useSubmitMilestoneEvidence,
     useVoteOnMilestone,
     useReleaseMilestoneFunds,
+    useClaimRecoveryShare,
     useCampaignMilestones,
     useCampaignAccounting,
     useCampaign,

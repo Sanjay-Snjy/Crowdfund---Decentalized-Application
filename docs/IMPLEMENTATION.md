@@ -231,6 +231,7 @@ npm run build && npm start
 node tests/identity.test.js                  # CF IDs, idempotency, nonces, sessions
 node tests/indexer.test.js                   # event indexing, dedupe, rewards, admin filters
 node tests/libsql-driver.test.js             # the hosted-libSQL code path (no credentials needed)
+node tests/env-template.test.js              # the committed template must never carry a real secret
 node tests/api-smoke.mjs http://localhost:1112   # end-to-end API + authz (needs the dev server)
 node scripts/verify-indexer.mjs              # live indexer health against the configured RPC
 
@@ -251,7 +252,8 @@ npm run export-abi       # regenerate constants/abi.js from the compiled artifac
 | Suite | Command | Result |
 | --- | --- | --- |
 | Identity / DB unit tests | `node tests/identity.test.js` | **10 passed, 0 failed** — including concurrent multi-process registration never reusing an ID |
-| Indexer / rewards unit tests | `node tests/indexer.test.js` | **9 passed, 0 failed** — pending events excluded, re-index never duplicates, refunds reverse eligibility |
+| Indexer / rewards unit tests | `node tests/indexer.test.js` | **11 passed, 0 failed** — pending events excluded, re-index never duplicates, refunds reverse eligibility, and a database with no sync cursor backfills from `CF_INDEX_START_BLOCK` (a per-run block budget resumes instead of skipping history) |
+| Environment template guard | `node tests/env-template.test.js` | **3 passed, 0 failed** — `.env.example` documents every variable the app reads and contains no real database host, JWT, provider key or private key |
 | Hosted-libSQL path | `node tests/libsql-driver.test.js` | **8 passed, 0 failed** — batched migrations, `UPDATE … RETURNING` ID allocation, `ON CONFLICT DO NOTHING` idempotency, transactions in the AsyncLocalStorage scope, donation totals, and a loud failure when a URL is set without a token |
 | API smoke (live dev server) | `node tests/api-smoke.mjs http://localhost:1112` | **22 passed, 0 failed** — 401/403 authorization, nonce replay rejection, wallet session → CF-0004, admin sees newest CF-0006, no email leakage, 5 confirmed donations / 0.255 ETH, Sepolia explorer links |
 | Contract suite (existing) | `cd web3 && npm test` | **35 passed, 0 failing** |

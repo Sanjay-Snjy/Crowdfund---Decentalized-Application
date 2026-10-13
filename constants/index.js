@@ -6,7 +6,7 @@
 // After redeploying, run `cd web3 && npm run deploy-sepolia` and paste the new
 // address below.
 export const COMMITTED_CONTRACT_ADDRESS =
-  "0x4bbB7cF60C5D11978Edab37e77d8b939988844cA";
+  "0x43cFa879c2dbC2C87353af41D0043b35fA24f484";
 
 // Optional escape hatch for testing against a different deployment.
 // Deliberately a *different* variable name: a stale NEXT_PUBLIC_CONTRACT_ADDRESS

@@ -18,3 +18,44 @@
  ✓ Compiled /404 in 5.4s (2664 modules)
  ✓ Compiled /api/wallet-link in 279ms (164 modules)
 [?25h
+
+> crowd-funding-dapp@0.1.0 dev
+> next dev
+
+  ▲ Next.js 13.5.7
+  - Local:        http://localhost:4450
+  - Environments: .env.local
+
+ ✓ Ready in 3.6s
+ ○ Compiling / ...
+ ✓ Compiled / in 8.1s (2646 modules)
+ ✓ Compiled in 539ms (2646 modules)
+ ✓ Compiled /create-campaign in 576ms (2668 modules)
+ ✓ Compiled /home in 788ms (2674 modules)
+
+> crowd-funding-dapp@0.1.0 dev
+> next dev
+
+  ▲ Next.js 13.5.7
+  - Local:        http://localhost:11595
+  - Environments: .env.local
+
+ ✓ Ready in 2.9s
+
+> crowd-funding-dapp@0.1.0 dev
+> next dev -p 3000
+
+  ▲ Next.js 13.5.7
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Ready in 3s
+ ○ Compiling / ...
+ ✓ Compiled / in 8.5s (2646 modules)
+ ✓ Compiled in 4.5s (2646 modules)
+ ✓ Compiled /home in 687ms (2666 modules)
+ ✓ Compiled /create-campaign in 360ms (2674 modules)
+ ✓ Compiled /my-campaigns in 1337ms (2680 modules)
+ ✓ Compiled /dashboard in 376ms (2710 modules)
+ ✓ Compiled /contributions in 296ms (2716 modules)
+ ✓ Compiled in 905ms (2666 modules)

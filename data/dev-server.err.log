@@ -42,3 +42,34 @@ Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMa
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
+[admin-stats] chain read failed: Timed out after 10000ms: getContractStats
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.

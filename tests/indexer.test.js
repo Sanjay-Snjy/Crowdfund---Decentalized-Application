@@ -359,3 +359,77 @@ test("admin filters, search and totals work across campaigns", async () => {
   assert.equal(releases[0].extra.milestoneIndex, 0);
   assert.equal(releases[0].amountWei, eth("0.18").toString());
 });
+
+test("a database with no cursor backfills from the deploy block, not the recent window", async () => {
+  // Exactly what switching TURSO_DATABASE_URL to an empty database looks like: the
+  // indexed history and the cursor are gone, the chain is far ahead of the contract's
+  // deployment, and the automatic sync only gets a lookback-sized budget.
+  await repo.db.driver.run("DELETE FROM reward_events"); // references chain_transactions(id)
+  await repo.db.driver.run("DELETE FROM chain_transactions");
+  await repo.db.driver.run("DELETE FROM sync_state");
+
+  const farStub = createRpcStub({ chainId: CHAIN_ID, latestBlock: 100000, logs: scenarioLogs });
+  const url = await farStub.listen();
+  process.env.NEXT_PUBLIC_RPC_URL = url;
+  process.env.CF_INDEX_START_BLOCK = "1";
+  process.env.CF_INDEX_LOOKBACK_BLOCKS = "5000";
+
+  const { clearProvider } = await import("../lib/chain/provider.js");
+  clearProvider();
+
+  const result = await repo.indexer.syncChainEvents({ mode: "recent", maxBlocks: 5000 });
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.scanned.from, 1, "the first sync starts at the configured deploy block");
+  assert.equal(result.scanned.blocks, 5001, "the run spends its whole budget forward from there");
+
+  const donations = await repo.db.chainEvents.listRecentDonations({ limit: 10 });
+  assert.equal(
+    donations.length,
+    3,
+    "history far older than the recent window is still indexed as donations"
+  );
+  assert.equal(
+    result.scanned.from <= 990,
+    true,
+    "the contract events sit outside a lookback window ending at the tip, so only a deploy-block sync can find them"
+  );
+
+  await farStub.close();
+});
+
+test("a run that runs out of budget resumes where it stopped instead of skipping history", async () => {
+  const farStub = createRpcStub({ chainId: CHAIN_ID, latestBlock: 100000, logs: scenarioLogs });
+  const url = await farStub.listen();
+  process.env.NEXT_PUBLIC_RPC_URL = url;
+
+  const { clearProvider } = await import("../lib/chain/provider.js");
+  clearProvider();
+
+  const next = await repo.indexer.syncChainEvents({ mode: "recent", maxBlocks: 5000 });
+  assert.equal(next.ok, true, JSON.stringify(next));
+  assert.equal(next.scanned.from, 5002, "the run continues from the recorded block");
+  assert.equal(next.scanned.to, 10002, "the cursor moves forward one budget at a time");
+
+  const afterFirst = await repo.db.chainEvents.countTransactions({ eventType: "contribution" });
+
+  // A budget big enough for the remaining range finishes the catch-up.
+  const finished = await repo.indexer.syncChainEvents({ mode: "recent", maxBlocks: 100000 });
+  assert.equal(finished.ok, true, JSON.stringify(finished));
+  assert.equal(finished.scanned.to, 100000, "the cursor reaches the chain tip");
+  assert.equal(
+    await repo.db.chainEvents.countTransactions({ eventType: "contribution" }),
+    afterFirst,
+    "catching up never duplicates a donation"
+  );
+
+  const totals = await repo.db.chainEvents.transactionTotals({});
+  assert.equal(totals.confirmedDonations, 3);
+  assert.equal(totals.confirmedWei, eth("0.7").toString());
+
+  await farStub.close();
+
+  // Leave the environment as the other suites expect it.
+  process.env.CF_INDEX_START_BLOCK = "0";
+  process.env.NEXT_PUBLIC_RPC_URL = mainRpcUrl;
+  clearProvider();
+});

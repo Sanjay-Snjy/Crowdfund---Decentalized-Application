@@ -698,14 +698,6 @@ export default function AllCampaignsPage() {
           </div>
         </section>
 
-        {/* ============ Community donation activity (public, on-chain) ============ */}
-        <section className="px-4 pb-2">
-          <RecentDonations
-            limit={6}
-            title="Community Donation Activity"
-            description="Confirmed contributions across every campaign, straight from the deployed contract."
-          />
-        </section>
 
         {/* ================= Creator CTA Band ================= */}
         <section className="px-4">

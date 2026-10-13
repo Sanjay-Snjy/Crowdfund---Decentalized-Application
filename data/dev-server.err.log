@@ -5,19 +5,22 @@ Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMa
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
  ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
 <w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (101kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
-(node:33044) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+(node:25708) ExperimentalWarning: SQLite is an experimental feature and might change at any time
 (Use `node --trace-warnings ...` to show where the warning was created)
- ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
@@ -28,11 +31,7 @@ Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMa
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
-[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
-Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
-1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
-2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
-Desktop MetaMask extension connection keeps working regardless.
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).

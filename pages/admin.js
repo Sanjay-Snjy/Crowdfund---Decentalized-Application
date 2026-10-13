@@ -16,6 +16,17 @@ import RecentTransactions from "../components/Admin/RecentTransactions";
 /**
  * Admin dashboard.
  *
+ * The four sections are tabs (same visual language as the campaign page):
+ *
+ *   1. Platform Overview  — statistics/what changed + the on-chain Contract Controls
+ *   2. Users              — recently joined users
+ *   3. Campaigns          — per-campaign funding status and escrow
+ *   4. Recent Transactions— every indexed event, with totals
+ *
+ * Only the active tab is mounted, so opening the dashboard fires one
+ * /api/admin/* request instead of four, and each section keeps its own retry /
+ * refresh behaviour when it is opened.
+ *
  * Two independent authorization layers, both enforced away from the browser:
  *
  *  1. Platform data (recently registered users, recent transactions, campaign
@@ -26,9 +37,12 @@ import RecentTransactions from "../components/Admin/RecentTransactions";
  *     contract's `onlyOwner` modifier; connecting the owner wallet is what grants
  *     them, exactly as before.
  */
+const TABS = ["Platform Overview", "Users", "Campaigns", "Recent Transactions"];
+
 export default function AdminPage() {
   const { address, isConnected } = useAccount();
   const { useContractStats } = useContract();
+  const [activeTab, setActiveTab] = useState(TABS[0]);
   const [isContractOwner, setIsContractOwner] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [campaignToToggle, setCampaignToToggle] = useState("");
@@ -63,99 +77,143 @@ export default function AdminPage() {
           </p>
         </div>
 
-        {/* Platform data — requires the admin role on the server */}
-        <AdminGate>
-          <div className="space-y-6">
-            <PlatformOverview />
-            <RecentlyJoinedUsers />
-            <CampaignFundingPanel />
-            <RecentTransactions />
+        <div className="card rounded-2xl overflow-hidden">
+          {/* Tabs — same pattern as the campaign page */}
+          <div className="border-b flex gap-1 px-1 overflow-x-auto" role="tablist" style={{ borderColor: "var(--color-border)" }}>
+            {TABS.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
+                  activeTab === tab
+                    ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
+                    : "border-transparent hover:border-slate-300"
+                }`}
+                style={activeTab === tab ? undefined : { color: "var(--color-text-muted)" }}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
-        </AdminGate>
 
-        {/* On-chain controls — enforced by the contract's onlyOwner modifier */}
-        <div className="pt-2">
-          <h2 className="text-lg font-bold" style={{ color: "var(--color-text)" }}>Contract Controls</h2>
-          <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>
-            These actions are signed by your wallet and enforced by the smart contract owner check.
-          </p>
+          <div className="p-5 space-y-6">
+            {/* 1 ── Platform Overview + Contract Controls */}
+            {activeTab === "Platform Overview" && (
+              <>
+                <AdminGate>
+                  <PlatformOverview />
+                </AdminGate>
+
+                <div>
+                  <h2 className="text-lg font-bold" style={{ color: "var(--color-text)" }}>Contract Controls</h2>
+                  <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>
+                    These actions are signed by your wallet and enforced by the smart contract owner check.
+                  </p>
+                </div>
+
+                {!isConnected ? (
+                  <div className="card p-8 text-center max-w-sm mx-auto">
+                    <FiShield className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--color-text-muted)" }} />
+                    <h2 className="text-lg font-bold mb-2" style={{ color: "var(--color-text)" }}>Connect your wallet</h2>
+                    <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+                      Connect the contract owner wallet to use the on-chain controls.
+                    </p>
+                  </div>
+                ) : !isContractOwner ? (
+                  <div className="card p-6 text-center max-w-md mx-auto">
+                    <FiShield className="w-8 h-8 mx-auto mb-3" style={{ color: "var(--color-text-muted)" }} />
+                    <h2 className="text-sm font-bold mb-2" style={{ color: "var(--color-text)" }}>Contract owner only</h2>
+                    <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                      The connected wallet is not the contract owner, so treasury and pause actions would revert on-chain.
+                      The platform data above is available to CrowdFund administrators.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                      {[
+                        { label: "Campaigns", value: total },
+                        { label: "Fees", value: `${fees} ETH` },
+                        { label: "Balance", value: `${balance} ETH` },
+                        { label: "Status", value: isPaused ? "Paused" : "Active" },
+                      ].map((s) => (
+                        <div key={s.label} className="card p-4 rounded-2xl">
+                          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{s.label}</p>
+                          <p className="text-lg font-bold mt-1" style={{ color: "var(--color-text)" }}>{s.value}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Withdraw */}
+                      <div className="card p-5 rounded-2xl">
+                        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-text)" }}>
+                          <FiDollarSign className="w-4 h-4" /> Treasury
+                        </h3>
+                        <label className="label">Withdraw (ETH)</label>
+                        <input type="number" step="0.01" min="0" placeholder="0.00" value={withdrawAmount} onChange={(e) => setWithdrawAmount(e.target.value)} className="input" />
+                        <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>Available: {fees} ETH</p>
+                        <button onClick={() => { if (!withdrawAmount) return; try { withdrawFees?.({ args: [parseEther(withdrawAmount)] }); } catch { toast.error("Invalid"); } }} disabled={isWithdrawing || !withdrawAmount} className="btn w-full mt-3">
+                          {isWithdrawing ? "Withdrawing..." : "Withdraw Fees"}
+                        </button>
+                      </div>
+
+                      {/* Controls */}
+                      <div className="card p-5 rounded-2xl">
+                        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-text)" }}>
+                          <FiShield className="w-4 h-4" /> Platform Controls
+                        </h3>
+                        <button onClick={() => isPaused ? unpauseContract?.() : pauseContract?.()} disabled={isPausing || isUnpausing} className="btn btn-secondary w-full mb-3">
+                          {isPausing || isUnpausing ? "Processing..." : isPaused ? <><FiPlay className="w-4 h-4" /> Resume</> : <><FiPause className="w-4 h-4" /> Pause</>}
+                        </button>
+                        <button onClick={() => { if (window.confirm("Emergency withdraw? This cannot be undone.")) emergencyWithdraw?.(); }} disabled={isEmergency} className="btn btn-danger w-full">
+                          <FiAlertTriangle className="w-4 h-4" /> {isEmergency ? "Processing..." : "Emergency Withdraw"}
+                        </button>
+                      </div>
+
+                      {/* Deactivate */}
+                      <div className="card p-5 lg:col-span-2 rounded-2xl">
+                        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-text)" }}>
+                          <FiActivity className="w-4 h-4" /> Deactivate Campaign
+                        </h3>
+                        <div className="flex gap-3">
+                          <input type="number" min="1" placeholder="Campaign ID" value={campaignToToggle} onChange={(e) => setCampaignToToggle(e.target.value)} className="input flex-1" />
+                          <button onClick={() => { if (!campaignToToggle) return; if (window.confirm(`Deactivate campaign #${campaignToToggle}?`)) deactivateCampaign?.({ args: [parseInt(campaignToToggle)] }); }} disabled={isDeactivating || !campaignToToggle} className="btn btn-danger shrink-0">
+                            {isDeactivating ? "Processing..." : "Deactivate"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* 2 ── Users */}
+            {activeTab === "Users" && (
+              <AdminGate>
+                <RecentlyJoinedUsers />
+              </AdminGate>
+            )}
+
+            {/* 3 ── Campaigns */}
+            {activeTab === "Campaigns" && (
+              <AdminGate>
+                <CampaignFundingPanel />
+              </AdminGate>
+            )}
+
+            {/* 4 ── Recent Transactions */}
+            {activeTab === "Recent Transactions" && (
+              <AdminGate>
+                <RecentTransactions />
+              </AdminGate>
+            )}
+          </div>
         </div>
-
-        {!isConnected ? (
-          <div className="card p-8 text-center max-w-sm mx-auto">
-            <FiShield className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--color-text-muted)" }} />
-            <h2 className="text-lg font-bold mb-2" style={{ color: "var(--color-text)" }}>Connect your wallet</h2>
-            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-              Connect the contract owner wallet to use the on-chain controls.
-            </p>
-          </div>
-        ) : !isContractOwner ? (
-          <div className="card p-6 text-center max-w-md mx-auto">
-            <FiShield className="w-8 h-8 mx-auto mb-3" style={{ color: "var(--color-text-muted)" }} />
-            <h2 className="text-sm font-bold mb-2" style={{ color: "var(--color-text)" }}>Contract owner only</h2>
-            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-              The connected wallet is not the contract owner, so treasury and pause actions would revert on-chain.
-              The platform data above is available to CrowdFund administrators.
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {[
-                { label: "Campaigns", value: total },
-                { label: "Fees", value: `${fees} ETH` },
-                { label: "Balance", value: `${balance} ETH` },
-                { label: "Status", value: isPaused ? "Paused" : "Active" },
-              ].map((s) => (
-                <div key={s.label} className="card p-4 rounded-2xl">
-                  <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{s.label}</p>
-                  <p className="text-lg font-bold mt-1" style={{ color: "var(--color-text)" }}>{s.value}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Withdraw */}
-              <div className="card p-5 rounded-2xl">
-                <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-text)" }}>
-                  <FiDollarSign className="w-4 h-4" /> Treasury
-                </h3>
-                <label className="label">Withdraw (ETH)</label>
-                <input type="number" step="0.01" min="0" placeholder="0.00" value={withdrawAmount} onChange={(e) => setWithdrawAmount(e.target.value)} className="input" />
-                <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>Available: {fees} ETH</p>
-                <button onClick={() => { if (!withdrawAmount) return; try { withdrawFees?.({ args: [parseEther(withdrawAmount)] }); } catch { toast.error("Invalid"); } }} disabled={isWithdrawing || !withdrawAmount} className="btn w-full mt-3">
-                  {isWithdrawing ? "Withdrawing..." : "Withdraw Fees"}
-                </button>
-              </div>
-
-              {/* Controls */}
-              <div className="card p-5 rounded-2xl">
-                <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-text)" }}>
-                  <FiShield className="w-4 h-4" /> Platform Controls
-                </h3>
-                <button onClick={() => isPaused ? unpauseContract?.() : pauseContract?.()} disabled={isPausing || isUnpausing} className="btn btn-secondary w-full mb-3">
-                  {isPausing || isUnpausing ? "Processing..." : isPaused ? <><FiPlay className="w-4 h-4" /> Resume</> : <><FiPause className="w-4 h-4" /> Pause</>}
-                </button>
-                <button onClick={() => { if (window.confirm("Emergency withdraw? This cannot be undone.")) emergencyWithdraw?.(); }} disabled={isEmergency} className="btn btn-danger w-full">
-                  <FiAlertTriangle className="w-4 h-4" /> {isEmergency ? "Processing..." : "Emergency Withdraw"}
-                </button>
-              </div>
-
-              {/* Deactivate */}
-              <div className="card p-5 lg:col-span-2 rounded-2xl">
-                <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-text)" }}>
-                  <FiActivity className="w-4 h-4" /> Deactivate Campaign
-                </h3>
-                <div className="flex gap-3">
-                  <input type="number" min="1" placeholder="Campaign ID" value={campaignToToggle} onChange={(e) => setCampaignToToggle(e.target.value)} className="input flex-1" />
-                  <button onClick={() => { if (!campaignToToggle) return; if (window.confirm(`Deactivate campaign #${campaignToToggle}?`)) deactivateCampaign?.({ args: [parseInt(campaignToToggle)] }); }} disabled={isDeactivating || !campaignToToggle} className="btn btn-danger shrink-0">
-                    {isDeactivating ? "Processing..." : "Deactivate"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
       </div>
     </Layout>
   );

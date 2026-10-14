@@ -31,7 +31,14 @@ export default async function handler(req, res) {
       cfUserId: identity.user.cf_user_id,
     });
 
-    return res.status(200).json({ ...rewards, ledger });
+    // Rewards are attributed through the *linked* wallet. When the profile has none,
+    // the UI explains how to link one instead of silently showing zero forever.
+    return res.status(200).json({
+      ...rewards,
+      walletAddress,
+      walletLinked: Boolean(walletAddress),
+      ledger,
+    });
   } catch (error) {
     return serverError(res, error, "rewards-me");
   }

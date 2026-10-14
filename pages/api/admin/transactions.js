@@ -82,6 +82,7 @@ export default async function handler(req, res) {
       campaignId: row.campaignId,
       campaignName: row.campaignName,
       cfUserId: row.cfUserId,
+      donorName: row.donorDisplayName || null,
       donorWallet: row.donorWallet || row.actorAddress,
       amountWei: row.amountWei,
       amountEth: formatEthDisplay(row.amountWei, 6),
@@ -92,7 +93,7 @@ export default async function handler(req, res) {
       refundedAt: row.refundedAt,
       extra: row.extra,
       identity: row.cfUserId
-        ? { label: row.cfUserId, kind: "crowdfund_user" }
+        ? { label: row.donorDisplayName || row.cfUserId, kind: "crowdfund_user" }
         : { label: row.donorWallet || row.actorAddress, kind: "wallet" },
     }));
 

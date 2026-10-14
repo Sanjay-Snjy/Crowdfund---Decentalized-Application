@@ -228,15 +228,30 @@ export default function RecentTransactions({ enabled = true }) {
                       </a>
                     </td>
                     <td className="px-2 py-2">
-                      {tx.cfUserId ? (
-                        <span className="font-mono font-semibold" style={{ color: "var(--color-text)" }}>
-                          {tx.cfUserId}
-                        </span>
-                      ) : (
-                        <span className="font-mono" style={{ color: "var(--color-text-muted)" }} title={tx.donorWallet || ""}>
-                          {tx.donorWallet ? formatAddress(tx.donorWallet) : "—"}
-                        </span>
+                      {/* Account name first (Clerk-derived, same as the header), wallet
+                          address always underneath. */}
+                      {tx.donorName && (
+                        <p className="font-semibold" style={{ color: "var(--color-text)" }}>
+                          {tx.donorName}
+                          {tx.cfUserId && (
+                            <span className="ml-2 font-mono text-[10px]" style={{ color: "var(--color-text-muted)" }}>
+                              {tx.cfUserId}
+                            </span>
+                          )}
+                        </p>
                       )}
+                      <p
+                        className={tx.donorName ? "font-mono text-[11px]" : "font-mono font-semibold"}
+                        style={{ color: tx.donorName ? "var(--color-text-secondary)" : "var(--color-text)" }}
+                        title={tx.donorWallet || ""}
+                      >
+                        {tx.donorWallet ? formatAddress(tx.donorWallet) : "—"}
+                        {!tx.donorName && tx.cfUserId && (
+                          <span className="ml-2 text-[10px]" style={{ color: "var(--color-text-muted)" }}>
+                            {tx.cfUserId}
+                          </span>
+                        )}
+                      </p>
                     </td>
                     <td className="px-2 py-2" style={{ color: "var(--color-text)" }}>
                       <span className="font-mono text-[11px]" style={{ color: "var(--color-text-muted)" }}>
@@ -279,8 +294,15 @@ export default function RecentTransactions({ enabled = true }) {
             {transactions.map((tx) => (
               <div key={`${tx.txHash}-${tx.logIndex}`} className="rounded-xl p-3" style={{ background: "var(--color-surface-raised)" }}>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-xs" style={{ color: "var(--color-text)" }}>
-                    {tx.cfUserId || (tx.donorWallet ? formatAddress(tx.donorWallet) : "—")}
+                  <span className="min-w-0">
+                    {tx.donorName && (
+                      <span className="block truncate text-xs font-semibold" style={{ color: "var(--color-text)" }}>
+                        {tx.donorName}
+                      </span>
+                    )}
+                    <span className="block truncate font-mono text-xs" style={{ color: "var(--color-text-secondary)" }}>
+                      {tx.donorWallet ? formatAddress(tx.donorWallet) : tx.cfUserId || "—"}
+                    </span>
                   </span>
                   <StatusPill status={tx.status} />
                 </div>

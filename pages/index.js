@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
-import { useAccount, useContractRead } from "wagmi";
+import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
@@ -21,9 +21,9 @@ import {
   FiSun,
   FiPenTool,
 } from "react-icons/fi";
-import { CONTRACT_ADDRESS } from "../constants";
-import { CROWDFUNDING_ABI } from "../constants/abi";
+import { useQuery } from "@tanstack/react-query";
 import { setDemoMode } from "../lib/demoMode";
+import { apiGet } from "../utils/apiClient";
 import { useContract } from "../hooks/useContract";
 import CampaignCard from "../components/Campaign/CampaignCard";
 import { getFromIPFS } from "../utils/ipfs";
@@ -32,12 +32,17 @@ export default function Home() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const { user, isLoaded } = useUser();
-  const [stats, setStats] = useState({
-    campaignsLaunched: 0,
-    fundsRaised: 0,
-    contributors: 0,
+  // Live platform totals for the hero. /api/stats aggregates indexed, confirmed
+  // on-chain events (campaign counter, confirmed donations net of refunds and
+  // distinct donor wallets), so the landing page can never show a stale or
+  // hardcoded figure. Polled so a new confirmed donation moves the numbers.
+  const { data: platformStats, isLoading: statsLoading } = useQuery({
+    queryKey: ["platform-stats"],
+    queryFn: () => apiGet("/api/stats"),
+    refetchInterval: 30 * 1000,
+    staleTime: 15 * 1000,
+    retry: 1,
   });
-  const [loading, setLoading] = useState(true);
   const [shouldBlinkDashboard, setShouldBlinkDashboard] = useState(false);
 
   const hasValidClerkKey =
@@ -70,13 +75,6 @@ export default function Home() {
     };
   }, []);
 
-  // Fetch campaign counter
-  const { data: campaignCount } = useContractRead({
-    address: CONTRACT_ADDRESS,
-    abi: CROWDFUNDING_ABI,
-    functionName: "campaignCounter",
-    staleTime: 30_000,
-  });
 
   // Blink the explore button right after the wallet connects
   useEffect(() => {
@@ -93,52 +91,6 @@ export default function Home() {
 
     localStorage.setItem("walletWasConnected", isConnected.toString());
   }, [isConnected]);
-
-  // Fetch and aggregate campaign statistics from the chain
-  useEffect(() => {
-    const fetchStats = async () => {
-      if (!campaignCount) return;
-
-      try {
-        setLoading(true);
-        const publicClient = await import("wagmi").then((m) => m.publicClient);
-        let totalFunds = 0n;
-        let totalContributors = 0;
-
-        const campaignId = campaignCount.toNumber ? campaignCount.toNumber() : Number(campaignCount);
-
-        for (let i = 1; i <= campaignId; i++) {
-          try {
-            const result = await publicClient().readContract({
-              address: CONTRACT_ADDRESS,
-              abi: CROWDFUNDING_ABI,
-              functionName: "getCampaignStats",
-              args: [i],
-            });
-
-            if (result) {
-              totalFunds += BigInt(result[0]);
-              totalContributors += Number(result[2]);
-            }
-          } catch (err) {
-            console.warn(`Error fetching stats for campaign ${i}:`, err);
-          }
-        }
-
-        setStats({
-          campaignsLaunched: campaignId,
-          fundsRaised: totalFunds,
-          contributors: totalContributors,
-        });
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [campaignCount]);
 
   const features = [
     {
@@ -442,13 +394,23 @@ export default function Home() {
   const heroSecondaryButtonClass =
     "inline-flex w-full items-center justify-center rounded-full border border-white/15 backdrop-blur-sm px-8 py-3.5 text-sm font-medium text-white transition-colors hover:border-white/40 sm:w-auto";
 
+  // Before the first response the hero shows a placeholder instead of a fake zero.
+  const statsPending = statsLoading && !platformStats;
   const heroStats = [
-    { value: loading ? "—" : String(stats.campaignsLaunched), label: "Campaigns" },
     {
-      value: loading ? "—" : `Ξ ${(Number(stats.fundsRaised) / 1e18).toFixed(2)}`,
+      value: statsPending ? "—" : String(platformStats?.campaigns ?? 0),
+      label: "Campaigns",
+    },
+    {
+      value: statsPending
+        ? "—"
+        : `Ξ ${Number(platformStats?.fundsRaisedEth || 0).toFixed(2)}`,
       label: "Funds Raised",
     },
-    { value: loading ? "—" : String(stats.contributors), label: "Contributors" },
+    {
+      value: statsPending ? "—" : String(platformStats?.contributors ?? 0),
+      label: "Contributors",
+    },
   ];
 
   return (

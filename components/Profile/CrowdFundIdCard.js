@@ -3,19 +3,27 @@
  *
  * Shows the application-facing identity only: the CrowdFund User ID, the display
  * name, wallet connection state and the account source. Clerk ids are never shown.
+ *
+ * The display name is NOT editable here: it is derived from the signed-in Clerk
+ * account (full name, then first + last name, then username, then the email
+ * local-part) and kept in step by the server on every authenticated request — the
+ * same name the header shows. Contributors link their wallet from here with a free
+ * signature, which is what attributes their donations, points and badges.
  */
 import { useMemo, useState } from "react";
-import { FiCopy, FiCheck, FiLink, FiShield, FiUser } from "react-icons/fi";
+import { FiCheck, FiCopy, FiLink, FiShield, FiUser } from "react-icons/fi";
 import { toast } from "react-hot-toast";
-import { apiPatch, ApiError } from "../../utils/apiClient";
+import { useAccount } from "wagmi";
 import { copyToClipboard, formatAddress, formatDate } from "../../utils/helpers";
+import { useWalletLink } from "../../hooks/useWalletLink";
 
 export default function CrowdFundIdCard({ identity, profile, onUpdated = null }) {
-  const [name, setName] = useState(profile?.displayName || "");
-  const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { address, isConnected } = useAccount();
+  const { linkWallet, linking } = useWalletLink();
 
   const wallet = profile?.walletAddress || identity?.walletAddress || null;
+  const connectedWallet = isConnected ? address : null;
 
   const registered = useMemo(() => {
     if (!profile?.registeredAt) return null;
@@ -26,17 +34,9 @@ export default function CrowdFundIdCard({ identity, profile, onUpdated = null })
     }
   }, [profile?.registeredAt]);
 
-  const save = async () => {
-    setSaving(true);
-    try {
-      const result = await apiPatch("/api/me", { displayName: name });
-      toast.success("Display name updated");
-      onUpdated?.(result.profile);
-    } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : "Could not save your display name");
-    } finally {
-      setSaving(false);
-    }
+  const link = async () => {
+    const result = await linkWallet();
+    if (result) onUpdated?.(result);
   };
 
   if (!profile?.cfUserId) {
@@ -94,45 +94,49 @@ export default function CrowdFundIdCard({ identity, profile, onUpdated = null })
           )}
           <span className={`badge ${wallet ? "badge-success" : "badge-neutral"}`}>
             <FiLink className="mr-1 h-3 w-3" />
-            {wallet ? "Wallet connected" : "No wallet connected"}
+            {wallet ? "Wallet linked" : "No wallet linked"}
           </span>
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="label" htmlFor="cf-display-name">
-            Display name
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="cf-display-name"
-              className="input"
-              value={name}
-              maxLength={60}
-              placeholder="Shown on campaigns you create"
-              onChange={(event) => setName(event.target.value)}
-            />
-            <button
-              type="button"
-              className="btn btn-secondary shrink-0"
-              disabled={saving || name === (profile.displayName || "")}
-              onClick={save}
-            >
-              {saving ? "Saving…" : "Save"}
-            </button>
-          </div>
+          <p className="label">Display name</p>
+          <p className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
+            {profile.displayName || "—"}
+          </p>
+          <p className="mt-1 text-[11px]" style={{ color: "var(--color-text-muted)" }}>
+            Taken from your Clerk account — the same name shown in the header. Change it in Clerk and it
+            updates here automatically.
+          </p>
         </div>
 
         <div>
           <p className="label">Linked wallet</p>
           <p className="text-sm" style={{ color: "var(--color-text)" }}>
-            {wallet ? formatAddress(wallet) : "— not connected —"}
+            {wallet ? formatAddress(wallet) : "— no wallet linked —"}
           </p>
           <p className="mt-1 text-[11px]" style={{ color: "var(--color-text-muted)" }}>
+            {wallet
+              ? "Donations from this wallet are attributed to you."
+              : "Donations from an unlinked wallet cannot be attributed to your account, so they earn no points."}
+            {" · "}
             {registered ? `Registered ${registered}` : "Registration date unavailable"} ·{" "}
             {profile.authSource === "clerk" ? "Clerk account" : "Wallet account"}
           </p>
+
+          {!wallet && connectedWallet && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm mt-2"
+              disabled={linking}
+              onClick={link}
+              title="Sign once to prove you own this wallet — free, no funds move"
+            >
+              <FiLink className="h-3 w-3" />
+              {linking ? "Waiting for your signature…" : `Link ${formatAddress(connectedWallet)}`}
+            </button>
+          )}
         </div>
       </div>
     </div>

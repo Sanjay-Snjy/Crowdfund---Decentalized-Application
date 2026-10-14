@@ -1,24 +1,18 @@
 /**
  * GET   /api/me  → the signed-in CrowdFund profile (CrowdFund User ID, display
  *                  name, linked wallet, role, reward summary)
- * PATCH /api/me  → display name / public display / anonymous donations preference
+ * PATCH /api/me  → public display / anonymous donations preference
  *
  * Private, never cached. The Clerk user id is intentionally NOT part of the
- * response: the application only ever exposes the CrowdFund User ID.
+ * response: the application only ever exposes the CrowdFund User ID. The display
+ * name is READ-ONLY here — it is derived from the signed-in Clerk account by
+ * ensureUserFromClerk(), so the header, the identity card and the public donor
+ * lists can never disagree.
  */
 import { db } from "../../lib/db/index.js";
 import { requireUser } from "../../lib/auth/identity.js";
 import { computeRewards } from "../../lib/rewards/index.js";
 import { badRequest, methodNotAllowed, privateNoStore, readJson, serverError } from "../../lib/api/http.js";
-
-const MAX_NAME_LENGTH = 60;
-
-function sanitizeName(value) {
-  if (value === null) return null;
-  if (typeof value !== "string") return undefined;
-  const trimmed = value.trim().replace(/\s+/g, " ").slice(0, MAX_NAME_LENGTH);
-  return trimmed || null;
-}
 
 export default async function handler(req, res) {
   if (!["GET", "PATCH"].includes(req.method)) return methodNotAllowed(res, ["GET", "PATCH"]);
@@ -34,18 +28,23 @@ export default async function handler(req, res) {
 
     if (req.method === "PATCH") {
       const body = await readJson(req, 8 * 1024);
-      const displayName = sanitizeName(body?.displayName);
+
+      // A client-supplied display name is refused rather than silently ignored: the
+      // name shown everywhere is the one on the signed-in Clerk account.
+      if (body?.displayName !== undefined) {
+        return badRequest(res, "The display name comes from your Clerk account and cannot be set here");
+      }
+
       const publicDisplay = typeof body?.publicDisplay === "boolean" ? body.publicDisplay : undefined;
       const anonymousDonations =
         typeof body?.anonymousDonations === "boolean" ? body.anonymousDonations : undefined;
 
-      if (displayName === undefined && publicDisplay === undefined && anonymousDonations === undefined) {
+      if (publicDisplay === undefined && anonymousDonations === undefined) {
         return badRequest(res, "Nothing to update");
       }
 
       const updated = await db.users.updateUserProfile({
         userId: identity.userId,
-        displayName,
         publicDisplay,
         anonymousDonations,
       });

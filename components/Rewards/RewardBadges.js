@@ -11,6 +11,7 @@ import { apiGet } from "../../utils/apiClient";
 import { formatDate } from "../../utils/helpers";
 import { formatEther as formatWei } from "../../lib/format";
 import { EmptyState, ErrorState, LoadingState, SectionTitle, StatTile } from "../Common/AsyncStates";
+import LinkWalletNotice from "../Profile/LinkWalletNotice";
 
 const BADGE_ICONS = {
   supporter: FiStar,
@@ -115,6 +116,14 @@ export default function RewardBadges({ enabled = true }) {
         }
       />
 
+      {/* Points are attributed through the linked wallet: without one the server can
+          only report zero, so the user is told how to fix it rather than left guessing. */}
+      <LinkWalletNotice
+        walletLinked={Boolean(data.walletLinked)}
+        onLinked={refetch}
+        className="mb-3"
+      />
+
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile label="Reward points" value={data.points} accent="var(--color-accent)" />
         <StatTile label="Eligible contributions" value={`${formatWei(data.eligibleWei)} ETH`} />
@@ -135,7 +144,11 @@ export default function RewardBadges({ enabled = true }) {
         {data.breakdown.length === 0 ? (
           <EmptyState
             title="No contributions indexed yet"
-            description="Contribute to a campaign and your recognition appears here once the transaction is confirmed."
+            description={
+              data.walletLinked
+                ? "Contribute to a campaign and your recognition appears here once the transaction is confirmed."
+                : "Link the wallet you donated with — your confirmed contributions are attributed to it."
+            }
             action={
               <Link href="/home" className="btn btn-secondary btn-sm">
                 Browse campaigns

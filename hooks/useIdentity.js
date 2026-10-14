@@ -17,11 +17,13 @@ import { useCallback, useEffect, useState } from "react";
 import { useAccount, useSignMessage } from "wagmi";
 import { toast } from "react-hot-toast";
 import { apiDelete, apiGet, apiPost, ApiError } from "../utils/apiClient";
+import { useWalletLink } from "./useWalletLink";
 
 export function useIdentity() {
   const [state, setState] = useState({ loading: true, identity: null, error: null });
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
+  const { linkWallet: linkConnectedWallet } = useWalletLink();
 
   const refresh = useCallback(async () => {
     try {
@@ -71,31 +73,12 @@ export function useIdentity() {
     [address, isConnected, refresh, signMessageAsync]
   );
 
-  /** Link the connected wallet to the signed-in CrowdFund profile. */
+  /** Link the connected wallet to the signed-in CrowdFund profile (free signature). */
   const linkWallet = useCallback(async () => {
-    if (!isConnected || !address) {
-      toast.error("Connect your wallet first");
-      return null;
-    }
-
-    try {
-      const challenge = await apiPost("/api/auth/wallet/nonce", { address, purpose: "link" });
-      const signature = await signMessageAsync({ message: challenge.message });
-      const result = await apiPost("/api/me/wallet", {
-        address,
-        signature,
-        message: challenge.message,
-        nonce: challenge.nonce,
-      });
-      toast.success(`Wallet connected to ${result.cfUserId}`);
-      await refresh();
-      return result;
-    } catch (error) {
-      const message = error instanceof ApiError ? error.message : error?.message || "Could not link the wallet";
-      toast.error(message);
-      return null;
-    }
-  }, [address, isConnected, refresh, signMessageAsync]);
+    const result = await linkConnectedWallet();
+    if (result) await refresh();
+    return result;
+  }, [linkConnectedWallet, refresh]);
 
   const signOut = useCallback(async () => {
     try {

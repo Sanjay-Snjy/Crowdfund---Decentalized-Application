@@ -3,8 +3,10 @@
  *
  * Rows come from indexed `ContributionMade` events of the deployed contract, so
  * every entry has a real transaction hash, a confirmed status and a block
- * timestamp. Donors are labelled with their CrowdFund User ID when their wallet is
- * linked, otherwise with a shortened address — never with a fabricated ID.
+ * timestamp. Donors are labelled with the name of the Clerk account their wallet is
+ * linked to (the same name the header shows), then their CrowdFund User ID, and the
+ * wallet address is always shown underneath — a name is never invented for an
+ * unlinked wallet.
  *
  * Used on the campaign details page (campaignId set) and on the user dashboard
  * (community-wide activity).
@@ -80,8 +82,8 @@ export default function RecentDonations({
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-xs font-semibold" style={{ color: "var(--color-text)" }}>
-                    {donation.donor.label}
-                    {donation.donor.cfUserId && donation.donor.label !== donation.donor.cfUserId && (
+                    {donation.donor.displayName || donation.donor.cfUserId || "Anonymous donor"}
+                    {donation.donor.displayName && donation.donor.cfUserId && (
                       <span
                         className="ml-2 font-mono text-[10px]"
                         style={{ color: "var(--color-text-muted)" }}
@@ -91,6 +93,15 @@ export default function RecentDonations({
                       </span>
                     )}
                   </p>
+                  {donation.donor.walletAddress && (
+                    <p
+                      className="truncate font-mono text-[11px]"
+                      style={{ color: "var(--color-text-secondary)" }}
+                      title={donation.donor.walletAddress}
+                    >
+                      {formatAddress(donation.donor.walletAddress)}
+                    </p>
+                  )}
                   <p className="truncate text-[11px]" style={{ color: "var(--color-text-muted)" }}>
                     {showCampaign && (
                       <>
@@ -99,9 +110,6 @@ export default function RecentDonations({
                       </>
                     )}
                     {donation.timestamp ? formatDate(donation.timestamp) : "timestamp unavailable"}
-                    {!donation.donor.verified && donation.donor.walletAddress && (
-                      <> · {formatAddress(donation.donor.walletAddress)}</>
-                    )}
                   </p>
                 </div>
               </div>

@@ -279,7 +279,9 @@ function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* CrowdFund identity + donor rewards (verified server-side) */}
-          <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* items-start: the identity card is shorter than the rewards panel and must
+              not be stretched to match it (it used to leave a long empty column). */}
+          <div className="lg:col-span-3 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
             <IdentityPanel />
             <RewardBadges />
           </div>

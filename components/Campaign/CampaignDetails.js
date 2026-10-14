@@ -11,6 +11,9 @@ import {
 import { useContract } from "../../hooks/useContract";
 import { getFromIPFS, uploadToIPFS, uploadJSONToIPFS } from "../../utils/ipfs";
 import { useBookmarks } from "../../hooks/useBookmarks";
+import { useWalletProfiles } from "../../hooks/useWalletProfiles";
+import { useWalletLink } from "../../hooks/useWalletLink";
+import useIdentity from "../../hooks/useIdentity";
 import {
   formatEther, calculateTimeLeft, calculateProgress, formatDate,
   copyToClipboard, getCreatorDisplayName, formatAddress,
@@ -61,11 +64,13 @@ export default function CampaignDetails({ campaignId }) {
   const { address, isConnected } = useAccount();
   const { user } = useUser();
   const { toggle, isBookmarked } = useBookmarks();
+  const identity = useIdentity();
   const {
     useCampaign, useCampaignStats, useContributeToCampaignSimple, useGetRefund,
     useSubmitMilestoneEvidence, useVoteOnMilestone,
     useReleaseMilestoneFunds, useCampaignMilestones, useContribution, useCampaignAccounting,
   } = useContract();
+  const { linkWallet: linkConnectedWallet } = useWalletLink();
 
   const [metadata, setMetadata] = useState(null);
   const [creatorProfile, setCreatorProfile] = useState(null);
@@ -84,7 +89,7 @@ export default function CampaignDetails({ campaignId }) {
   const { data: stats } = useCampaignStats(campaignId);
   const { data: userContribution } = useContribution(campaignId, address);
   const { data: accounting, refetch: refetchAccounting } = useCampaignAccounting(campaignId);
-  const { contribute, isLoading: contributing } = useContributeToCampaignSimple();
+  const { contributeAsync, isLoading: contributing } = useContributeToCampaignSimple();
   const { getRefund, isLoading: refunding } = useGetRefund();
   const { submitMilestoneEvidence, isLoading: submittingEvidence } = useSubmitMilestoneEvidence();
   const { voteOnMilestone, isLoading: voting } = useVoteOnMilestone();
@@ -183,6 +188,15 @@ export default function CampaignDetails({ campaignId }) {
     return [first, second, raised.sub(first).sub(second)];
   }, [campaign?.raisedAmount]);
 
+  // Public CrowdFund names for the contributor addresses read from the contract, so
+  // the Contributors tab can show a name with the wallet address underneath.
+  // NOTE: this must stay above the early returns — hooks may never run conditionally.
+  const contributorAddresses = useMemo(
+    () => (contributions || []).map((entry) => entry?.contributor?.toString?.() || null),
+    [contributions]
+  );
+  const contributorProfiles = useWalletProfiles(contributorAddresses);
+
   // Only the next milestone in order can receive evidence / votes / a release.
   // NOTE: this must stay above the early returns — hooks may never run conditionally.
   const nextMilestoneIndex = useMemo(() => {
@@ -258,9 +272,26 @@ export default function CampaignDetails({ campaignId }) {
   const handleContribute = async () => {
     if (!contributionAmount || parseFloat(contributionAmount) <= 0) { toast.error("Enter a valid amount"); return; }
     try {
-      await contribute?.({ args: [campaignId], value: ethers.utils.parseEther(contributionAmount) });
+      await contributeAsync?.({ args: [campaignId], value: ethers.utils.parseEther(contributionAmount) });
       setContributionAmount("");
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      // The hook already reported the failure (onError); stop here so a rejected
+      // transaction never asks for a wallet-linking signature.
+      console.error(err);
+      return;
+    }
+
+    // A donation is only attributed to a CrowdFund profile through its linked
+    // wallet (that is what makes it count for points, badges, the personal history
+    // and the public donor name). Ask for that one free signature right here, where
+    // the user has just donated and the reason is obvious.
+    if (identity.isSignedIn && !identity.identity?.walletAddress) {
+      const toastId = toast.loading("One free signature links this wallet to your account…");
+      const linked = await linkConnectedWallet({ notify: false });
+      toast.dismiss(toastId);
+      if (linked) toast.success(`Wallet linked to ${linked.cfUserId} — your donations now count towards your rewards`);
+      else toast("Wallet not linked — you can link it any time from your dashboard.");
+    }
   };
 
   const handleSubmitEvidence = async (index) => {
@@ -727,16 +758,36 @@ export default function CampaignDetails({ campaignId }) {
                     <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="skeleton h-14" />)}</div>
                   ) : uniqueContributors.length > 0 ? (
                     <div className="space-y-2">
-                      {uniqueContributors.map((c, i) => (
+                      {uniqueContributors.map((c, i) => {
+                        const profile = contributorProfiles.get(String(c.address).toLowerCase());
+                        return (
                         <div key={c.address} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "var(--color-accent)" }}>
                               #{i + 1}
                             </div>
                             <div>
-                              <p className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
+                              {/* Name from the donor's CrowdFund (Clerk) profile when their wallet is
+                                  linked, with the wallet address always shown underneath. */}
+                              {profile?.name && (
+                                <p className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
+                                  {profile.name}
+                                  {profile.cfUserId && (
+                                    <span className="ml-2 font-mono text-[10px]" style={{ color: "var(--color-text-muted)" }}>
+                                      {profile.cfUserId}
+                                    </span>
+                                  )}
+                                  {c.address.toLowerCase() === address?.toLowerCase() && <span className="ml-1 text-xs" style={{ color: "var(--color-accent)" }}>(You)</span>}
+                                </p>
+                              )}
+                              <p
+                                className={profile?.name ? "font-mono text-xs" : "text-sm font-medium"}
+                                style={{ color: profile?.name ? "var(--color-text-secondary)" : "var(--color-text)" }}
+                              >
                                 {formatAddress(c.address)}
-                                {c.address.toLowerCase() === address?.toLowerCase() && <span className="ml-1 text-xs" style={{ color: "var(--color-accent)" }}>(You)</span>}
+                                {!profile?.name && c.address.toLowerCase() === address?.toLowerCase() && (
+                                  <span className="ml-1 text-xs" style={{ color: "var(--color-accent)" }}>(You)</span>
+                                )}
                               </p>
                               <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{c.count} contribution{c.count !== 1 ? "s" : ""}</p>
                             </div>
@@ -746,7 +797,8 @@ export default function CampaignDetails({ campaignId }) {
                             <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{((Number(formatEther(c.total)) / parseFloat(raised || 1)) * 100).toFixed(1)}% voting power</p>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-center py-8">

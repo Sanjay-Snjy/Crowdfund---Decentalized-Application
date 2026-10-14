@@ -53,6 +53,10 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       cfUserId: identity.user?.cf_user_id || null,
+      // Donations are attributed through the linked wallet; without one nothing can
+      // be matched to this profile, and the UI says so instead of showing an empty list.
+      walletAddress: identity.user?.wallet_address || null,
+      walletLinked: Boolean(identity.user?.wallet_address),
       donations,
       summary: {
         confirmedCount: confirmed.length,

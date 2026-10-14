@@ -42,7 +42,10 @@ export default async function handler(req, res) {
     const donations = rows.map((row) => {
       const label = row.donorWallet ? labels.get(row.donorWallet) : null;
       const cfUserId = label?.cfUserId || row.cfUserId || null;
-      const displayName = label?.displayName || null;
+      // A linked profile's public name wins. When the wallet has no active profile
+      // row the already-attributed owner (merged wallet) is used, and the profile's
+      // own public-display / anonymous flags are still respected.
+      const displayName = label ? label.displayName : row.donorDisplayName || null;
       const anonymous = Boolean(label?.anonymous) || !displayName;
 
       return {

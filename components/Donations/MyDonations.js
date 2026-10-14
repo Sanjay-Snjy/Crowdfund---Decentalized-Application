@@ -9,9 +9,10 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { FiExternalLink, FiHeart } from "react-icons/fi";
 import { apiGet } from "../../utils/apiClient";
-import { formatDate } from "../../utils/helpers";
+import { formatAddress, formatDate } from "../../utils/helpers";
 import { formatEthDisplay } from "../../lib/format";
 import { EmptyState, ErrorState, LoadingState, SectionTitle, StatusPill } from "../Common/AsyncStates";
+import LinkWalletNotice from "../Profile/LinkWalletNotice";
 
 export default function MyDonations({ enabled = true, title = "Transaction History", limit = 8 }) {
   const { data, isLoading, error, refetch } = useQuery({
@@ -38,6 +39,16 @@ export default function MyDonations({ enabled = true, title = "Transaction Histo
         right={data?.cfUserId ? <span className="badge badge-neutral">{data.cfUserId}</span> : null}
       />
 
+      {/* Donations are matched to this profile through its linked wallet. */}
+      {!isLoading && !error && (
+        <LinkWalletNotice
+          walletLinked={Boolean(data?.walletLinked)}
+          onLinked={refetch}
+          message="Link the wallet you donated with to see those donations here."
+          className="mb-3"
+        />
+      )}
+
       {isLoading ? (
         <LoadingState rows={3} height="h-12" />
       ) : error ? (
@@ -50,7 +61,11 @@ export default function MyDonations({ enabled = true, title = "Transaction Histo
         <EmptyState
           icon={<FiHeart className="h-8 w-8" style={{ color: "var(--color-text-muted)" }} />}
           title="No contributions indexed yet"
-          description="Donations appear here once the transaction is mined and confirmed. If you just contributed, it can take a few seconds."
+          description={
+            data?.walletLinked
+              ? "Donations appear here once the transaction is mined and confirmed. If you just contributed, it can take a few seconds."
+              : "Donations from the wallet linked to this account appear here once they are mined and confirmed."
+          }
           action={
             <Link href="/home" className="btn btn-secondary btn-sm">
               Browse campaigns
@@ -73,6 +88,9 @@ export default function MyDonations({ enabled = true, title = "Transaction Histo
                 >
                   {donation.campaignName || `Campaign #${donation.campaignId}`}
                 </Link>
+                <p className="font-mono text-[11px]" style={{ color: "var(--color-text-secondary)" }} title={donation.donorWallet || ""}>
+                  {donation.donorWallet ? formatAddress(donation.donorWallet) : "—"}
+                </p>
                 <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
                   {formatDate(donation.timestamp)}
                   {donation.refundedAt ? " · refunded" : ""}

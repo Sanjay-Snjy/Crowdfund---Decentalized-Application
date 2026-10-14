@@ -4,9 +4,9 @@
  * Rows come from indexed `ContributionMade` events of the deployed contract, so
  * every entry has a real transaction hash, a confirmed status and a block
  * timestamp. Donors are labelled with the name of the Clerk account their wallet is
- * linked to (the same name the header shows), then their CrowdFund User ID, and the
- * wallet address is always shown underneath — a name is never invented for an
- * unlinked wallet.
+ * linked to (the same name the header shows) followed by their CrowdFund User ID.
+ * The raw wallet address is deliberately not shown — and a name is never invented
+ * for an unlinked wallet.
  *
  * Used on the campaign details page (campaignId set) and on the user dashboard
  * (community-wide activity).
@@ -15,7 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { FiExternalLink, FiHeart, FiUsers } from "react-icons/fi";
 import { apiGet, buildQuery } from "../../utils/apiClient";
-import { formatDate, formatAddress } from "../../utils/helpers";
+import { formatDate } from "../../utils/helpers";
 import { formatEthDisplay } from "../../lib/format";
 import { EmptyState, ErrorState, LoadingState, SectionTitle, StatusPill } from "../Common/AsyncStates";
 
@@ -83,7 +83,7 @@ export default function RecentDonations({
                 <div className="min-w-0">
                   <p className="truncate text-xs font-semibold" style={{ color: "var(--color-text)" }}>
                     {donation.donor.displayName || donation.donor.cfUserId || "Anonymous donor"}
-                    {donation.donor.displayName && donation.donor.cfUserId && (
+                    {donation.donor.cfUserId && (
                       <span
                         className="ml-2 font-mono text-[10px]"
                         style={{ color: "var(--color-text-muted)" }}
@@ -93,15 +93,6 @@ export default function RecentDonations({
                       </span>
                     )}
                   </p>
-                  {donation.donor.walletAddress && (
-                    <p
-                      className="truncate font-mono text-[11px]"
-                      style={{ color: "var(--color-text-secondary)" }}
-                      title={donation.donor.walletAddress}
-                    >
-                      {formatAddress(donation.donor.walletAddress)}
-                    </p>
-                  )}
                   <p className="truncate text-[11px]" style={{ color: "var(--color-text-muted)" }}>
                     {showCampaign && (
                       <>

@@ -15,7 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 /** Shared shell for a matched, fixed-height dashboard card (fits 4 rows + header). */
-export const MATCHED_CARD = "card flex h-[24rem] flex-col rounded-2xl p-5";
+export const MATCHED_CARD = "card flex h-[26rem] flex-col rounded-2xl p-5";
 /** Shorter shell for the full-width milestone card — it scrolls sideways, so it
  *  only needs room for one row of campaign chips. */
 export const MATCHED_WIDE_CARD = "card flex h-[14rem] flex-col rounded-2xl p-5";

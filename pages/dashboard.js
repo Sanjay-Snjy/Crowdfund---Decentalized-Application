@@ -2,6 +2,8 @@ import { useAccount, useContractReads } from "wagmi";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { useQuery } from "@tanstack/react-query";
+import { apiGet, buildQuery } from "../utils/apiClient";
 import Layout from "../components/Layout/Layout";
 import DashboardStats from "../components/Dashboard/DashboardStats";
 import FundingProgress from "../components/Dashboard/FundingProgress";
@@ -21,7 +23,7 @@ import { CROWDFUNDING_ABI } from "../constants/abi";
 
 import { formatDate, formatEther } from "../utils/helpers";
 import { MATCHED_CARD, MATCHED_CARD_BODY, MATCHED_WIDE_CARD, Pager, usePagedList } from "../components/Common/PagedList";
-import { FiArrowUpRight } from "react-icons/fi";
+import { FiArrowUpRight, FiExternalLink } from "react-icons/fi";
 import Link from "next/link";
 import {
   useDemoMode,
@@ -59,7 +61,7 @@ function Dashboard() {
     });
   }, [userContributions, address]);
 
-  const { data: txData, isLoading: loadingTx } = useContractReads({ contracts: transactionCalls, enabled: transactionCalls.length > 0 });
+  const { data: txData } = useContractReads({ contracts: transactionCalls, enabled: transactionCalls.length > 0 });
 
   useEffect(() => {
     if (!txData || !userContributions?.length || !address) { setTransactionFeed([]); return; }
@@ -98,13 +100,47 @@ function Dashboard() {
         action: "Contribution",
         amount: `${(index + 1) * 10000000000000000}`,
         timestamp: Math.floor(Date.now() / 1000) - index * 3600,
+        status: "confirmed",
+        txHash: `0x${(index + 1).toString(16).padStart(64, "0")}`,
+        explorerUrl: `https://sepolia.etherscan.io/tx/0x${(index + 1).toString(16).padStart(64, "0")}`,
       }))
     : transactionFeed;
   // TEMP-DEBUG-LAYOUT end
 
+  // Recent Transactions are sourced from the verified indexer feed instead of raw
+  // contract reads: only the indexed rows carry the transaction hash, so only they
+  // can link each row to its Etherscan entry. Contract reads never expose hashes.
+  const {
+    data: myDonationsData,
+    isLoading: loadingRecent,
+    error: recentError,
+  } = useQuery({
+    queryKey: ["me", "donations", address || "account"],
+    queryFn: () => apiGet(`/api/me/donations${buildQuery({ address })}`),
+    enabled: (isConnected || debugLayout) && !demoMode,
+    refetchInterval: 60 * 1000,
+    retry: 1,
+  });
+
+  const recentTransactions = useMemo(() => {
+    if (debugLayout) return debugTransactions;
+    return (myDonationsData?.donations || [])
+      .map((donation) => ({
+        campaignId: donation.campaignId,
+        campaignTitle: donation.campaignName || `Campaign #${donation.campaignId}`,
+        action: "Contribution",
+        amount: donation.amountWei,
+        timestamp: Number(donation.timestamp) || 0,
+        status: donation.status,
+        txHash: donation.txHash,
+        explorerUrl: donation.explorerUrl,
+      }))
+      .sort((a, b) => b.timestamp - a.timestamp);
+  }, [debugLayout, debugTransactions, myDonationsData]);
+
   // Matched, fixed-height cards: their lists are paged instead of growing (or
   // scrolling) past the shared card height. Milestone Progress scrolls horizontally.
-  const transactionPager = usePagedList(debugTransactions, 4);
+  const transactionPager = usePagedList(recentTransactions, 4);
   const campaignPager = usePagedList(debugCampaigns, 4);
 
   if (!isConnected && !demoMode && !debugLayout) {
@@ -333,7 +369,7 @@ function Dashboard() {
               <Pager pager={transactionPager} label="transactions" />
             </div>
             <div className={`mt-4 ${MATCHED_CARD_BODY}`}>
-              {loadingTx ? (
+              {loadingRecent ? (
                 <div className="space-y-2">{[1, 2, 3].map((i) => <div key={i} className="skeleton h-14" />)}</div>
               ) : transactionPager.total > 0 ? (
                 <div className="space-y-2">
@@ -341,12 +377,37 @@ function Dashboard() {
                     <div key={`${tx.campaignId}-${tx.timestamp}-${i}`} className="flex items-center justify-between p-3 rounded-lg" style={{ background: "var(--color-surface-raised, var(--color-surface))" }}>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium" style={{ color: "var(--color-text)" }}>{tx.action} → {tx.campaignTitle}</p>
-                        <p className="text-xs mt-0.5" style={{ color: "var(--color-text-muted)" }}>{formatDate(tx.timestamp)}</p>
+                        <p className="text-xs mt-0.5" style={{ color: "var(--color-text-muted)" }}>
+                          {formatDate(tx.timestamp)}
+                          {tx.status && tx.status !== "confirmed" ? ` · ${tx.status}` : ""}
+                        </p>
                       </div>
-                      <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>{formatEther(tx.amount)} ETH</p>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>{formatEther(tx.amount)} ETH</p>
+                        {tx.explorerUrl && (
+                          <a
+                            href={tx.explorerUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-ghost btn-sm"
+                            title={`View transaction ${tx.txHash || ""} on Etherscan`}
+                            aria-label="View transaction on Etherscan"
+                          >
+                            Tx <FiExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
+              ) : recentError?.status === 401 || recentError?.status === 403 ? (
+                <p className="text-sm text-center py-6" style={{ color: "var(--color-text-muted)" }}>
+                  Sign in to see your transaction history.
+                </p>
+              ) : recentError ? (
+                <p className="text-sm text-center py-6" style={{ color: "var(--color-text-muted)" }}>
+                  Could not load transactions right now.
+                </p>
               ) : (
                 <p className="text-sm text-center py-6" style={{ color: "var(--color-text-muted)" }}>No transactions yet</p>
               )}
@@ -404,7 +465,7 @@ function Dashboard() {
             </div>
             {debugCampaigns?.length > 0 ? (
               <div className="mt-4 flex min-h-0 flex-1 gap-4 overflow-x-auto pb-2 pr-1">
-                {userCampaigns.map((c) => (
+                {debugCampaigns.map((c) => (
                   <div
                     key={c.id}
                     className="min-w-[18rem] shrink-0 rounded-xl p-3"

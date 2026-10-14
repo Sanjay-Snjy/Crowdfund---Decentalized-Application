@@ -4,20 +4,24 @@
  * Verified indexed contributions for the signed-in CrowdFund user, each with its
  * transaction hash, block timestamp, status and a link to the correct block
  * explorer. A refunded contribution is labelled as such instead of being hidden.
+ *
+ * The connected wallet is passed along, so the list is populated as soon as a
+ * wallet is connected even before it has been linked to the account.
  */
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useAccount } from "wagmi";
 import { FiExternalLink, FiHeart } from "react-icons/fi";
-import { apiGet } from "../../utils/apiClient";
+import { apiGet, buildQuery } from "../../utils/apiClient";
 import { formatAddress, formatDate } from "../../utils/helpers";
 import { formatEthDisplay } from "../../lib/format";
 import { EmptyState, ErrorState, LoadingState, SectionTitle, StatusPill } from "../Common/AsyncStates";
-import LinkWalletNotice from "../Profile/LinkWalletNotice";
 
 export default function MyDonations({ enabled = true, title = "Transaction History", limit = 8 }) {
+  const { address } = useAccount();
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["me", "donations"],
-    queryFn: () => apiGet("/api/me/donations"),
+    queryKey: ["me", "donations", address || "account"],
+    queryFn: () => apiGet(`/api/me/donations${buildQuery({ address })}`),
     enabled,
     refetchInterval: 60 * 1000,
     retry: 1,
@@ -39,16 +43,6 @@ export default function MyDonations({ enabled = true, title = "Transaction Histo
         right={data?.cfUserId ? <span className="badge badge-neutral">{data.cfUserId}</span> : null}
       />
 
-      {/* Donations are matched to this profile through its linked wallet. */}
-      {!isLoading && !error && (
-        <LinkWalletNotice
-          walletLinked={Boolean(data?.walletLinked)}
-          onLinked={refetch}
-          message="Link the wallet you donated with to see those donations here."
-          className="mb-3"
-        />
-      )}
-
       {isLoading ? (
         <LoadingState rows={3} height="h-12" />
       ) : error ? (
@@ -62,9 +56,9 @@ export default function MyDonations({ enabled = true, title = "Transaction Histo
           icon={<FiHeart className="h-8 w-8" style={{ color: "var(--color-text-muted)" }} />}
           title="No contributions indexed yet"
           description={
-            data?.walletLinked
+            data?.walletAddress
               ? "Donations appear here once the transaction is mined and confirmed. If you just contributed, it can take a few seconds."
-              : "Donations from the wallet linked to this account appear here once they are mined and confirmed."
+              : "Connect the wallet you donated with to see your contribution history here."
           }
           action={
             <Link href="/home" className="btn btn-secondary btn-sm">

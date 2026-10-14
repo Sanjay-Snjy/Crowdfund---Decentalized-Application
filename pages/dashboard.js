@@ -1,6 +1,6 @@
 import { useAccount, useContractReads } from "wagmi";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import Layout from "../components/Layout/Layout";
 import DashboardStats from "../components/Dashboard/DashboardStats";
@@ -13,7 +13,6 @@ import MilestoneTracker from "../components/Dashboard/MilestoneTracker";
 
 import BookmarkedCampaigns from "../components/Dashboard/BookmarkedCampaigns";
 import IdentityPanel from "../components/Profile/IdentityPanel";
-import RewardBadges from "../components/Rewards/RewardBadges";
 import RecentDonations from "../components/Donations/RecentDonations";
 import MyDonations from "../components/Donations/MyDonations";
 import { useContract } from "../hooks/useContract";
@@ -21,6 +20,8 @@ import { CONTRACT_ADDRESS } from "../constants";
 import { CROWDFUNDING_ABI } from "../constants/abi";
 
 import { formatDate, formatEther } from "../utils/helpers";
+import { MATCHED_CARD, MATCHED_CARD_BODY, MATCHED_WIDE_CARD, Pager, usePagedList } from "../components/Common/PagedList";
+import { FiArrowUpRight } from "react-icons/fi";
 import Link from "next/link";
 import {
   useDemoMode,
@@ -38,11 +39,10 @@ function Dashboard() {
   const { user } = useUser();
   const router = useRouter();
   const demoMode = useDemoMode();
-  const { useActiveCampaigns, useUserCampaignsWithDetails, useUserContributions } = useContract();
+  const { useUserCampaignsWithDetails, useUserContributions } = useContract();
 
   const currentUserName = user?.fullName || [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "";
 
-  const { data: activeCampaigns, refetch: refetchActive } = useActiveCampaigns(0, 100);
   const { campaigns: userCampaigns, isLoading: loadingUserCampaigns, campaignIds: userCampaignIds } = useUserCampaignsWithDetails(address);
   const { data: userContributions } = useUserContributions(address);
 
@@ -75,16 +75,39 @@ function Dashboard() {
         });
       }
     }
-    setTransactionFeed(feed.sort((a, b) => b.timestamp - a.timestamp).slice(0, 6));
+    // Every contribution is kept: the card pages through them four at a time.
+    setTransactionFeed(feed.sort((a, b) => b.timestamp - a.timestamp));
   }, [txData, userContributions, address]);
 
-  const liveActive = useMemo(() => (activeCampaigns || []).filter((c) => c?.active && Number(c.deadline?.toString?.() || 0) * 1000 > Date.now()), [activeCampaigns]);
+  // TEMP-DEBUG-LAYOUT start
+  const debugLayout = router.query?.layout === "1";
+  const debugCampaigns = debugLayout
+    ? Array.from({ length: 7 }, (_, index) => ({
+        id: index + 1,
+        title: `Debug campaign ${index + 1}`,
+        active: true,
+        deadline: Math.floor(Date.now() / 1000) + 86400,
+        raisedAmount: `${(index + 1) * 100000000000000000}`,
+        targetAmount: "5000000000000000000",
+      }))
+    : userCampaigns;
+  const debugTransactions = debugLayout
+    ? Array.from({ length: 9 }, (_, index) => ({
+        campaignId: index + 1,
+        campaignTitle: `Debug campaign ${index + 1}`,
+        action: "Contribution",
+        amount: `${(index + 1) * 10000000000000000}`,
+        timestamp: Math.floor(Date.now() / 1000) - index * 3600,
+      }))
+    : transactionFeed;
+  // TEMP-DEBUG-LAYOUT end
 
-  const refreshData = useCallback(() => {
-    refetchActive?.();
-  }, [refetchActive]);
+  // Matched, fixed-height cards: their lists are paged instead of growing (or
+  // scrolling) past the shared card height. Milestone Progress scrolls horizontally.
+  const transactionPager = usePagedList(debugTransactions, 4);
+  const campaignPager = usePagedList(debugCampaigns, 4);
 
-  if (!isConnected && !demoMode) {
+  if (!isConnected && !demoMode && !debugLayout) {
     return (
       <Layout>
         <div className="flex min-h-[60vh] items-center justify-center px-4">
@@ -259,63 +282,92 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Stats grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
-            { label: "Created", value: userCampaigns?.length || 0 },
-            { label: "Contributions", value: userContributions?.length || 0 },
-            { label: "Active Campaigns", value: liveActive.length },
-          ].map((s) => (
-            <div key={s.label} className="card p-4 rounded-2xl">
-              <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{s.label}</p>
-              <p className="text-2xl font-bold mt-1" style={{ color: "var(--color-text)" }}>{s.value}</p>
-            </div>
-          ))}
-          <div className="card p-4 rounded-2xl">
-            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Connected</p>
-            <p className="text-sm font-medium mt-1" style={{ color: "var(--color-success)" }}>{address?.slice(0, 6)}...{address?.slice(-4)}</p>
+        {/* First row: the account itself (CrowdFund User ID, name, wallet state), then
+            what this wallet created and backed. The old "Active Campaigns" and
+            "Connected" tiles are gone — the connected wallet lives on the identity card. */}
+        <div className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-4">
+          <div className="lg:col-span-2">
+            <IdentityPanel />
           </div>
+          {[
+            {
+              label: "Created",
+              value: userCampaigns?.length || 0,
+              href: "/my-campaigns",
+              hint: "Open My Campaigns",
+            },
+            {
+              label: "Contributions",
+              value: userContributions?.length || 0,
+              href: "/contributions",
+              hint: "Open My Contributions",
+            },
+          ].map((tile) => (
+            <Link
+              key={tile.label}
+              href={tile.href}
+              className="card flex flex-col justify-center rounded-2xl p-4 transition-colors hover:border-[var(--color-accent)]"
+              title={tile.hint}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{tile.label}</p>
+                <FiArrowUpRight className="h-4 w-4" style={{ color: "var(--color-accent)" }} />
+              </div>
+              <p className="text-2xl font-bold mt-1" style={{ color: "var(--color-text)" }}>{tile.value}</p>
+              <p className="mt-1 text-[11px]" style={{ color: "var(--color-text-muted)" }}>{tile.hint}</p>
+            </Link>
+          ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* CrowdFund identity + donor rewards (verified server-side) */}
-          {/* items-start: the identity card is shorter than the rewards panel and must
-              not be stretched to match it (it used to leave a long empty column). */}
-          <div className="lg:col-span-3 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-            <IdentityPanel />
-            <RewardBadges />
-          </div>
-
+        {/* Working area — Recent Transactions beside Your Campaigns, with Milestone
+            Progress scrolling horizontally underneath. Rewards and badges live on
+            their own page (/rewards), reachable from the header profile menu. */}
+        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
           {/* Recent transactions */}
-          <div className="lg:col-span-2 card p-5 rounded-2xl">
-            <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--color-text)" }}>Recent Transactions</h3>
-            {loadingTx ? (
-              <div className="space-y-2">{[1, 2, 3].map((i) => <div key={i} className="skeleton h-14" />)}</div>
-            ) : transactionFeed.length > 0 ? (
-              <div className="space-y-2">
-                {transactionFeed.map((tx, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg" style={{ background: "var(--color-surface-raised, var(--color-surface))" }}>
-                    <div>
-                      <p className="text-sm font-medium" style={{ color: "var(--color-text)" }}>{tx.action} → {tx.campaignTitle}</p>
-                      <p className="text-xs mt-0.5" style={{ color: "var(--color-text-muted)" }}>{formatDate(tx.timestamp)}</p>
-                    </div>
-                    <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>{formatEther(tx.amount)} ETH</p>
-                  </div>
-                ))}
+          <div className={MATCHED_CARD}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Recent Transactions</h3>
+                <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>Your confirmed contributions on-chain</p>
               </div>
-            ) : (
-              <p className="text-sm text-center py-6" style={{ color: "var(--color-text-muted)" }}>No transactions yet</p>
-            )}
+              <Pager pager={transactionPager} label="transactions" />
+            </div>
+            <div className={`mt-4 ${MATCHED_CARD_BODY}`}>
+              {loadingTx ? (
+                <div className="space-y-2">{[1, 2, 3].map((i) => <div key={i} className="skeleton h-14" />)}</div>
+              ) : transactionPager.total > 0 ? (
+                <div className="space-y-2">
+                  {transactionPager.slice.map((tx, i) => (
+                    <div key={`${tx.campaignId}-${tx.timestamp}-${i}`} className="flex items-center justify-between p-3 rounded-lg" style={{ background: "var(--color-surface-raised, var(--color-surface))" }}>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium" style={{ color: "var(--color-text)" }}>{tx.action} → {tx.campaignTitle}</p>
+                        <p className="text-xs mt-0.5" style={{ color: "var(--color-text-muted)" }}>{formatDate(tx.timestamp)}</p>
+                      </div>
+                      <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>{formatEther(tx.amount)} ETH</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-center py-6" style={{ color: "var(--color-text-muted)" }}>No transactions yet</p>
+              )}
+            </div>
           </div>
 
           {/* Created campaigns with progress bars and countdown */}
-          <div className="card p-5 rounded-2xl">
-            <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--color-text)" }}>Your Campaigns</h3>
+          <div className={MATCHED_CARD}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Your Campaigns</h3>
+                <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>Funding progress and deadlines</p>
+              </div>
+              <Pager pager={campaignPager} label="campaigns" />
+            </div>
+            <div className={`mt-4 ${MATCHED_CARD_BODY}`}>
             {loadingUserCampaigns ? (
               <div className="space-y-2">{[1, 2, 3].map((i) => <div key={i} className="skeleton h-10" />)}</div>
-            ) : userCampaigns?.length > 0 ? (
+            ) : debugCampaigns?.length > 0 ? (
               <div className="space-y-3">
-                {userCampaigns.slice(0, 4).map((c) => (
+                {campaignPager.slice.map((c) => (
                   <div key={c.id} className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <Link href={`/campaign/${c.id}`} className="text-xs font-medium truncate max-w-[70%] hover:underline" style={{ color: "var(--color-text)" }}>
@@ -335,27 +387,44 @@ function Dashboard() {
                 <Link href="/create-campaign" className="btn btn-sm mt-2">Create One</Link>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Feature #14: Milestone Progress Tracker */}
-        {userCampaigns?.length > 0 && (
-          <div className="card p-5 rounded-2xl">
-            <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--color-text)" }}>
-              Milestone Progress
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {userCampaigns.slice(0, 6).map((c) => (
-                <div key={c.id} className="p-3 rounded-xl" style={{ background: "var(--color-surface)" }}>
-                  <Link href={`/campaign/${c.id}`} className="text-xs font-medium block truncate mb-2 hover:underline" style={{ color: "var(--color-text)" }}>
-                    {c.title || `Campaign #${c.id}`}
-                  </Link>
-                  <MilestoneTracker campaignId={c.id} campaign={c} />
-                </div>
-              ))}
             </div>
           </div>
-        )}
+
+          {/* Feature #14: Milestone Progress Tracker — full width, scrolled sideways
+              so any number of campaigns fits the same card height. */}
+          <div className={`${MATCHED_WIDE_CARD} lg:col-span-2`}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Milestone Progress</h3>
+                <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
+                  Evidence, votes and fund releases — scroll sideways to see every campaign
+                </p>
+              </div>
+              <span className="badge badge-neutral shrink-0">{userCampaigns?.length || 0} campaign(s)</span>
+            </div>
+            {debugCampaigns?.length > 0 ? (
+              <div className="mt-4 flex min-h-0 flex-1 gap-4 overflow-x-auto pb-2 pr-1">
+                {userCampaigns.map((c) => (
+                  <div
+                    key={c.id}
+                    className="min-w-[18rem] shrink-0 rounded-xl p-3"
+                    style={{ background: "var(--color-surface)" }}
+                  >
+                    <Link href={`/campaign/${c.id}`} className="text-xs font-medium block truncate mb-2 hover:underline" style={{ color: "var(--color-text)" }}>
+                      {c.title || `Campaign #${c.id}`}
+                    </Link>
+                    <MilestoneTracker campaignId={c.id} campaign={c} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-1 flex-col items-center justify-center text-center">
+                <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>No campaigns created yet</p>
+                <Link href="/create-campaign" className="btn btn-sm mt-2">Create One</Link>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Community donation activity + my verified donation history */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

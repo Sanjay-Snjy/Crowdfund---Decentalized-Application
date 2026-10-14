@@ -3,15 +3,19 @@
  *
  * All values come from /api/rewards/me, which recomputes them from verified,
  * indexed contribution records. Nothing here can be edited by the browser.
+ *
+ * The connected wallet is passed along so a user who has just connected (but not
+ * yet linked) a wallet sees its real, verified contributions instead of a zero.
  */
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { FiAward, FiStar, FiTrendingUp } from "react-icons/fi";
-import { apiGet } from "../../utils/apiClient";
-import { formatDate } from "../../utils/helpers";
+import { useAccount } from "wagmi";
+import { FiAward, FiLink, FiStar, FiTrendingUp } from "react-icons/fi";
+import { apiGet, buildQuery } from "../../utils/apiClient";
+import { formatAddress, formatDate } from "../../utils/helpers";
 import { formatEther as formatWei } from "../../lib/format";
 import { EmptyState, ErrorState, LoadingState, SectionTitle, StatTile } from "../Common/AsyncStates";
-import LinkWalletNotice from "../Profile/LinkWalletNotice";
+import { MATCHED_CARD, MATCHED_CARD_BODY, Pager, usePagedList } from "../Common/PagedList";
 
 const BADGE_ICONS = {
   supporter: FiStar,
@@ -69,19 +73,24 @@ function BadgeCard({ badge }) {
 }
 
 export default function RewardBadges({ enabled = true }) {
+  const { address } = useAccount();
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["rewards", "me"],
-    queryFn: () => apiGet("/api/rewards/me"),
+    queryKey: ["rewards", "me", address || "account"],
+    queryFn: () => apiGet(`/api/rewards/me${buildQuery({ address })}`),
     enabled,
     refetchInterval: 60 * 1000,
     retry: 1,
   });
 
+  // The per-contribution breakdown is paged so the card can keep the same fixed
+  // height as the cards it sits beside.
+  const breakdownPager = usePagedList(data?.breakdown, 3);
+
   if (!enabled) return null;
 
   if (isLoading) {
     return (
-      <div className="card rounded-2xl p-5">
+      <div className={MATCHED_CARD}>
         <SectionTitle title="My Rewards & Badges" description="Loading your recognition…" />
         <LoadingState rows={2} height="h-16" />
       </div>
@@ -90,7 +99,7 @@ export default function RewardBadges({ enabled = true }) {
 
   if (error) {
     return (
-      <div className="card rounded-2xl p-5">
+      <div className={MATCHED_CARD}>
         <SectionTitle title="My Rewards & Badges" />
         <ErrorState
           error={error}
@@ -104,26 +113,31 @@ export default function RewardBadges({ enabled = true }) {
   const badges = data?.badges || [];
 
   return (
-    <div className="card rounded-2xl p-5">
+    <div className={MATCHED_CARD}>
       <SectionTitle
         title="My Rewards & Badges"
         description={`${data.policy.pointsPerEth} points per 1 ETH of eligible, confirmed contribution`}
         right={
-          <span className="badge badge-neutral">
-            <FiTrendingUp className="mr-1 h-3 w-3" />
-            {data.points} points
+          <span className="flex flex-wrap items-center justify-end gap-2">
+            <Pager pager={breakdownPager} label="contributions" />
+            {data.walletAddress && !data.walletLinked && (
+              <span
+                className="badge badge-neutral"
+                title="Connected wallet — these verified contributions are matched by address"
+              >
+                <FiLink className="mr-1 h-3 w-3" />
+                {formatAddress(data.walletAddress)}
+              </span>
+            )}
+            <span className="badge badge-neutral">
+              <FiTrendingUp className="mr-1 h-3 w-3" />
+              {data.points} points
+            </span>
           </span>
         }
       />
 
-      {/* Points are attributed through the linked wallet: without one the server can
-          only report zero, so the user is told how to fix it rather than left guessing. */}
-      <LinkWalletNotice
-        walletLinked={Boolean(data.walletLinked)}
-        onLinked={refetch}
-        className="mb-3"
-      />
-
+      <div className={`${MATCHED_CARD_BODY} space-y-4`}>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile label="Reward points" value={data.points} accent="var(--color-accent)" />
         <StatTile label="Eligible contributions" value={`${formatWei(data.eligibleWei)} ETH`} />
@@ -131,13 +145,13 @@ export default function RewardBadges({ enabled = true }) {
         <StatTile label="Contributions" value={data.contributionsCount} />
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {badges.map((badge) => (
           <BadgeCard key={badge.id} badge={badge} />
         ))}
       </div>
 
-      <div className="mt-5">
+      <div>
         <p className="text-xs font-semibold" style={{ color: "var(--color-text)" }}>
           How each reward was earned
         </p>
@@ -145,9 +159,9 @@ export default function RewardBadges({ enabled = true }) {
           <EmptyState
             title="No contributions indexed yet"
             description={
-              data.walletLinked
+              data.walletAddress
                 ? "Contribute to a campaign and your recognition appears here once the transaction is confirmed."
-                : "Link the wallet you donated with — your confirmed contributions are attributed to it."
+                : "Connect the wallet you donated with to see your points, badges and contribution breakdown."
             }
             action={
               <Link href="/home" className="btn btn-secondary btn-sm">
@@ -157,7 +171,7 @@ export default function RewardBadges({ enabled = true }) {
           />
         ) : (
           <div className="mt-2 space-y-1.5">
-            {data.breakdown.map((row) => (
+            {breakdownPager.slice.map((row) => (
               <div
                 key={`${row.txHash}-${row.transactionId}`}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-xl px-3 py-2"
@@ -193,11 +207,12 @@ export default function RewardBadges({ enabled = true }) {
         )}
       </div>
 
-      <p className="mt-4 text-[11px]" style={{ color: "var(--color-text-muted)" }}>
+      <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
         Refunded contributions do not earn points (
         {data.policy.refundedContributionsEarnRewards ? "policy: refunds still count" : "policy: refunds are excluded"}).
         Badges are recognition only — they have no monetary value and cannot be redeemed.
       </p>
+      </div>
     </div>
   );
 }

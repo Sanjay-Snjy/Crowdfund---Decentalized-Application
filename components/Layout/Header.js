@@ -212,7 +212,13 @@ export default function Header({ onMenuToggle, isCollapsed }) {
                   href="/contributions"
                   className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  My Contributions & Rewards
+                  My Contributions
+                </Link>
+                <Link
+                  href="/rewards"
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  My Rewards & Badges
                 </Link>
                 {identity.isSignedIn && !isSignedIn && (
                   <button

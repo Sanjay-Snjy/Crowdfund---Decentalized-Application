@@ -1,15 +1,21 @@
 /**
- * GET /api/me/donations
+ * GET /api/me/donations[?address=0x…]
  *
  * The signed-in user's donation history, taken from verified indexed contribution
  * events (transaction hash, campaign, amount, block timestamp, status and reward
  * eligibility). Includes donations made with a wallet that was linked later.
+ *
+ * `address` is the wallet the browser has connected. It is only a *filter* over
+ * already-public, already-indexed donations and is used solely while the profile
+ * has no linked wallet — so a user who just connected a wallet sees their history
+ * immediately. Once a wallet is linked it is authoritative and `address` is
+ * ignored; nothing is ever written for an unlinked address.
  */
 import { db } from "../../../lib/db/index.js";
 import { requireUser } from "../../../lib/auth/identity.js";
 import { getChainConfig } from "../../../lib/chain/config.js";
 import { maybeAutoSync } from "../../../lib/chain/indexer.js";
-import { methodNotAllowed, privateNoStore, serverError } from "../../../lib/api/http.js";
+import { isAddressLike, methodNotAllowed, privateNoStore, serverError } from "../../../lib/api/http.js";
 import { formatEther, formatEthDisplay } from "../../../lib/format.js";
 
 export default async function handler(req, res) {
@@ -26,9 +32,15 @@ export default async function handler(req, res) {
 
     const config = getChainConfig();
     const { identity } = guard;
+    const linkedWallet = identity.user?.wallet_address || null;
+    const requested =
+      typeof req.query.address === "string" ? req.query.address.trim().toLowerCase() : null;
+    const connectedWallet = !linkedWallet && isAddressLike(requested) ? requested : null;
+    const watchedWallet = linkedWallet || connectedWallet;
+
     const rows = await db.chainEvents.listDonationsForIdentity({
-      userId: identity.userId,
-      walletAddress: identity.user?.wallet_address || null,
+      userId: linkedWallet ? identity.userId : null,
+      walletAddress: watchedWallet,
       limit: 100,
     });
 
@@ -53,10 +65,9 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       cfUserId: identity.user?.cf_user_id || null,
-      // Donations are attributed through the linked wallet; without one nothing can
-      // be matched to this profile, and the UI says so instead of showing an empty list.
-      walletAddress: identity.user?.wallet_address || null,
-      walletLinked: Boolean(identity.user?.wallet_address),
+      walletAddress: watchedWallet,
+      walletLinked: Boolean(linkedWallet),
+      connectedWallet,
       donations,
       summary: {
         confirmedCount: confirmed.length,

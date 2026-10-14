@@ -1,10 +1,4 @@
  ⚠ Your project has `@next/font` installed as a dependency, please use the built-in `next/font` instead. The `@next/font` package will be removed in Next.js 14. You can migrate by running `npx @next/codemod@latest built-in-next-font .`. Read more: https://nextjs.org/docs/messages/built-in-next-font
-[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
-Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
-1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
-2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
-Desktop MetaMask extension connection keeps working regardless.
- ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
 <w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (101kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
@@ -13,25 +7,138 @@ Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMa
 Desktop MetaMask extension connection keeps working regardless.
  ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
  ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
-(node:25708) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(node:12504) ExperimentalWarning: SQLite is an experimental feature and might change at any time
 (Use `node --trace-warnings ...` to show where the warning was created)
-[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
-Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
-1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
-2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
-Desktop MetaMask extension connection keeps working regardless.
-[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
-Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
-1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
-2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
-Desktop MetaMask extension connection keeps working regardless.
  ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
@@ -42,7 +149,82 @@ Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMa
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
-[admin-stats] chain read failed: Timed out after 10000ms: getContractStats
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
@@ -58,6 +240,26 @@ Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMa
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
+Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
+1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
+2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
+Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
@@ -68,489 +270,118 @@ Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMa
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
-[admin-stats] chain read failed: Timed out after 10000ms: getContractStats
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
- ⨯ Error: Cannot find module './4222.js'
-Require stack:
-- D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js
-- D:\Projects\CrowdFund\CF\.next\server\pages\api\auth\session.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\future\helpers\module-loader\node-module-loader.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\future\helpers\module-loader\route-module-loader.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\export\routes\app-route.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\export\worker.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\worker.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\entries.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-reloader-webpack.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-server.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\start-server.js
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
-    at D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:54:36
-    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
-    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
-    at Module._load (node:internal/modules/cjs/loader:1226:37)
-    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
-    at mod.require (D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:64:28)
-    at require (node:internal/modules/helpers:152:16)
-    at __webpack_require__.f.require (D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:181:28)
-    at D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:108:40
-    at Array.reduce (<anonymous>)
-    at __webpack_require__.e (D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:107:67)
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\webpack-api-runtime.js',
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\pages\\api\\auth\\session.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\future\\helpers\\module-loader\\node-module-loader.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\future\\helpers\\module-loader\\route-module-loader.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\export\\routes\\app-route.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\export\\worker.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\worker.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\webpack\\loaders\\next-route-loader\\index.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\entries.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-server.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\start-server.js'
-  ]
-}
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
 [wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
 Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
 1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
-Error: Cannot find module './chunks/vendor-chunks/next.js'
-Require stack:
-- D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js
-- D:\Projects\CrowdFund\CF\.next\server\pages\_document.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\load-components.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\utils.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-middleware.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-reloader-webpack.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-server.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\start-server.js
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
-    at D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:54:36
-    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
-    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
-    at Module._load (node:internal/modules/cjs/loader:1226:37)
-    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
-    at mod.require (D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:64:28)
-    at require (node:internal/modules/helpers:152:16)
-    at __webpack_require__.f.require (D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:2447)
-    at D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:1680
-    at Array.reduce (<anonymous>)
-    at __webpack_require__.e (D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:1641)
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\webpack-runtime.js',
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\pages\\_document.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\require.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\load-components.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\utils.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-server.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\start-server.js'
-  ]
-}
- ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
-Require stack:
-- D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js
-- D:\Projects\CrowdFund\CF\.next\server\pages\api\admin\transactions.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\future\helpers\module-loader\node-module-loader.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\future\helpers\module-loader\route-module-loader.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\export\routes\app-route.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\export\worker.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\worker.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\entries.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-reloader-webpack.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-server.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\start-server.js
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
-    at D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:54:36
-    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
-    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
-    at Module._load (node:internal/modules/cjs/loader:1226:37)
-    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
-    at mod.require (D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:64:28)
-    at require (node:internal/modules/helpers:152:16)
-    at __webpack_require__.f.require (D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2933)
-    at D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2166
-    at Array.reduce (<anonymous>)
-    at __webpack_require__.e (D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2127)
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\webpack-api-runtime.js',
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\pages\\api\\admin\\transactions.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\future\\helpers\\module-loader\\node-module-loader.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\future\\helpers\\module-loader\\route-module-loader.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\export\\routes\\app-route.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\export\\worker.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\worker.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\webpack\\loaders\\next-route-loader\\index.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\entries.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-server.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\start-server.js'
-  ]
-}
-[wallet-config] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is invalid (32 characters — expected a 36-character UUID like 123e4567-e89b-12d3-a456-426614174000).
-Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMask...' until a real project ID is configured.
-1) Create a free project at https://cloud.walletconnect.com (copy its Project ID).
-2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
-Desktop MetaMask extension connection keeps working regardless.
-Error: Cannot find module './chunks/vendor-chunks/next.js'
-Require stack:
-- D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js
-- D:\Projects\CrowdFund\CF\.next\server\pages\_document.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\load-components.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\utils.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-middleware.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-reloader-webpack.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-server.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\start-server.js
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
-    at D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:54:36
-    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
-    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
-    at Module._load (node:internal/modules/cjs/loader:1226:37)
-    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
-    at mod.require (D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:64:28)
-    at require (node:internal/modules/helpers:152:16)
-    at __webpack_require__.f.require (D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:2447)
-    at D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:1680
-    at Array.reduce (<anonymous>)
-    at __webpack_require__.e (D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:1641)
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\webpack-runtime.js',
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\pages\\_document.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\require.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\load-components.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\utils.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-server.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\start-server.js'
-  ]
-}
- ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
-Require stack:
-- D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js
-- D:\Projects\CrowdFund\CF\.next\server\pages\api\admin\transactions.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\future\helpers\module-loader\node-module-loader.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\future\helpers\module-loader\route-module-loader.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\export\routes\app-route.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\export\worker.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\worker.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\entries.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-reloader-webpack.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-server.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\start-server.js
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
-    at D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:54:36
-    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
-    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
-    at Module._load (node:internal/modules/cjs/loader:1226:37)
-    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
-    at mod.require (D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:64:28)
-    at require (node:internal/modules/helpers:152:16)
-    at __webpack_require__.f.require (D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2933)
-    at D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2166
-    at Array.reduce (<anonymous>)
-    at __webpack_require__.e (D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2127)
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\webpack-api-runtime.js',
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\pages\\api\\admin\\transactions.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\future\\helpers\\module-loader\\node-module-loader.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\future\\helpers\\module-loader\\route-module-loader.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\export\\routes\\app-route.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\export\\worker.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\worker.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\webpack\\loaders\\next-route-loader\\index.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\entries.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-server.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\start-server.js'
-  ]
-}
-Error: Cannot find module './chunks/vendor-chunks/next.js'
-Require stack:
-- D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js
-- D:\Projects\CrowdFund\CF\.next\server\pages\_document.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\load-components.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\utils.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-middleware.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-reloader-webpack.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-server.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\start-server.js
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
-    at D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:54:36
-    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
-    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
-    at Module._load (node:internal/modules/cjs/loader:1226:37)
-    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
-    at mod.require (D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:64:28)
-    at require (node:internal/modules/helpers:152:16)
-    at __webpack_require__.f.require (D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:2447)
-    at D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:1680
-    at Array.reduce (<anonymous>)
-    at __webpack_require__.e (D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:1641)
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\webpack-runtime.js',
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\pages\\_document.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\require.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\load-components.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\utils.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-server.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\start-server.js'
-  ]
-}
- ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
-Require stack:
-- D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js
-- D:\Projects\CrowdFund\CF\.next\server\pages\api\admin\transactions.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\future\helpers\module-loader\node-module-loader.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\future\helpers\module-loader\route-module-loader.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\export\routes\app-route.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\export\worker.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\worker.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\entries.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-reloader-webpack.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-server.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\start-server.js
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
-    at D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:54:36
-    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
-    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
-    at Module._load (node:internal/modules/cjs/loader:1226:37)
-    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
-    at mod.require (D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:64:28)
-    at require (node:internal/modules/helpers:152:16)
-    at __webpack_require__.f.require (D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2933)
-    at D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2166
-    at Array.reduce (<anonymous>)
-    at __webpack_require__.e (D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2127)
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\webpack-api-runtime.js',
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\pages\\api\\admin\\transactions.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\future\\helpers\\module-loader\\node-module-loader.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\future\\helpers\\module-loader\\route-module-loader.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\export\\routes\\app-route.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\export\\worker.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\worker.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\webpack\\loaders\\next-route-loader\\index.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\entries.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-server.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\start-server.js'
-  ]
-}
-Error: Cannot find module './chunks/vendor-chunks/next.js'
-Require stack:
-- D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js
-- D:\Projects\CrowdFund\CF\.next\server\pages\_document.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\load-components.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\utils.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-middleware.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-reloader-webpack.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-server.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\start-server.js
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
-    at D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:54:36
-    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
-    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
-    at Module._load (node:internal/modules/cjs/loader:1226:37)
-    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
-    at mod.require (D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:64:28)
-    at require (node:internal/modules/helpers:152:16)
-    at __webpack_require__.f.require (D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:2447)
-    at D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:1680
-    at Array.reduce (<anonymous>)
-    at __webpack_require__.e (D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:1641)
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\webpack-runtime.js',
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\pages\\_document.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\require.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\load-components.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\utils.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-server.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\start-server.js'
-  ]
-}
- ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
-Require stack:
-- D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js
-- D:\Projects\CrowdFund\CF\.next\server\pages\api\admin\transactions.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\future\helpers\module-loader\node-module-loader.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\future\helpers\module-loader\route-module-loader.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\export\routes\app-route.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\export\worker.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\worker.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\entries.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-reloader-webpack.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-server.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\start-server.js
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
-    at D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:54:36
-    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
-    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
-    at Module._load (node:internal/modules/cjs/loader:1226:37)
-    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
-    at mod.require (D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:64:28)
-    at require (node:internal/modules/helpers:152:16)
-    at __webpack_require__.f.require (D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2933)
-    at D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2166
-    at Array.reduce (<anonymous>)
-    at __webpack_require__.e (D:\Projects\CrowdFund\CF\.next\server\webpack-api-runtime.js:1:2127)
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\webpack-api-runtime.js',
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\pages\\api\\admin\\transactions.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\future\\helpers\\module-loader\\node-module-loader.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\future\\helpers\\module-loader\\route-module-loader.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\export\\routes\\app-route.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\export\\worker.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\worker.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\webpack\\loaders\\next-route-loader\\index.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\entries.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-server.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\start-server.js'
-  ]
-}
-Error: Cannot find module './chunks/vendor-chunks/next.js'
-Require stack:
-- D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js
-- D:\Projects\CrowdFund\CF\.next\server\pages\_document.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\load-components.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\build\utils.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-middleware.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\dev\hot-reloader-webpack.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\router-server.js
-- D:\Projects\CrowdFund\CF\node_modules\next\dist\server\lib\start-server.js
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
-    at D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:54:36
-    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
-    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
-    at Module._load (node:internal/modules/cjs/loader:1226:37)
-    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
-    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
-    at mod.require (D:\Projects\CrowdFund\CF\node_modules\next\dist\server\require-hook.js:64:28)
-    at require (node:internal/modules/helpers:152:16)
-    at __webpack_require__.f.require (D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:2447)
-    at D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:1680
-    at Array.reduce (<anonymous>)
-    at __webpack_require__.e (D:\Projects\CrowdFund\CF\.next\server\webpack-runtime.js:1:1641)
-    at Array.map (<anonymous>) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\webpack-runtime.js',
-    'D:\\Projects\\CrowdFund\\CF\\.next\\server\\pages\\_document.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\require.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\load-components.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\build\\utils.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\router-server.js',
-    'D:\\Projects\\CrowdFund\\CF\\node_modules\\next\\dist\\server\\lib\\start-server.js'
-  ]
-}
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function
+[auth] Clerk profile lookup failed: clerkClient is not a function

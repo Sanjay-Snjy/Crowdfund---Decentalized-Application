@@ -191,6 +191,100 @@ test("simultaneous registrations across processes never receive the same ID", as
   assert.equal(total >= workers * perWorker, true);
 });
 
+test("the admin list can be limited to active, wallet-connected profiles", async () => {
+  // A wallet profile that is later merged into a Clerk profile becomes a retired
+  // row (same person, no wallet). It must not be listed next to its survivor.
+  const retired = await users.ensureUserFromWallet({
+    address: ADDRESSES.dave,
+    displayName: "Retired Wallet",
+  });
+  const survivor = await users.ensureUserFromClerk({
+    clerkUserId: "user_retired_owner",
+    displayName: "Retired Owner",
+  });
+  await users.linkWalletToUser({ userId: survivor.id, address: ADDRESSES.dave });
+
+  const walletless = await users.ensureUserFromClerk({
+    clerkUserId: "user_no_wallet",
+    displayName: "No Wallet",
+  });
+
+  const list = await users.listRecentUsers({ limit: 100, activeOnly: true, walletOnly: true });
+  const cfIds = list.map((user) => user.cfUserId);
+
+  assert.equal(cfIds.includes(retired.cf_user_id), false, "a merged (retired) profile is not listed");
+  assert.equal(cfIds.includes(walletless.cf_user_id), false, "a registration without a wallet is not listed");
+  assert.equal(cfIds.includes(survivor.cf_user_id), true, "the surviving profile with the wallet is listed");
+  assert.equal(
+    list.every((user) => user.walletAddress && user.walletConnected),
+    true,
+    "every listed row has a connected wallet"
+  );
+  assert.equal((await users.countWalletUsers()) >= list.length, true);
+
+  // The unfiltered list keeps its previous behavior for other consumers.
+  const unfiltered = await users.listRecentUsers({ limit: 100 });
+  assert.equal(
+    unfiltered.some((user) => user.cfUserId === walletless.cf_user_id),
+    true,
+    "without the filter, wallet-less rows still appear"
+  );
+});
+
+test("a wallet this browser already proved is linked to the Clerk profile automatically", async () => {
+  const { autoLinkWalletSession, SESSION_COOKIE } = await import("../lib/auth/identity.js");
+
+  const walletProfile = await users.ensureUserFromWallet({
+    address: ADDRESSES.erin,
+    displayName: "Auto Wallet",
+  });
+  const { token } = await sessions.createSession({
+    userId: walletProfile.id,
+    address: ADDRESSES.erin,
+  });
+  const clerkProfile = await users.ensureUserFromClerk({
+    clerkUserId: "user_autolink",
+    displayName: "Auto Link",
+  });
+
+  const req = { headers: { cookie: `${SESSION_COOKIE}=${token}` } };
+  const linked = await autoLinkWalletSession(req, clerkProfile);
+
+  assert.equal(linked.id, clerkProfile.id, "the Clerk profile survives the merge");
+  assert.equal(linked.wallet_address, ADDRESSES.erin, "the proven wallet is attached");
+  assert.equal(
+    (await users.getUserByCfUserId(walletProfile.cf_user_id)).status,
+    "merged",
+    "the throwaway wallet profile is retired"
+  );
+
+  // Ambiguous cases are left to the explicit link flow.
+  const bystander = await users.ensureUserFromClerk({
+    clerkUserId: "user_autolink_bystander",
+    displayName: "Bystander",
+  });
+  assert.equal(
+    (await autoLinkWalletSession(null, bystander)).wallet_address,
+    null,
+    "no session cookie means nothing is linked"
+  );
+
+  const carolOwner = await users.getUserByWallet(ADDRESSES.carol);
+  const { token: carolToken } = await sessions.createSession({
+    userId: carolOwner.id,
+    address: ADDRESSES.carol,
+  });
+  const untouched = await autoLinkWalletSession(
+    { headers: { cookie: `${SESSION_COOKIE}=${carolToken}` } },
+    bystander
+  );
+  assert.equal(
+    untouched.wallet_address,
+    null,
+    "a wallet already owned by another Clerk account is never reassigned"
+  );
+});
+
 test.after(() => {
   cleanup(tempDir);
 });

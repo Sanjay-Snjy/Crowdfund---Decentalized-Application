@@ -9,6 +9,11 @@
  *
  * Emails are never returned. The only identifiers exposed are the CrowdFund User
  * ID and the wallet address.
+ *
+ * The list is limited to active profiles with a connected wallet: a retired row
+ * (merged into another profile) and a registration that never connected a wallet
+ * are not "users you can look up", and listing them made the panel contradict its
+ * own registered count.
  */
 import { db } from "../../../lib/db/index.js";
 import { requireAdmin } from "../../../lib/auth/identity.js";
@@ -32,8 +37,10 @@ export default async function handler(req, res) {
       limit,
       offset,
       beforeId: Number.isFinite(beforeId) ? beforeId : null,
+      activeOnly: true,
+      walletOnly: true,
     });
-    const total = await db.users.countUsers();
+    const total = await db.users.countWalletUsers();
 
     res.setHeader("X-Total-Count", String(total));
 

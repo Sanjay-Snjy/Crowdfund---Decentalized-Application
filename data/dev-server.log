@@ -101,3 +101,16 @@
  ○ Compiling /api/admin/transactions ...
  ✓ Compiled /api/admin/transactions in 4.2s (2792 modules)
  ✓ Compiled /api/admin/stats in 179ms (236 modules)
+ ✓ Compiled /campaign/[id] in 789ms (2797 modules)
+ ✓ Compiled /api/admin/stats in 113ms (226 modules)
+ ✓ Compiled /api/auth/session in 128ms (228 modules)
+ ✓ Compiled /api/admin/users in 706ms (230 modules)
+ ✓ Compiled /_error in 1330ms (2788 modules)
+ ○ Compiling /api/campaigns/[id]/funding ...
+ ✓ Compiled /api/campaigns/[id]/funding in 3.1s (2794 modules)
+ ✓ Compiled /_error in 616ms (2794 modules)
+ ✓ Compiled in 434ms (185 modules)
+ ✓ Compiled in 871ms (2558 modules)
+ ✓ Compiled in 1662ms (2743 modules)
+ ✓ Compiled /api/campaigns/[id]/funding in 554ms (221 modules)
+ ✓ Compiled /api/donations in 638ms (2784 modules)

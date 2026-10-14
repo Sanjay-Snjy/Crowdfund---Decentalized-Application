@@ -2,8 +2,10 @@
  * Admin → Recently Joined Users.
  *
  * Newest registrations first, CrowdFund User ID only (Clerk ids are never shown),
- * registration date/time, wallet connection status with the address when present,
- * and an explicit placeholder when no wallet is connected.
+ * registration date/time, and the connected wallet address. Only profiles with a
+ * wallet are listed: a merged (retired) row and a registration that never
+ * connected a wallet are deliberately absent, so every row here is a real account
+ * with an on-chain identity and the row count matches the badge.
  *
  * The list refreshes on an interval so a user who registers while the dashboard is
  * open appears without a reload.
@@ -37,10 +39,10 @@ export default function RecentlyJoinedUsers({ enabled = true }) {
     <div className="card rounded-2xl p-5">
       <SectionTitle
         title="Recently Joined Users"
-        description="Newest registrations first · refreshes automatically"
+        description="Newest wallet-connected registrations first · refreshes automatically"
         right={
           <div className="flex items-center gap-2">
-            <span className="badge badge-neutral">{pagination?.total ?? "—"} registered</span>
+            <span className="badge badge-neutral">{pagination?.total ?? "—"} with wallet</span>
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => refetch()} disabled={isFetching}>
               <FiRefreshCw className="h-3 w-3" /> {isFetching ? "Refreshing…" : "Refresh"}
             </button>
@@ -59,8 +61,8 @@ export default function RecentlyJoinedUsers({ enabled = true }) {
       ) : users.length === 0 ? (
         <EmptyState
           icon={<FiUserPlus className="h-8 w-8" style={{ color: "var(--color-text-muted)" }} />}
-          title="No registered users yet"
-          description="Profiles appear here as soon as someone registers — via the Clerk webhook or their first signed wallet sign-in."
+          title="No wallet-connected users yet"
+          description="Profiles appear here as soon as someone signs in with their wallet or links one to their account."
         />
       ) : (
         <>
@@ -89,16 +91,12 @@ export default function RecentlyJoinedUsers({ enabled = true }) {
                       {formatDate(user.registeredAt)}
                     </td>
                     <td className="px-3 py-2">
-                      {user.walletConnected ? (
-                        <span className="inline-flex items-center gap-1.5">
-                          <FiCreditCard className="h-3 w-3" style={{ color: "var(--color-success)" }} />
-                          <span className="font-mono" style={{ color: "var(--color-text)" }} title={user.walletAddress}>
-                            {formatAddress(user.walletAddress)}
-                          </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <FiCreditCard className="h-3 w-3" style={{ color: "var(--color-success)" }} />
+                        <span className="font-mono" style={{ color: "var(--color-text)" }} title={user.walletAddress}>
+                          {formatAddress(user.walletAddress)}
                         </span>
-                      ) : (
-                        <span className="badge badge-neutral">No wallet connected</span>
-                      )}
+                      </span>
                     </td>
                     <td className="px-3 py-2">
                       <span className={`badge ${user.role === "admin" ? "badge-success" : "badge-neutral"}`}>
@@ -129,8 +127,8 @@ export default function RecentlyJoinedUsers({ enabled = true }) {
                 <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
                   {formatDate(user.registeredAt)}
                 </p>
-                <p className="mt-1 text-[11px]" style={{ color: user.walletConnected ? "var(--color-success)" : "var(--color-text-muted)" }}>
-                  {user.walletConnected ? `Wallet ${formatAddress(user.walletAddress)}` : "No wallet connected"}
+                <p className="mt-1 text-[11px]" style={{ color: "var(--color-success)" }}>
+                  Wallet {formatAddress(user.walletAddress)}
                 </p>
               </div>
             ))}
@@ -150,8 +148,8 @@ export default function RecentlyJoinedUsers({ enabled = true }) {
           )}
 
           <p className="mt-2 text-[11px]" style={{ color: "var(--color-text-muted)" }}>
-            Showing {users.length} of {pagination?.total ?? 0} registered users. Email addresses are never
-            displayed.
+            Showing {users.length} of {pagination?.total ?? 0} wallet-connected users. Email addresses
+            are never displayed.
           </p>
         </>
       )}

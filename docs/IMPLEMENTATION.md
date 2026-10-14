@@ -264,7 +264,8 @@ npm run export-abi       # regenerate constants/abi.js from the compiled artifac
 | Browser check | `/home`, `/campaign/1`, `/admin` | Rendered; the public community activity section shows real indexed donations (CF-0006, 0.01 ETH, Confirmed, Sepolia link) |
 
 Scenario coverage requested in the brief is mapped to those runs: duplicate/simultaneous
-registration, wallet-less users in the admin list, admin-only list access, per-campaign
+registration, admin list limited to active wallet-connected users (retired merged rows and
+registrations without a wallet are never listed), admin-only list access, per-campaign
 donation attribution, failed/pending transactions excluded, unlinked wallets getting no
 fabricated ID, escrow/release percentages, refund eligibility, recovery guards and reward
 idempotency.

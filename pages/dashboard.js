@@ -489,7 +489,7 @@ function Dashboard() {
 
         {/* Community donation activity + my verified donation history */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RecentDonations limit={6} title="Recent Community Donations" />
+          <RecentDonations limit={6} title="Recent Community Donations" showTxLink={false} />
           <MyDonations />
         </div>
 

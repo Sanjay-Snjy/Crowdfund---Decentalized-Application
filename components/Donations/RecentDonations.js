@@ -26,6 +26,7 @@ export default function RecentDonations({
   description = "Confirmed contributions recorded on-chain",
   enabled = true,
   showCampaign = true,
+  showTxLink = true,
 }) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["donations", campaignId || "all", limit],
@@ -110,15 +111,17 @@ export default function RecentDonations({
                 <span className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
                   {formatEthDisplay(donation.amountWei, 4)} ETH
                 </span>
-                <a
-                  href={donation.explorerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-ghost btn-sm"
-                  title={`View transaction ${donation.txHash}`}
-                >
-                  Tx <FiExternalLink className="h-3 w-3" />
-                </a>
+                {showTxLink && (
+                  <a
+                    href={donation.explorerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-ghost btn-sm"
+                    title={`View transaction ${donation.txHash}`}
+                  >
+                    Tx <FiExternalLink className="h-3 w-3" />
+                  </a>
+                )}
               </div>
             </div>
           ))}

@@ -86,3 +86,18 @@
  ✓ Compiled /api/admin/users in 707ms (245 modules)
  ✓ Compiled /api/admin/campaigns in 174ms (245 modules)
  ✓ Compiled /api/admin/transactions in 217ms (243 modules)
+ ✓ Compiled /api/me/donations in 144ms (241 modules)
+ ✓ Compiled (245 modules)
+ ○ Compiling /campaign/[id] ...
+ ✓ Compiled /campaign/[id] in 5.2s (2796 modules)
+ ✓ Compiled /api/auth/session in 263ms (224 modules)
+ ✓ Compiled /api/wallet-link in 145ms (235 modules)
+ ✓ Compiled (239 modules)
+ ✓ Compiled in 1508ms (2784 modules)
+ ✓ Compiled in 2.4s (2784 modules)
+ ✓ Compiled /api/auth/session in 801ms (2775 modules)
+ ✓ Compiled /api/donations in 646ms (221 modules)
+ ✓ Compiled (232 modules)
+ ○ Compiling /api/admin/transactions ...
+ ✓ Compiled /api/admin/transactions in 4.2s (2792 modules)
+ ✓ Compiled /api/admin/stats in 179ms (236 modules)

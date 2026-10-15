@@ -4,10 +4,12 @@ import { useAccount, useContractRead, useContractReads } from "wagmi";
 import { useUser } from "@clerk/nextjs";
 import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
 import {
   FiUser, FiClock, FiTarget, FiShare2, FiHeart, FiUsers, FiCalendar, FiBookmark,
-  FiUpload, FiExternalLink, FiShield, FiLock, FiUnlock, FiCheckCircle,
+  FiUpload, FiExternalLink, FiShield, FiLock, FiUnlock, FiCheckCircle, FiFlag,
 } from "react-icons/fi";
+import { apiGet } from "../../utils/apiClient";
 import { useContract } from "../../hooks/useContract";
 import { getFromIPFS, uploadToIPFS, uploadJSONToIPFS } from "../../utils/ipfs";
 import { useBookmarks } from "../../hooks/useBookmarks";
@@ -22,8 +24,13 @@ import { CONTRACT_ADDRESS, MILESTONE_SCHEDULE, VOTE_QUORUM_PERCENT } from "../..
 import { CROWDFUNDING_ABI } from "../../constants/abi";
 import FundingStatus from "./FundingStatus";
 import RecentDonations from "../Donations/RecentDonations";
+import AdminMilestoneRelease from "./AdminMilestoneRelease";
 
 const TABS = ["Overview", "Milestones", "Contributors"];
+// The milestone release controls are administrative (they move escrow and ask the
+// creator for evidence), so the tab is only offered to administrators. The guards
+// that matter are on the API routes — this only decides what is rendered.
+const ADMIN_TAB = "Milestone release";
 
 // Community "support" votes: three quick questions plus optional remarks. They are
 // community feedback (kept in the voter's browser) and never move funds.
@@ -205,6 +212,22 @@ export default function CampaignDetails({ campaignId }) {
     return index === -1 ? null : index;
   }, [milestones]);
 
+  // Evidence requests an administrator recorded for this campaign. Public and
+  // non-personal: a campaign page is readable by anyone, so this must be told to
+  // every visitor — the creator is not always the one looking at the page.
+  const { data: evidenceRequests } = useQuery({
+    queryKey: ["campaign", campaignId, "milestone-requests"],
+    queryFn: () => apiGet(`/api/campaigns/${campaignId}/milestone-requests`),
+    enabled: Boolean(campaignId),
+    refetchInterval: 60 * 1000,
+    retry: 1,
+  });
+
+  const pendingEvidenceRequest = useMemo(() => {
+    const pending = evidenceRequests?.pending || [];
+    return pending.find((request) => request.milestoneIndex === nextMilestoneIndex) || null;
+  }, [evidenceRequests, nextMilestoneIndex]);
+
   if (campaignLoading) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-20 space-y-4">
@@ -236,6 +259,7 @@ export default function CampaignDetails({ campaignId }) {
   const currentUserName = user?.fullName || user?.firstName || "";
   const creatorName = getCreatorDisplayName(campaign.creator, metadata?.creator, creatorProfile, address, currentUserName);
   const isCreator = address?.toLowerCase() === campaign.creator?.toLowerCase();
+  const tabs = identity.isAdmin ? [...TABS, ADMIN_TAB] : TABS;
   const isSuccessful = parseFloat(raised) >= parseFloat(target);
   const fundingClosed = timeLeft.expired;
   const canRefund = !isCreator && fundingClosed && !isSuccessful && userContribution > 0;
@@ -351,7 +375,11 @@ export default function CampaignDetails({ campaignId }) {
       refetchMilestones?.();
       refetchMilestoneReads?.();
       refetchAccounting?.();
-    } catch (err) { console.error(err); }
+      toast.success(`Milestone ${index + 1} released to the creator`);
+    } catch (err) {
+      toast.error(err?.shortMessage || err?.message || "Could not release this milestone");
+      throw err;
+    }
   };
 
   const handleShare = async () => {
@@ -504,7 +532,7 @@ export default function CampaignDetails({ campaignId }) {
           {/* Tabs */}
           <div className="card">
             <div className="border-b flex gap-1 px-1 overflow-x-auto" style={{ borderColor: "var(--color-border)" }}>
-              {TABS.map((tab) => (
+              {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -670,6 +698,22 @@ export default function CampaignDetails({ campaignId }) {
                             </p>
                           )}
 
+                          {/* An administrator asked for this milestone's evidence: the
+                              creator sees the request, its date and note right here. */}
+                          {isNext && !m.evidenceSubmitted && pendingEvidenceRequest && (
+                            <div
+                              className="mt-3 flex items-start gap-2 rounded-lg px-3 py-2 text-xs"
+                              style={{ background: "var(--color-accent-light)", color: "var(--color-text-secondary)" }}
+                            >
+                              <FiFlag className="mt-0.5 w-3.5 h-3.5 shrink-0" style={{ color: "var(--color-accent)" }} />
+                              <span>
+                                The CrowdFund platform requested the evidence for this milestone on{" "}
+                                {formatDate(pendingEvidenceRequest.createdAt)}
+                                {pendingEvidenceRequest.note ? ` — “${pendingEvidenceRequest.note}”` : "."}
+                              </span>
+                            </div>
+                          )}
+
                           {/* Vote tallies */}
                           {m.evidenceSubmitted && (
                             <div className="mt-3 flex flex-wrap items-center gap-4 text-xs" style={{ color: "var(--color-text-muted)" }}>
@@ -807,6 +851,22 @@ export default function CampaignDetails({ campaignId }) {
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* Administrator-only: the milestone release section. Evidence, donor
+                  voting, escrow release and the recorded evidence requests all live
+                  here; the API routes behind it re-check administrator access. */}
+              {activeTab === ADMIN_TAB && identity.isAdmin && (
+                <AdminMilestoneRelease
+                  campaignId={campaignId}
+                  milestones={milestones}
+                  plannedShares={plannedShares}
+                  approvedStatuses={approvedStatuses}
+                  onRelease={handleRelease}
+                  releasing={releasing}
+                  onRefetch={refetchMilestones}
+                  raisedWei={campaign.raisedAmount}
+                />
               )}
             </div>
           </div>

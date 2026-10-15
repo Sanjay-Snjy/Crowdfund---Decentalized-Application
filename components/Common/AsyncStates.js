@@ -2,6 +2,7 @@
  * Shared presentation blocks so every new section has consistent loading, empty,
  * error and stat states instead of one-off markup.
  */
+import Link from "next/link";
 import { FiAlertTriangle, FiInbox, FiRefreshCw } from "react-icons/fi";
 
 export function LoadingState({ rows = 3, height = "h-12", label = "Loading…" }) {
@@ -66,9 +67,15 @@ export function ErrorState({ error, onRetry = null, title = "Could not load this
   );
 }
 
-export function StatTile({ label, value, hint = null, accent = null, icon = null }) {
-  return (
-    <div className="card rounded-2xl p-4">
+/**
+ * Stat tile. When `href` is given the whole tile becomes a link, so a metric can
+ * open its own breakdown page without a separate "view" button.
+ */
+export function StatTile({ label, value, hint = null, accent = null, icon = null, href = null, linkLabel = null }) {
+  const className = `card rounded-2xl p-4${href ? " card-hover block" : ""}`;
+
+  const content = (
+    <>
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
           {label}
@@ -83,7 +90,15 @@ export function StatTile({ label, value, hint = null, accent = null, icon = null
           {hint}
         </p>
       )}
-    </div>
+    </>
+  );
+
+  if (!href) return <div className={className}>{content}</div>;
+
+  return (
+    <Link href={href} className={className} aria-label={linkLabel || `${label} — open the breakdown`}>
+      {content}
+    </Link>
   );
 }
 

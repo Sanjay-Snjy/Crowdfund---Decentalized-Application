@@ -7,6 +7,7 @@ import { FiPause, FiPlay, FiDollarSign, FiShield, FiActivity, FiAlertTriangle } 
 import { formatEther, parseEther } from "../utils/helpers";
 import { CONTRACT_ADDRESS } from "../constants";
 import { CROWDFUNDING_ABI } from "../constants/abi";
+import { StatTile } from "../components/Common/AsyncStates";
 import AdminGate from "../components/Admin/AdminGate";
 import PlatformOverview from "../components/Admin/PlatformOverview";
 import RecentlyJoinedUsers from "../components/Admin/RecentlyJoinedUsers";
@@ -137,13 +138,21 @@ export default function AdminPage() {
                       {[
                         { label: "Campaigns", value: total },
                         { label: "Fees", value: `${fees} ETH` },
-                        { label: "Balance", value: `${balance} ETH` },
+                        // Clicking the contract balance opens the per-campaign breakdown.
+                        {
+                          label: "Balance",
+                          value: `${balance} ETH`,
+                          href: "/admin/contract-balance",
+                        },
                         { label: "Status", value: isPaused ? "Paused" : "Active" },
                       ].map((s) => (
-                        <div key={s.label} className="card p-4 rounded-2xl">
-                          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{s.label}</p>
-                          <p className="text-lg font-bold mt-1" style={{ color: "var(--color-text)" }}>{s.value}</p>
-                        </div>
+                        <StatTile
+                          key={s.label}
+                          label={s.label}
+                          value={s.value}
+                          href={s.href}
+                          linkLabel={s.href ? "Contract balance — open the per-campaign breakdown" : undefined}
+                        />
                       ))}
                     </div>
 

@@ -121,8 +121,10 @@ export default function PlatformOverview({ enabled = true, onSynced = null }) {
         <StatTile
           label="Contract balance"
           value={chain ? `${chain.contractBalanceEth} ETH` : "—"}
-          hint="Every campaign combined"
+          hint="Every campaign combined · open the breakdown"
           accent="var(--color-warning)"
+          href="/admin/contract-balance"
+          linkLabel="Contract balance — open the per-campaign breakdown"
         />
         <StatTile label="Campaigns on-chain" value={campaigns.onChainTotal ?? campaigns.cached} />
         <StatTile label="Refunded to donors" value={`${donations.refundedEth} ETH`} />

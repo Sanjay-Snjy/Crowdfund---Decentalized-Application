@@ -16,10 +16,7 @@ import {
   FiBookOpen,
   FiBriefcase,
   FiBook,
-  FiHeart,
   FiZap,
-  FiSun,
-  FiPenTool,
 } from "react-icons/fi";
 import { useQuery } from "@tanstack/react-query";
 import { setDemoMode } from "../lib/demoMode";
@@ -159,12 +156,7 @@ export default function Home() {
     { icon: FiBookOpen, title: "Student Projects", description: "Support student ideas and research." },
     { icon: FiBriefcase, title: "Startups", description: "Help new businesses get off the ground." },
     { icon: FiBook, title: "Education", description: "Fund learning programs and scholarships." },
-    { icon: FiHeart, title: "Medical", description: "Support treatment and medical needs." },
-    { icon: FiGlobe, title: "Social Causes", description: "Back community and charity projects." },
-    { icon: FiZap, title: "Research & Innovation", description: "Support new research and discovery." },
     { icon: FiZap, title: "Technology", description: "Fund useful tools and products." },
-    { icon: FiSun, title: "Agriculture", description: "Help farms and food systems grow." },
-    { icon: FiPenTool, title: "Arts and Culture", description: "Support creative and cultural work." },
     { icon: FiGlobe, title: "Environment", description: "Fund projects that protect nature." },
   ];
 
@@ -243,18 +235,8 @@ export default function Home() {
         categoryTitle = "Startups";
       } else if (normalizedCategory.includes("education")) {
         categoryTitle = "Education";
-      } else if (normalizedCategory.includes("medical")) {
-        categoryTitle = "Medical";
-      } else if (normalizedCategory.includes("social")) {
-        categoryTitle = "Social Causes";
-      } else if (normalizedCategory.includes("research") || normalizedCategory.includes("innovation")) {
-        categoryTitle = "Research & Innovation";
       } else if (normalizedCategory.includes("technology")) {
         categoryTitle = "Technology";
-      } else if (normalizedCategory.includes("agriculture")) {
-        categoryTitle = "Agriculture";
-      } else if (normalizedCategory.includes("arts") || normalizedCategory.includes("culture")) {
-        categoryTitle = "Arts and Culture";
       } else if (normalizedCategory.includes("environment")) {
         categoryTitle = "Environment";
       }

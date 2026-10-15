@@ -12,8 +12,7 @@ import { formatEther } from "../../utils/helpers";
 import { useDemoMode } from "../../lib/demoMode";
 
 const CATEGORIES = [
-  "Student Projects", "Medical", "Startup", "Education", "Research and Innovation",
-  "Social Causes", "Technology", "Agriculture", "Arts and Culture", "Environment",
+  "Student Projects", "Startup", "Education", "Technology", "Environment",
 ];
 
 export default function CreateCampaignForm() {

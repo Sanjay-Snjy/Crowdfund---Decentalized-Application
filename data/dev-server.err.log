@@ -28,3 +28,17 @@ Mobile MetaMask connection (WalletConnect v2) will hang on 'Connecting to MetaMa
 2) Set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to that UUID in .env.local AND in your deployment (e.g. Vercel) environment variables.
 Desktop MetaMask extension connection keeps working regardless.
 [admin-stats] chain read failed: Timed out after 10000ms: getContractStats
+[admin-stats] chain read failed: Timed out after 10000ms: getContractStats
+[stats] on-chain campaign count failed: Timed out after 10000ms: getContractStats
+[stats] on-chain campaign count failed: Timed out after 10000ms: getContractStats
+[stats] on-chain campaign count failed: Timed out after 10000ms: getContractStats
+[admin-stats] chain read failed: Timed out after 10000ms: getBalance
+[admin-stats] chain read failed: Timed out after 10000ms: getContractStats
+[stats] on-chain campaign count failed: Timed out after 10000ms: getContractStats
+[admin-stats] chain read failed: Timed out after 10000ms: getContractStats
+[admin-stats] chain read failed: Timed out after 10000ms: getContractStats
+[admin-stats] chain read failed: Timed out after 10000ms: getContractStats
+[admin-stats] chain read failed: Timed out after 10000ms: getContractStats
+[admin-stats] chain read failed: Timed out after 10000ms: getBalance
+[admin-stats] chain read failed: Timed out after 10000ms: getContractStats
+[admin-stats] chain read failed: Timed out after 10000ms: getContractStats

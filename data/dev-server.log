@@ -27,3 +27,5 @@
  ✓ Compiled /api/admin/stats in 134ms (213 modules)
  ○ Compiling /home ...
  ✓ Compiled /home in 7.9s (2755 modules)
+ ✓ Compiled /api/admin/users in 887ms (219 modules)
+[?25h

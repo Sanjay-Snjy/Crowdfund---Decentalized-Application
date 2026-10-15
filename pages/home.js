@@ -22,7 +22,6 @@ import {
   FiUploadCloud,
   FiArrowRight,
   FiCheckCircle,
-  FiShield,
 } from "react-icons/fi";
 import { getCreatorDisplayName, calculateProgress } from "../utils/helpers";
 import { getFromIPFS } from "../utils/ipfs";
@@ -31,9 +30,7 @@ import RecentDonations from "../components/Donations/RecentDonations";
 import { useDemoMode, DEMO_ACTIVE_CAMPAIGNS, DEMO_TRANSACTION_FEED } from "../lib/demoMode";
 
 const CATEGORIES = [
-  "All", "Student Projects", "Medical", "Startup", "Education",
-  "Research and Innovation", "Social Causes", "Technology", "Agriculture",
-  "Arts and Culture", "Environment",
+  "All", "Student Projects", "Startup", "Education", "Technology", "Environment",
 ];
 
 const HERO_SLIDES = [
@@ -42,12 +39,6 @@ const HERO_SLIDES = [
     title: "Empower Student Projects",
     subtitle1: "Big ideas begin with bold student innovation.",
     subtitle2: "Support young creators and help their ideas take shape.",
-  },
-  {
-    image: "/Hero_banners/2.png",
-    title: "Support Better Healthcare",
-    subtitle1: "Heal lives and bring hope through meaningful support.",
-    subtitle2: "Fund medical treatments, equipment, and healthcare initiatives.",
   },
   {
     image: "/Hero_banners/3.png",
@@ -62,34 +53,10 @@ const HERO_SLIDES = [
     subtitle2: "Support learning, scholarships, and educational programs.",
   },
   {
-    image: "/Hero_banners/5.png",
-    title: "Research and Innovation",
-    subtitle1: "Innovate today and create a lasting impact tomorrow.",
-    subtitle2: "Fund research and breakthrough ideas that drive progress.",
-  },
-  {
-    image: "/Hero_banners/10.png",
-    title: "Create Meaningful Social Impact",
-    subtitle1: "Together, we can create meaningful and lasting change.",
-    subtitle2: "Support initiatives that uplift communities and transform lives.",
-  },
-  {
     image: "/Hero_banners/6.png",
     title: "Build Future with Technology",
     subtitle1: "Power bold ideas and build technology for the future.",
     subtitle2: "Support innovative solutions that transform the world.",
-  },
-  {
-    image: "/Hero_banners/9.png",
-    title: "Grow Sustainable Agriculture",
-    subtitle1: "Grow smarter today and help feed a sustainable future.",
-    subtitle2: "Support modern farming and sustainable agriculture projects.",
-  },
-  {
-    image: "/Hero_banners/7.png",
-    title: "Celebrate Arts and Culture",
-    subtitle1: "Celebrate creativity while preserving culture and heritage.",
-    subtitle2: "Support artists, performances, and inspiring cultural initiatives.",
   },
   {
     image: "/Hero_banners/8.png",
@@ -101,14 +68,9 @@ const HERO_SLIDES = [
 
 const CATEGORY_META = {
   "Student Projects": FiUsers,
-  Medical: FiShield,
   Startup: FiUploadCloud,
   Education: FiAward,
-  "Research and Innovation": FiZap,
-  "Social Causes": FiUsers,
   Technology: FiZap,
-  Agriculture: FiTarget,
-  "Arts and Culture": FiAward,
   Environment: FiTarget,
 };
 

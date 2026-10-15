@@ -411,9 +411,6 @@ export default function AllCampaignsPage() {
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <div className="mt-2.5 flex items-center gap-1 text-xs" style={sectionMuted}>
-                        <FiUsers className="h-3 w-3" /> {c.contributorsCount || 0} backers
-                      </div>
                     </div>
                   </Link>
                 );

@@ -4,11 +4,19 @@
  * Public platform totals for the landing page: campaigns launched, donor funds
  * raised and distinct contributors.
  *
- * Nothing here is hardcoded and nothing comes from the browser. Campaigns is the
- * contract's own counter (with the cached table as a fallback when the RPC cannot
- * be reached), and the money figures are summed from indexed, confirmed
- * contribution events, minus confirmed refunds. A pending transaction can never
- * move these numbers, so a failed contribution cannot inflate them.
+ * Nothing here is hardcoded and nothing comes from the browser. The money figures
+ * are summed from indexed, confirmed contribution events, minus confirmed refunds.
+ * A pending transaction can never move these numbers, so a failed contribution
+ * cannot inflate them.
+ *
+ * Two campaign counts are reported on purpose:
+ *   campaigns       every campaign the contract has ever created (campaignCounter),
+ *                   deactivated ones included — the all-time figure
+ *   activeCampaigns the ones a visitor can actually browse, read from the same
+ *                   `getActiveCampaigns` view the Explore page uses, so a campaign
+ *                   an administrator deactivated never inflates the public number
+ *
+ * Both fall back to the cached campaign table when the RPC cannot be reached.
  */
 import { db } from "../../lib/db/index.js";
 import { maybeAutoSync } from "../../lib/chain/indexer.js";
@@ -33,10 +41,11 @@ export default async function handler(req, res) {
       contractAddress: config.contractAddress,
     };
 
-    const [totals, contributors, campaigns] = await Promise.all([
+    const [totals, contributors, campaigns, activeCampaigns] = await Promise.all([
       db.chainEvents.transactionTotals(filters),
       db.chainEvents.countUniqueDonors(filters),
       campaignCount(),
+      activeCampaignCount(),
     ]);
 
     // Refunded donations were returned to the donor, so they are not "raised".
@@ -46,6 +55,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       campaigns,
+      activeCampaigns,
       contributors,
       contributions: totals.confirmedDonations,
       fundsRaisedWei: netWei,
@@ -83,6 +93,33 @@ async function campaignCount() {
   }
 
   return (await db.campaigns.listCampaigns({ limit: 500 })).length;
+}
+
+/**
+ * Campaigns a visitor can actually browse. `getContractStats()` counts every
+ * campaign ever created — deactivated ones included — so the live count is read
+ * from `getActiveCampaigns`, the same view the Explore page and the landing page's
+ * campaign cards use. That keeps the headline number in step with what a visitor
+ * can find, instead of promising campaigns that are no longer listed anywhere.
+ */
+async function activeCampaignCount() {
+  const contract = getReadContract();
+
+  if (contract) {
+    try {
+      const active = await withTimeout(
+        contract.getActiveCampaigns(0, 100),
+        10000,
+        "getActiveCampaigns"
+      );
+      return Array.isArray(active) ? active.length : 0;
+    } catch (error) {
+      console.warn("[stats] active campaign count failed:", error?.message);
+    }
+  }
+
+  const cached = await db.campaigns.listCampaigns({ limit: 500 });
+  return cached.filter((campaign) => campaign.active).length;
 }
 
 /** BigInt-safe subtraction, clamped at zero so a stale refund can never go negative. */

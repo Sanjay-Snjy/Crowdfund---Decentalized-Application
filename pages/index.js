@@ -380,8 +380,13 @@ export default function Home() {
   const statsPending = statsLoading && !platformStats;
   const heroStats = [
     {
-      value: statsPending ? "—" : String(platformStats?.campaigns ?? 0),
-      label: "Campaigns",
+      // Live campaigns only. /api/stats also reports the all-time counter, which
+      // includes campaigns an administrator deactivated — those are not listed
+      // anywhere a visitor can browse, so they must not inflate this headline.
+      value: statsPending
+        ? "—"
+        : String(platformStats?.activeCampaigns ?? platformStats?.campaigns ?? 0),
+      label: "Live Campaigns",
     },
     {
       value: statsPending

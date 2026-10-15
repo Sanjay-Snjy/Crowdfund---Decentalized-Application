@@ -19,7 +19,7 @@
  * Authorization is enforced server-side by those routes (admin role from the
  * database); this component only presents what they return.
  */
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { FiArrowLeft, FiExternalLink, FiLayers, FiRefreshCw } from "react-icons/fi";
@@ -51,6 +51,11 @@ function amountCell(value) {
 }
 
 export default function ContractBalancePage() {
+  // A campaign deactivated by an administrator is no longer live, so it is hidden
+  // from this list by default — but its escrow is still part of the contract
+  // balance, so it stays one click away.
+  const [showDeactivated, setShowDeactivated] = useState(false);
+
   const statsQuery = useQuery({
     queryKey: ["admin", "contract-balance", "stats"],
     queryFn: () => apiGet("/api/admin/stats"),
@@ -67,6 +72,13 @@ export default function ContractBalancePage() {
   });
 
   const campaigns = campaignsQuery.data?.campaigns || [];
+  const deactivatedCampaigns = useMemo(
+    () => campaigns.filter((campaign) => campaign.active === false),
+    [campaigns]
+  );
+  const visibleCampaigns = showDeactivated
+    ? campaigns
+    : campaigns.filter((campaign) => campaign.active !== false);
   const campaignIds = useMemo(
     () => campaigns.map((campaign) => campaign.campaignId),
     [campaigns]
@@ -215,7 +227,8 @@ export default function ContractBalancePage() {
                   A campaign&apos;s collected total counts every contribution it ever received. The
                   contract balance is the ETH physically still held there — collected funds that have
                   already been released for milestones, refunded to donors or withdrawn as fees are no
-                  longer part of it.
+                  longer part of it. A deactivated campaign is still holding its escrow until its donors
+                  refund it, so it keeps counting towards these totals.
                 </p>
               </>
             )}
@@ -228,9 +241,22 @@ export default function ContractBalancePage() {
               description="Collected balance, deadline and the contributors behind each campaign"
               right={
                 campaigns.length > 0 ? (
-                  <span className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
-                    {campaigns.length} campaign{campaigns.length === 1 ? "" : "s"}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
+                      Showing {visibleCampaigns.length} of {campaigns.length}
+                    </span>
+                    {deactivatedCampaigns.length > 0 && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setShowDeactivated((value) => !value)}
+                      >
+                        {showDeactivated
+                          ? `Hide deactivated (${deactivatedCampaigns.length})`
+                          : `Show deactivated (${deactivatedCampaigns.length})`}
+                      </button>
+                    )}
+                  </div>
                 ) : null
               }
             />
@@ -255,7 +281,13 @@ export default function ContractBalancePage() {
               />
             ) : (
               <div className="space-y-4">
-                {campaigns.map((campaign) => {
+                {visibleCampaigns.length === 0 && (
+                  <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
+                    Every campaign for this deployment is deactivated — use “Show deactivated” to list
+                    them and their escrow.
+                  </p>
+                )}
+                {visibleCampaigns.map((campaign) => {
                   const funding = campaign.funding || {};
                   const escrow = campaign.escrow || {};
                   const milestones = campaign.milestones || {};
@@ -288,7 +320,10 @@ export default function ContractBalancePage() {
                             <strong style={{ color: "var(--color-text-secondary)" }}>
                               {campaign.deadline ? formatDate(campaign.deadline) : "—"}
                             </strong>{" "}
-                            · {campaign.status || "—"}
+                            ·{" "}
+                            {campaign.active === false
+                              ? "deactivated by an administrator"
+                              : campaign.status || "—"}
                             {campaign.creator ? (
                               <span className="font-mono"> · creator {formatAddress(campaign.creator)}</span>
                             ) : null}
@@ -297,14 +332,18 @@ export default function ContractBalancePage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <span
                             className={`badge ${
-                              campaign.completed
+                              campaign.active === false
+                                ? "badge-error"
+                                : campaign.completed
                                 ? "badge-success"
                                 : funding.funded
                                 ? "badge-warning"
                                 : "badge-neutral"
                             }`}
                           >
-                            {campaign.completed
+                            {campaign.active === false
+                              ? "Deactivated"
+                              : campaign.completed
                               ? "Completed"
                               : funding.funded
                               ? "Target reached"
